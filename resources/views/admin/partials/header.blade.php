@@ -33,9 +33,9 @@
             <span class="admin-header__icon-badge">3</span>
         </button>
 
-        <span class="admin-header__badge">
+        <span class="admin-header__badge" title="Staff Access">
             <span class="admin-header__badge-dot"></span>
-            Staff Access
+            <span class="admin-header__badge-text">Staff Access</span>
         </span>
 
         <div class="admin-header__profile">

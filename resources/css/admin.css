@@ -445,7 +445,12 @@
     display: flex;
     align-items: center;
     gap: 14px;
+    min-width: 0;
     flex-shrink: 0;
+}
+
+.admin-header__titles {
+    min-width: 0;
 }
 
 .admin-header__menu {
@@ -466,6 +471,9 @@
     font-size: 0.72rem;
     color: #94a3b8;
     margin: 0 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .admin-header__title {
@@ -474,6 +482,9 @@
     color: var(--brand-navy);
     margin: 0;
     letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .admin-header__search {
@@ -925,8 +936,26 @@
         z-index: 35;
     }
 
+    .admin-header {
+        height: auto;
+        min-height: var(--header-height);
+        padding: 10px 16px;
+        gap: 10px;
+    }
+
     .admin-header__menu {
         display: flex;
+        flex-shrink: 0;
+    }
+
+    .admin-header__left {
+        gap: 10px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .admin-header__right {
+        gap: 8px;
     }
 
     .admin-content {
@@ -941,29 +970,184 @@
     .dashboard-hero {
         padding: 22px 18px;
         border-radius: 16px;
+        gap: 18px;
+        margin-bottom: 18px;
+    }
+
+    .dashboard-hero__panel {
+        max-width: none;
+        width: 100%;
     }
 
     .dashboard-hero__title {
-        font-size: 1.35rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .admin-header {
-        padding: 0 16px;
-        gap: 12px;
+        font-size: clamp(1.2rem, 5vw, 1.45rem);
     }
 
-    .admin-header__title {
-        font-size: 1rem;
+    .dashboard-hero__desc {
+        font-size: 0.82rem;
+        margin-bottom: 16px;
     }
 
     .dashboard-hero__actions {
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
     }
 
     .hero-btn {
         width: 100%;
         justify-content: center;
+        min-height: 44px;
+        padding: 10px 12px;
+        text-align: center;
+    }
+
+    .module-card {
+        padding: 18px 16px 16px;
+    }
+}
+
+/* Phones — single-column actions, compact header */
+@media (max-width: 640px) {
+    .dashboard-hero__actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Large phones — tighten spacing */
+@media (max-width: 480px) {
+    .admin-header {
+        padding: 10px 12px;
+        gap: 8px;
+    }
+
+    .admin-header__title {
+        font-size: 0.95rem;
+    }
+
+    .admin-header__breadcrumb {
+        font-size: 0.65rem;
+    }
+
+    .admin-header__badge-text {
+        display: none;
+    }
+
+    .admin-header__badge {
+        padding: 6px;
+        border-radius: 50%;
+    }
+
+    .admin-header__icon-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    .admin-content {
+        padding: 12px;
+    }
+
+    .dashboard-hero {
+        padding: 18px 14px;
+        border-radius: 14px;
+    }
+
+    .dashboard-hero__eyebrow {
+        font-size: 0.62rem;
+        letter-spacing: 0.08em;
+        margin-bottom: 10px;
+    }
+
+    .dashboard-hero__panel {
+        padding: 16px 14px;
+    }
+
+    .dashboard-hero__panel-date {
+        font-size: 0.92rem;
+    }
+
+    .dashboard-hero__panel-list li {
+        font-size: 0.74rem;
+        gap: 8px;
+    }
+
+    .module-card__title {
+        font-size: 0.9rem;
+    }
+
+    .module-card__desc {
+        font-size: 0.76rem;
+    }
+}
+
+/* Small phones — hide access badge to free header space */
+@media (max-width: 400px) {
+    .admin-header__badge {
+        display: none;
+    }
+
+    .dashboard-hero__title {
+        font-size: 1.2rem;
+        line-height: 1.25;
+    }
+
+    .dashboard-hero__desc {
+        font-size: 0.8rem;
+        line-height: 1.5;
+    }
+}
+
+/* Extra-small (e.g. 320px) */
+@media (max-width: 360px) {
+    .admin-header {
+        padding: 8px 10px;
+        gap: 6px;
+    }
+
+    .admin-header__left {
+        gap: 8px;
+    }
+
+    .admin-header__right {
+        gap: 6px;
+    }
+
+    .admin-header__breadcrumb {
+        display: none;
+    }
+
+    .admin-header__title {
+        font-size: 0.88rem;
+    }
+
+    .admin-header__profile-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 0.65rem;
+    }
+
+    .admin-header__icon-btn {
+        width: 34px;
+        height: 34px;
+    }
+
+    .admin-content {
+        padding: 10px;
+    }
+
+    .dashboard-hero {
+        padding: 16px 12px;
+        border-radius: 12px;
+        gap: 14px;
+    }
+
+    .dashboard-hero__panel-list li {
+        flex-wrap: wrap;
+        row-gap: 2px;
+    }
+
+    .module-card {
+        padding: 16px 14px 14px;
+        border-radius: 14px;
     }
 }
