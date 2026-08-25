@@ -1,13 +1,13 @@
 Options -Indexes
-DirectoryIndex index.php
+DirectoryIndex index.phtml index.php
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /dig_travel_and_tour/
 
-    # Already inside /public — do nothing extra
-    RewriteRule ^public/ - [L]
+    # Leave /public as-is (no double rewrite)
+    RewriteRule ^public(?:/|$) - [L]
 
-    # Send everything else into Laravel's public folder
+    # Send all other requests into public/
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>

@@ -19,8 +19,10 @@
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # Send Requests To Front Controller...
+    # Front controller — use .phtml to avoid parent ".php strip" rules
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^ index.php [L]
+    RewriteRule ^ index.phtml [L]
 </IfModule>
+
+DirectoryIndex index.phtml index.php
