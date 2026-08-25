@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Subdirectory deploy (cPanel): uncomment if routes/assets 404
+    # RewriteBase /dig_travel_and_tour/public/
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
