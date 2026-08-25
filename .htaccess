@@ -3,7 +3,11 @@ DirectoryIndex index.php
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteBase /dig_travel_and_tour/
 
-    # Always send traffic into Laravel's public folder
+    # Already inside /public — do nothing extra
+    RewriteRule ^public/ - [L]
+
+    # Send everything else into Laravel's public folder
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
