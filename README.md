@@ -2,65 +2,32 @@
 
 Internal staff/admin system — Laravel 12, Blade, Alpine.js, custom CSS.
 
-**Stack:** PHP 8.2 · Laravel 12 · Laravel Breeze (Blade) · MySQL
+**Stack:** PHP 8.2 · Laravel 12 · Laravel Breeze (Blade) · MySQL · Alpine.js (CDN) · plain CSS
 
 ---
 
 ## Prerequisites
 
-Check before starting:
-
 ```powershell
 php -v          # PHP 8.2+
 composer -V     # Composer installed
-node -v         # Node.js (needed after Breeze)
-npm -v
 ```
+
+No Node.js or npm required.
 
 ---
 
-## Step 1 — Create Laravel 12 project
+## Setup
 
 ```powershell
-cd D:\laravel_projects
-
-composer create-project laravel/laravel:^12.0 DIG_Software_management
-```
-
----
-
-## Step 2 — Environment setup
-
-```powershell
-cd DIG_Software_management
-
 copy .env.example .env
-
 php artisan key:generate
 ```
 
-Edit `.env` — set database (example):
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=dig_management_software
-DB_USERNAME=root
-DB_PASSWORD=
-```
-
-Create the database in phpMyAdmin or MySQL, then run migrations:
+Edit `.env` — set database, then:
 
 ```powershell
 php artisan migrate
-```
-
----
-
-## Step 3 — Run the app
-
-```powershell
 php artisan serve
 ```
 
@@ -68,68 +35,26 @@ Open: **http://127.0.0.1:8000**
 
 ---
 
-## Step 4 — Install Laravel Breeze (auth)
+## Assets (no build step)
 
-```powershell
-composer require laravel/breeze --dev
+| Asset | Location |
+|-------|----------|
+| Admin CSS | `public/css/admin.css` |
+| Auth CSS | `public/css/auth.css` |
+| Alpine.js | CDN (layouts) |
+| Tailwind (Breeze profile pages only) | CDN |
 
-php artisan breeze:install blade
-
-npm install
-
-npm run build
-
-php artisan migrate
-```
-
-### What Breeze adds
-
-- Login, register, logout, password reset
-- `routes/auth.php`
-- `app/Http/Controllers/Auth/`
-- `resources/views/auth/`
-- Users table migration (if not already migrated)
-
-### Test auth
-
-```powershell
-php artisan serve
-```
-
-- Register: **http://127.0.0.1:8000/register**
-- Login: **http://127.0.0.1:8000/login**
-- Dashboard (protected): **http://127.0.0.1:8000/dashboard**
+Edit CSS under `public/css/` and refresh the browser — no `npm run build`.
 
 ---
 
-## Useful commands (daily dev)
+## Useful commands
 
 ```powershell
-# Start dev server
 php artisan serve
-
-# Rebuild frontend assets after CSS/JS changes
-npm run dev
-
-# Or one-off production build
-npm run build
-
-# New migration
-php artisan make:migration create_example_table
-
-# Run migrations
 php artisan migrate
-
-# Roll back last migration
-php artisan migrate:rollback
-
-# Create controller
 php artisan make:controller Admin/ExampleController
-
-# Create model + migration
 php artisan make:model Example -m
-
-# Clear caches (if something looks stale)
 php artisan config:clear
 php artisan cache:clear
 php artisan view:clear
@@ -137,42 +62,21 @@ php artisan view:clear
 
 ---
 
-## Project folders (quick reference)
+## Project folders
 
 | Path | Purpose |
 |------|---------|
-| `app/Http/Controllers` | Request handling / business logic |
-| `app/Models` | Database models (Eloquent) |
+| `app/Http/Controllers` | Request handling |
+| `app/Models` | Eloquent models |
 | `routes/web.php` | Web routes |
 | `routes/auth.php` | Auth routes (Breeze) |
 | `resources/views` | Blade templates |
-| `resources/css` | Styles (custom CSS later) |
-| `database/migrations` | Database schema changes |
+| `public/css` | Stylesheets |
 | `public/` | Web root — point cPanel here |
 
 ---
 
-## Git — files not committed (.gitignore)
+## Git — not committed
 
-These stay local and are **not** pushed to GitHub:
-
-- `.env` — secrets, DB password, app key
-- `/vendor` — PHP dependencies (run `composer install` on server)
-- `/node_modules` — JS dependencies (run `npm install` locally)
-- `/public/build` — built assets (run `npm run build`)
-
----
-
-## Next steps (planned)
-
-1. Replace Breeze Tailwind views with custom CSS
-2. Admin layout (sidebar)
-3. Modules: quotations, ticketing, bookings, attendance, PDF import
-4. GitHub + cPanel deploy
-
----
-
-## PHP version note
-
-- **PHP 8.2.12** → Laravel 12 (this project)
-- Laravel 13 requires PHP 8.3+
+- `.env` — secrets
+- `/vendor` — run `composer install` on server

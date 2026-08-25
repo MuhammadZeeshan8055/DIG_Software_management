@@ -1,6 +1,0 @@
-@import './auth.css';
-@import './admin.css';
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
