@@ -1,13 +1,23 @@
 Options -Indexes
-DirectoryIndex index.phtml index.php
+DirectoryIndex index.phtml
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /dig_travel_and_tour/
 
-    # Leave /public as-is (no double rewrite)
-    RewriteRule ^public(?:/|$) - [L]
+    # Block sensitive Laravel paths
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L]
+    RewriteRule ^(\.env|composer\.(json|lock)|artisan|phpunit\.xml)$ - [F,L]
 
-    # Send all other requests into public/
-    RewriteRule ^(.*)$ public/$1 [L]
+    # App assets are stored under /public but URLs are /css and /images
+    RewriteRule ^css/(.*)$ public/css/$1 [L]
+    RewriteRule ^images/(.*)$ public/images/$1 [L]
+
+    # Serve real files and folders as-is (do NOT rewrite everything into /public)
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Front controller (use .phtml so main-site ".php strip" rules do not break it)
+    RewriteRule ^ index.phtml [L]
 </IfModule>
