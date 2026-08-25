@@ -3,21 +3,21 @@ DirectoryIndex index.phtml
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /dig_travel_and_tour/
+    RewriteBase /dig_management_portal/
 
     # Block sensitive Laravel paths
     RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L]
     RewriteRule ^(\.env|composer\.(json|lock)|artisan|phpunit\.xml)$ - [F,L]
 
-    # App assets are stored under /public but URLs are /css and /images
+    # Assets live under /public but URLs are /css and /images
     RewriteRule ^css/(.*)$ public/css/$1 [L]
     RewriteRule ^images/(.*)$ public/images/$1 [L]
 
-    # Serve real files and folders as-is (do NOT rewrite everything into /public)
+    # Serve real files and folders as-is
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
-    # Front controller (use .phtml so main-site ".php strip" rules do not break it)
+    # Front controller (.phtml avoids main-site .php strip rules)
     RewriteRule ^ index.phtml [L]
 </IfModule>
