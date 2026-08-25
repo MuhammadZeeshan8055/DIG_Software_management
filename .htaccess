@@ -1,11 +1,9 @@
-Options +FollowSymLinks
-RewriteEngine On
+Options -Indexes
+DirectoryIndex index.php
 
-# Handle Authorization Header
-RewriteCond %{HTTP:Authorization} .
-RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+<IfModule mod_rewrite.c>
+    RewriteEngine On
 
-# Route everything to index.php
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^ index.php [L]
+    # Always send traffic into Laravel's public folder
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
