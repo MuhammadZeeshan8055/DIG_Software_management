@@ -1384,43 +1384,297 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     backdrop-filter: blur(10px);
 }
 
-.option-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+/* ===== Module stats + charts + tables ===== */
+.module-panel {
+    margin-top: 4px;
 }
 
-.option-card {
-    display: flex;
-    align-items: center;
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
-    width: 100%;
-    padding: 16px 18px;
-    text-align: left;
-    font: inherit;
-    color: inherit;
-    appearance: none;
-    cursor: pointer;
+    margin-bottom: 16px;
+}
+
+.stat-card {
+    position: relative;
+    overflow: hidden;
+    padding: 18px 18px 16px;
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.82);
     background: linear-gradient(
-        165deg,
-        rgba(255, 255, 255, 0.9) 0%,
-        rgba(255, 255, 255, 0.7) 100%
+        160deg,
+        rgba(255, 255, 255, 0.96) 0%,
+        rgba(245, 250, 255, 0.88) 100%
     );
     box-shadow:
-        0 4px 16px rgba(45, 58, 97, 0.06),
-        inset 0 1px 0 rgba(255, 255, 255, 0.95);
-    animation: optionCardIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: calc(0.06s + (var(--opt-i, 0) * 0.05s));
-    transition:
-        transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-        box-shadow 0.3s ease,
-        border-color 0.3s ease,
-        background 0.3s ease;
+        0 8px 22px rgba(45, 58, 97, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 1);
+    animation: moduleDashIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(0.04s + (var(--stat-i, 0) * 0.05s));
 }
 
-@keyframes optionCardIn {
+.stat-card::after {
+    content: "";
+    position: absolute;
+    right: -18px;
+    top: -22px;
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 145, 212, 0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.stat-card--amber::after {
+    background: radial-gradient(circle, rgba(253, 202, 9, 0.16) 0%, transparent 70%);
+}
+
+.stat-card--red::after {
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.12) 0%, transparent 70%);
+}
+
+.stat-card--green::after {
+    background: radial-gradient(circle, rgba(34, 197, 94, 0.12) 0%, transparent 70%);
+}
+
+.stat-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.stat-card__label {
+    margin: 0;
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(45, 58, 97, 0.52);
+}
+
+.stat-card__mark {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--brand-blue);
+    box-shadow: 0 0 0 4px rgba(0, 145, 212, 0.14);
+}
+
+.stat-card--navy .stat-card__mark {
+    background: var(--brand-navy);
+    box-shadow: 0 0 0 4px rgba(45, 58, 97, 0.12);
+}
+
+.stat-card--amber .stat-card__mark {
+    background: var(--brand-yellow);
+    box-shadow: 0 0 0 4px rgba(253, 202, 9, 0.22);
+}
+
+.stat-card--red .stat-card__mark {
+    background: #ef4444;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.14);
+}
+
+.stat-card--green .stat-card__mark {
+    background: #22c55e;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.14);
+}
+
+.stat-card__value {
+    margin: 0 0 6px;
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--brand-navy-dark);
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-card__hint {
+    margin: 0;
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: rgba(45, 58, 97, 0.5);
+}
+
+.chart-grid {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 14px;
+    align-items: stretch;
+}
+
+.chart-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 240px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.82);
+    background: linear-gradient(
+        165deg,
+        rgba(255, 255, 255, 0.96) 0%,
+        rgba(248, 251, 255, 0.9) 100%
+    );
+    box-shadow:
+        0 8px 22px rgba(45, 58, 97, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 1);
+    overflow: hidden;
+    animation: moduleDashIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.18s;
+}
+
+.chart-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 16px 6px;
+    flex-shrink: 0;
+}
+
+.chart-card__title {
+    margin: 0;
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--brand-navy-dark);
+}
+
+.chart-card__badge {
+    flex-shrink: 0;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--brand-navy);
+    background: rgba(0, 145, 212, 0.1);
+    border: 1px solid rgba(0, 145, 212, 0.16);
+}
+
+.chart-card__body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 4px 14px 14px;
+}
+
+.chart-card__body--bars {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 11px;
+    padding-top: 4px;
+    padding-bottom: 16px;
+}
+
+.trend-chart {
+    width: 100%;
+    height: 118px;
+    display: block;
+    flex: 1;
+    min-height: 0;
+}
+
+.trend-chart__line {
+    filter: drop-shadow(0 2px 4px rgba(0, 145, 212, 0.25));
+}
+
+.trend-chart__labels {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+    margin-top: 6px;
+    flex-shrink: 0;
+}
+
+.trend-chart__labels span {
+    text-align: center;
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(45, 58, 97, 0.42);
+}
+
+.bar-row__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.bar-row__label {
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--brand-navy);
+}
+
+.bar-row__value {
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(45, 58, 97, 0.55);
+    font-variant-numeric: tabular-nums;
+}
+
+.bar-row__track {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(45, 58, 97, 0.07);
+    overflow: hidden;
+}
+
+.bar-row__fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #0091d4, #56c1ea);
+    box-shadow: 0 0 10px rgba(0, 145, 212, 0.25);
+    transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bar-row__fill--navy {
+    background: linear-gradient(90deg, #2d3a61, #4a5d8f);
+    box-shadow: 0 0 10px rgba(45, 58, 97, 0.2);
+}
+
+.bar-row__fill--amber {
+    background: linear-gradient(90deg, #e8b800, #fdca09);
+    box-shadow: 0 0 10px rgba(253, 202, 9, 0.28);
+}
+
+.bar-row__fill--red {
+    background: linear-gradient(90deg, #dc2626, #f87171);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.22);
+}
+
+.bar-row__fill--green {
+    background: linear-gradient(90deg, #16a34a, #4ade80);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.22);
+}
+
+.bar-row__fill--blue {
+    background: linear-gradient(90deg, #0091d4, #56c1ea);
+}
+
+@keyframes moduleDashIn {
     from {
         opacity: 0;
         transform: translateY(12px);
@@ -1431,68 +1685,110 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     }
 }
 
-.option-card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(0, 145, 212, 0.28);
-    box-shadow:
-        0 12px 28px rgba(0, 145, 212, 0.12),
-        inset 0 1px 0 rgba(255, 255, 255, 1);
-}
-
-.option-card--active {
-    border-color: rgba(253, 202, 9, 0.55);
+.data-panel {
+    position: relative;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
     background: linear-gradient(
         165deg,
-        rgba(255, 250, 230, 0.98) 0%,
-        rgba(255, 255, 255, 0.92) 100%
+        rgba(255, 255, 255, 0.96) 0%,
+        rgba(248, 251, 255, 0.88) 100%
     );
     box-shadow:
-        0 10px 24px rgba(253, 202, 9, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 1);
+        0 10px 28px rgba(45, 58, 97, 0.08),
+        0 1px 0 rgba(255, 255, 255, 0.9) inset;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
-.option-card__icon {
-    width: 42px;
-    height: 42px;
-    flex-shrink: 0;
+.data-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: linear-gradient(
+        90deg,
+        var(--brand-blue) 0%,
+        rgba(0, 145, 212, 0.45) 40%,
+        var(--brand-yellow) 100%
+    );
+    pointer-events: none;
+}
+
+.data-panel__head {
     display: flex;
     align-items: center;
-    justify-content: center;
-    border-radius: 12px;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid rgba(45, 58, 97, 0.07);
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.65) 0%,
+        rgba(255, 255, 255, 0.2) 100%
+    );
+}
+
+.data-panel__title {
+    margin: 0;
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--brand-navy-dark);
+}
+
+.data-table-wrap {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-size: 0.8rem;
+}
+
+.data-table th {
+    text-align: left;
+    padding: 12px 18px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(45, 58, 97, 0.48);
+    background: rgba(15, 61, 110, 0.035);
+    border-bottom: 1px solid rgba(45, 58, 97, 0.08);
+    white-space: nowrap;
+}
+
+.data-table td {
+    padding: 14px 18px;
     color: var(--brand-navy);
-    background: linear-gradient(145deg, rgba(255, 251, 235, 0.95) 0%, rgba(254, 249, 195, 0.85) 100%);
-    border: 1px solid rgba(253, 202, 9, 0.3);
+    font-weight: 500;
+    border-bottom: 1px solid rgba(45, 58, 97, 0.055);
+    white-space: nowrap;
+    transition: background 0.2s ease;
 }
 
-.option-card__body {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+.data-table tbody tr:nth-child(even) td {
+    background: rgba(0, 145, 212, 0.018);
 }
 
-.option-card__body strong {
-    font-size: 0.92rem;
+.data-table tbody tr:hover td {
+    background: rgba(0, 145, 212, 0.06);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.data-table td:first-child {
     font-weight: 650;
-    color: var(--brand-navy);
-}
-
-.option-card__body span {
-    font-size: 0.75rem;
-    color: rgba(45, 58, 97, 0.55);
-}
-
-.option-card__arrow {
-    flex-shrink: 0;
-    color: var(--brand-blue);
-    opacity: 0.7;
-    transition: transform 0.25s ease, opacity 0.25s ease;
-}
-
-.option-card:hover .option-card__arrow {
-    transform: translateX(3px);
-    opacity: 1;
+    color: var(--brand-navy-dark);
+    font-variant-numeric: tabular-nums;
 }
 
 .module-card__sheen {
@@ -1714,7 +2010,11 @@ button.admin-nav-link:not(.admin-nav-link--active) {
         transition: transform 0.25s ease;
     }
 
-    .option-grid {
+    .stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .chart-grid {
         grid-template-columns: 1fr;
     }
 
@@ -1813,6 +2113,10 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 /* Phones â€” single-column actions, compact header */
 @media (max-width: 640px) {
     .dashboard-hero__actions {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-grid {
         grid-template-columns: 1fr;
     }
 }

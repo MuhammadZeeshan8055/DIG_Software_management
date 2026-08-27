@@ -10,11 +10,17 @@
 
         <div class="admin-header__titles">
             <p class="admin-header__breadcrumb">
-                <span x-text="activeModule ? 'Employee Portal / Module' : '{{ implode(' / ', $breadcrumb ?? ['Employee Portal']) }}'"></span>
+                <span x-text="activeModule
+                    ? (activeOption ? 'Employee Portal / Module / Option' : 'Employee Portal / Module')
+                    : '{{ implode(' / ', $breadcrumb ?? ['Employee Portal']) }}'"></span>
             </p>
             <h1 class="admin-header__title">
                 <span x-show="!activeModule">{{ $pageTitle ?? 'Dashboard' }}</span>
-                <span x-show="activeModule" x-cloak x-text="currentModule()?.title || 'Module'"></span>
+                <span
+                    x-show="activeModule"
+                    x-cloak
+                    x-text="currentTable()?.title || currentModule()?.title || 'Module'"
+                ></span>
             </h1>
         </div>
     </div>

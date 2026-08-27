@@ -2,11 +2,6 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Workspace links (top of sidebar)
-    |--------------------------------------------------------------------------
-    */
     'navigation' => [
         [
             'label' => 'Workspace',
@@ -23,10 +18,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Business modules (dashboard cards → module workspace + sidebar options)
+    | Business modules
     |--------------------------------------------------------------------------
-    | key      → id used when a card is clicked
-    | children → flat sidebar options shown only while that module is open
+    | key      → Alpine / data lookup id
+    | children → sidebar options (use stable key for tables & future routes)
     */
     'modules' => [
         [
@@ -36,10 +31,10 @@ return [
             'icon' => 'ticket',
             'status' => 'active',
             'children' => [
-                ['label' => 'Issue Ticket', 'route' => null],
-                ['label' => 'Import / Export Ticket Details', 'route' => null],
-                ['label' => 'Ticket History', 'route' => null],
-                ['label' => 'PNR Search', 'route' => null],
+                ['key' => 'issue-ticket', 'label' => 'Issue Ticket', 'route' => null],
+                ['key' => 'import-export', 'label' => 'Import / Export Ticket Details', 'route' => null],
+                ['key' => 'ticket-history', 'label' => 'Ticket History', 'route' => null],
+                ['key' => 'pnr-search', 'label' => 'PNR Search', 'route' => null],
             ],
         ],
         [
@@ -49,9 +44,9 @@ return [
             'icon' => 'building',
             'status' => 'active',
             'children' => [
-                ['label' => 'Create Hotel Voucher', 'route' => null],
-                ['label' => 'Manage Allotments', 'route' => null],
-                ['label' => 'Voucher Records', 'route' => null],
+                ['key' => 'create-voucher', 'label' => 'Create Hotel Voucher', 'route' => null],
+                ['key' => 'manage-allotments', 'label' => 'Manage Allotments', 'route' => null],
+                ['key' => 'voucher-records', 'label' => 'Voucher Records', 'route' => null],
             ],
         ],
         [
@@ -61,9 +56,9 @@ return [
             'icon' => 'globe',
             'status' => 'active',
             'children' => [
-                ['label' => 'New Consultation', 'route' => null],
-                ['label' => 'Visa Cases', 'route' => null],
-                ['label' => 'Student Records', 'route' => null],
+                ['key' => 'new-consultation', 'label' => 'New Consultation', 'route' => null],
+                ['key' => 'visa-cases', 'label' => 'Visa Cases', 'route' => null],
+                ['key' => 'student-records', 'label' => 'Student Records', 'route' => null],
             ],
         ],
         [
@@ -73,9 +68,9 @@ return [
             'icon' => 'receipt',
             'status' => 'active',
             'children' => [
-                ['label' => 'Create Invoice', 'route' => null],
-                ['label' => 'Payments', 'route' => null],
-                ['label' => 'Reports', 'route' => null],
+                ['key' => 'create-invoice', 'label' => 'Create Invoice', 'route' => null],
+                ['key' => 'payments', 'label' => 'Payments', 'route' => null],
+                ['key' => 'reports', 'label' => 'Reports', 'route' => null],
             ],
         ],
         [
@@ -85,15 +80,13 @@ return [
             'icon' => 'chart',
             'status' => 'active',
             'children' => [
-                ['label' => 'Campaigns', 'route' => null],
-                ['label' => 'Create Advertisement', 'route' => null],
-                ['label' => 'Performance', 'route' => null],
+                ['key' => 'campaigns', 'label' => 'Campaigns', 'route' => null],
+                ['key' => 'create-ad', 'label' => 'Create Advertisement', 'route' => null],
+                ['key' => 'performance', 'label' => 'Performance', 'route' => null],
             ],
         ],
     ],
 
-    'quick_actions' => [
-        // ['label' => 'Create Quotation', 'primary' => true],
-    ],
+    'quick_actions' => [],
 
 ];

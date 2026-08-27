@@ -41,13 +41,29 @@
             <div class="admin-nav-section admin-nav-section--module" x-cloak>
                 <p class="admin-nav-section__label" x-text="currentModule().title"></p>
                 <ul>
-                    <template x-for="(child, index) in (currentModule().children || [])" :key="child.label">
-                        <li :style="'--opt-i:' + index">
+                    <li>
+                        <button
+                            type="button"
+                            class="admin-nav-link admin-nav-link--option"
+                            :class="{ 'admin-nav-link--active': !activeOption }"
+                            @click="clearOption()"
+                            @mouseenter="$el.classList.add('nav-touched')"
+                        >
+                            <span class="admin-nav-link__inner">
+                                <span class="admin-nav-link__icon-box">
+                                    <x-admin-icon name="chart" :size="15" />
+                                </span>
+                                <span class="admin-nav-link__label">Module Dashboard</span>
+                            </span>
+                        </button>
+                    </li>
+                    <template x-for="(child, index) in (currentModule().children || [])" :key="child.key">
+                        <li :style="'--opt-i:' + (index + 1)">
                             <button
                                 type="button"
                                 class="admin-nav-link admin-nav-link--option"
-                                :class="{ 'admin-nav-link--active': activeOption === child.label }"
-                                @click="selectOption(child.label)"
+                                :class="{ 'admin-nav-link--active': activeOption === child.key }"
+                                @click="selectOption(child.key)"
                                 @mouseenter="$el.classList.add('nav-touched')"
                             >
                                 <span class="admin-nav-link__inner">

@@ -1,6 +1,7 @@
 @php
     $modulesList = $modules ?? config('admin.modules', []);
     $modulesMap = collect($modulesList)->keyBy('key')->all();
+    $workspace = $workspace ?? config('admin_workspace', []);
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -25,8 +26,44 @@
         activeModule: null,
         activeOption: null,
         modules: @js($modulesMap),
+        workspace: @js($workspace),
         currentModule() {
             return this.activeModule ? (this.modules[this.activeModule] || null) : null;
+        },
+        currentWorkspace() {
+            return this.activeModule ? (this.workspace[this.activeModule] || null) : null;
+        },
+        currentStats() {
+            return this.currentWorkspace()?.stats || [];
+        },
+        currentTrend() {
+            return this.currentWorkspace()?.trend || null;
+        },
+        currentShare() {
+            return this.currentWorkspace()?.share || null;
+        },
+        currentTable() {
+            if (!this.activeModule || !this.activeOption) return null;
+            return (this.currentWorkspace()?.tables || {})[this.activeOption] || null;
+        },
+        trendPoints() {
+            const trend = this.currentTrend();
+            if (!trend?.values?.length) return '';
+            const vals = trend.values;
+            const max = Math.max(...vals, 1);
+            const w = 320;
+            const h = 120;
+            const step = w / Math.max(vals.length - 1, 1);
+            return vals.map((v, i) => {
+                const x = (i * step).toFixed(1);
+                const y = (h - ((v / max) * (h - 16)) - 8).toFixed(1);
+                return x + ',' + y;
+            }).join(' ');
+        },
+        trendArea() {
+            const pts = this.trendPoints();
+            if (!pts) return '';
+            return '0,120 ' + pts + ' 320,120';
         },
         openModule(key) {
             if (!key || !this.modules[key]) return;
@@ -41,11 +78,14 @@
             this.activeOption = null;
             this.sidebarOpen = false;
         },
-        selectOption(label) {
-            this.activeOption = label;
+        selectOption(key) {
+            this.activeOption = key;
             if (window.matchMedia('(max-width: 1024px)').matches) {
                 this.sidebarOpen = false;
             }
+        },
+        clearOption() {
+            this.activeOption = null;
         }
     }"
 >

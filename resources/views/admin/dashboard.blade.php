@@ -115,15 +115,15 @@
         >
             <template x-if="currentModule()">
                 <div>
-                    <!-- <div class="module-workspace__toolbar">
-                        <button type="button" class="module-back-btn" @click="closeModule()">
+                    <div class="module-workspace__toolbar" x-show="activeOption" x-cloak>
+                        <button type="button" class="module-back-btn" @click="clearOption()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                                 <line x1="19" y1="12" x2="5" y2="12"/>
                                 <polyline points="12 19 5 12 12 5"/>
                             </svg>
-                            Back to Operations Overview
+                            Back to Module Dashboard
                         </button>
-                    </div> -->
+                    </div>
 
                     <section class="module-workspace__hero">
                         <div class="module-workspace__hero-glow" aria-hidden="true"></div>
@@ -141,32 +141,120 @@
                         </div>
                     </section>
 
-                    <div class="option-grid">
-                        <template x-for="(child, index) in (currentModule().children || [])" :key="child.label">
-                            <button
-                                type="button"
-                                class="option-card"
-                                :style="'--opt-i:' + index"
-                                :class="{ 'option-card--active': activeOption === child.label }"
-                                @click="selectOption(child.label)"
-                            >
-                                <div class="option-card__icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                        <polyline points="14 2 14 8 20 8"/>
-                                        <line x1="8" y1="13" x2="16" y2="13"/>
-                                        <line x1="8" y1="17" x2="13" y2="17"/>
-                                    </svg>
+                    {{-- Module overview: stats + charts --}}
+                    <div
+                        class="module-panel"
+                        x-show="!activeOption"
+                        x-transition.opacity.duration.200ms
+                    >
+                        <div class="stat-grid">
+                            <template x-for="(stat, index) in currentStats()" :key="stat.label + '-' + index">
+                                <article
+                                    class="stat-card"
+                                    :class="'stat-card--' + (stat.tone || 'blue')"
+                                    :style="'--stat-i:' + index"
+                                >
+                                    <div class="stat-card__top">
+                                        <p class="stat-card__label" x-text="stat.label"></p>
+                                        <span class="stat-card__mark" aria-hidden="true"></span>
+                                    </div>
+                                    <p class="stat-card__value" x-text="stat.value"></p>
+                                    <p class="stat-card__hint" x-text="stat.hint || ''"></p>
+                                </article>
+                            </template>
+                        </div>
+
+                        <template x-if="currentTrend() || currentShare()">
+                            <div class="chart-grid">
+                                <article class="chart-card" x-show="currentTrend()">
+                                    <div class="chart-card__head">
+                                        <h3 class="chart-card__title" x-text="currentTrend()?.title"></h3>
+                                        <span class="chart-card__badge">7 days</span>
+                                    </div>
+                                    <div class="chart-card__body">
+                                        <svg class="trend-chart" viewBox="0 0 320 120" preserveAspectRatio="none" aria-hidden="true">
+                                            <defs>
+                                                <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stop-color="#0091d4" stop-opacity="0.28"/>
+                                                    <stop offset="100%" stop-color="#0091d4" stop-opacity="0.02"/>
+                                                </linearGradient>
+                                                <linearGradient id="trendStroke" x1="0" y1="0" x2="1" y2="0">
+                                                    <stop offset="0%" stop-color="#0091d4"/>
+                                                    <stop offset="100%" stop-color="#fdca09"/>
+                                                </linearGradient>
+                                            </defs>
+                                            <polygon class="trend-chart__area" :points="trendArea()" fill="url(#trendFill)"></polygon>
+                                            <polyline class="trend-chart__line" :points="trendPoints()" fill="none" stroke="url(#trendStroke)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                                        </svg>
+                                        <div class="trend-chart__labels">
+                                            <template x-for="label in (currentTrend()?.labels || [])" :key="label">
+                                                <span x-text="label"></span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </article>
+
+                                <article class="chart-card" x-show="currentShare()">
+                                    <div class="chart-card__head">
+                                        <h3 class="chart-card__title" x-text="currentShare()?.title"></h3>
+                                        <span class="chart-card__badge">Share %</span>
+                                    </div>
+                                    <div class="chart-card__body chart-card__body--bars">
+                                        <template x-for="item in (currentShare()?.items || [])" :key="item.label">
+                                            <div class="bar-row">
+                                                <div class="bar-row__meta">
+                                                    <span class="bar-row__label" x-text="item.label"></span>
+                                                    <span class="bar-row__value" x-text="item.value + '%'"></span>
+                                                </div>
+                                                <div class="bar-row__track">
+                                                    <span
+                                                        class="bar-row__fill"
+                                                        :class="'bar-row__fill--' + (item.tone || 'blue')"
+                                                        :style="'width:' + item.value + '%'"
+                                                    ></span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </article>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Option table --}}
+                    <div
+                        class="module-panel"
+                        x-show="activeOption"
+                        x-cloak
+                        x-transition.opacity.duration.200ms
+                    >
+                        <template x-if="currentTable()">
+                            <div class="data-panel">
+                                <div class="data-panel__head">
+                                    <h3 class="data-panel__title" x-text="currentTable().title"></h3>
                                 </div>
-                                <div class="option-card__body">
-                                    <strong x-text="child.label"></strong>
-                                    <span>Open this option</span>
+
+                                <div class="data-table-wrap">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <template x-for="col in currentTable().columns" :key="col">
+                                                    <th x-text="col"></th>
+                                                </template>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template x-for="(row, rIndex) in currentTable().rows" :key="rIndex">
+                                                <tr>
+                                                    <template x-for="(cell, cIndex) in row" :key="cIndex">
+                                                        <td x-text="cell"></td>
+                                                    </template>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
                                 </div>
-                                <svg class="option-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="5" y1="12" x2="19" y2="12"/>
-                                    <polyline points="12 5 19 12 12 19"/>
-                                </svg>
-                            </button>
+                            </div>
                         </template>
                     </div>
                 </div>
