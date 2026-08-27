@@ -115,15 +115,6 @@
         >
             <template x-if="currentModule()">
                 <div>
-                    <div class="module-workspace__toolbar" x-show="activeOption" x-cloak>
-                        <button type="button" class="module-back-btn" @click="clearOption()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                                <line x1="19" y1="12" x2="5" y2="12"/>
-                                <polyline points="12 19 5 12 12 5"/>
-                            </svg>
-                            Back to Module Dashboard
-                        </button>
-                    </div>
 
                     <section class="module-workspace__hero">
                         <div class="module-workspace__hero-glow" aria-hidden="true"></div>
