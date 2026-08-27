@@ -113,9 +113,10 @@
     border-radius: 14px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     background: linear-gradient(
-        160deg,
-        rgba(255, 255, 255, 0.14) 0%,
-        rgba(255, 255, 255, 0.05) 100%
+        to right,
+        rgba(255, 255, 255, 0.18) 0%,
+        rgba(255, 255, 255, 0.06) 55%,
+        rgba(255, 255, 255, 0.03) 100%
     );
     backdrop-filter: blur(14px) saturate(1.25);
     -webkit-backdrop-filter: blur(14px) saturate(1.25);
