@@ -81,13 +81,13 @@
                             </svg>
                         </a>
                     @else
-                        <span class="module-card__link module-card__link--soon">
+                        <!-- <span class="module-card__link module-card__link--soon">
                             Coming soon
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="5" y1="12" x2="19" y2="12"/>
                                 <polyline points="12 5 19 12 12 19"/>
                             </svg>
-                        </span>
+                        </span> -->
                     @endif
                 </article>
             @endforeach
