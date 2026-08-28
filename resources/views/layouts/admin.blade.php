@@ -83,6 +83,9 @@
         },
         selectOption(key) {
             this.activeOption = key;
+            if (key === 'import-ticket-details') {
+                window.dispatchEvent(new CustomEvent('import-ticket-panel-opened'));
+            }
             if (window.matchMedia('(max-width: 1024px)').matches) {
                 this.sidebarOpen = false;
             }

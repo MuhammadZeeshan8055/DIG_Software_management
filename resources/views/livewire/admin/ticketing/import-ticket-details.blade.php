@@ -1,4 +1,4 @@
-<div class="import-ticket">
+<div class="import-ticket" @import-ticket-panel-opened.window="$wire.$refresh()">
     @if ($successMessage)
         <div class="import-ticket__alert import-ticket__alert--success">
             {{ $successMessage }}
