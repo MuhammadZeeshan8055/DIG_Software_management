@@ -2,7 +2,9 @@
 
 Internal staff/admin system — Laravel 12, Blade, Alpine.js, custom CSS.
 
-**Stack:** PHP 8.2 · Laravel 12 · Laravel Breeze (Blade) · MySQL · Alpine.js (CDN) · plain CSS
+**Stack:** PHP 8.2 · Laravel 12 · Laravel Breeze (Blade) · Livewire · MySQL · Alpine.js (CDN) · plain CSS
+
+**Extra packages (Import Ticket Details):** `livewire/livewire` · `smalot/pdfparser`
 
 ---
 
@@ -73,6 +75,37 @@ php artisan view:clear
 | `resources/views` | Blade templates |
 | `public/css` | Stylesheets |
 | `public/` | Web root — point cPanel here |
+
+---
+
+## cPanel deployment
+
+Run from the Laravel project root (where `artisan` is).
+
+### Install packages
+
+If `composer.json` and `composer.lock` are already on the server:
+
+```bash
+composer install --no-dev --optimize-autoloader --no-interaction
+```
+
+If you need to install the Import Ticket Details packages manually:
+
+```bash
+composer require livewire/livewire:^4.4 smalot/pdfparser:^2.12 --no-interaction
+```
+
+### After install
+
+```bash
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+Point the domain document root to the `public/` folder.
 
 ---
 

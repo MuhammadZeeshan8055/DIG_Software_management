@@ -104,7 +104,7 @@
         {{-- Module workspace (replaces overview) --}}
         <div
             class="dashboard-view module-workspace"
-            x-show="activeModule"
+            x-show="activeModule && activeOption !== 'import-ticket-details'"
             x-cloak
             x-transition:enter="dash-enter"
             x-transition:enter-start="dash-enter-start"
@@ -212,10 +212,10 @@
                         </template>
                     </div>
 
-                    {{-- Option table --}}
+                    {{-- Other option tables (static demo data) --}}
                     <div
                         class="module-panel"
-                        x-show="activeOption"
+                        x-show="activeOption && activeOption !== 'import-ticket-details'"
                         x-cloak
                         x-transition.opacity.duration.200ms
                     >
@@ -250,6 +250,16 @@
                     </div>
                 </div>
             </template>
+        </div>
+
+        {{-- Import Ticket Details (Livewire — must be in page HTML on load, not inside Alpine x-if) --}}
+        <div
+            class="dashboard-view"
+            x-show="activeModule === 'ticketing' && activeOption === 'import-ticket-details'"
+            x-cloak
+            x-transition.opacity.duration.200ms
+        >
+            <livewire:admin.ticketing.import-ticket-details />
         </div>
     </div>
 @endsection
