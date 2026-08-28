@@ -1198,7 +1198,7 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 /* ===== Module grid â€” 4 columns ===== */
 .module-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 
