@@ -50,6 +50,11 @@ return [
             'type' => 'text',
             'placeholder' => 'e.g. 2352541196199',
         ],
+        'document_title' => [
+            'label' => 'Document Title',
+            'type' => 'text',
+            'placeholder' => 'e.g. Itinerary Receipt',
+        ],
     ],
 
     /*
@@ -78,6 +83,7 @@ return [
         'passenger_name' => '/TRAVELLER NAME\s+(.+?)\s*\(ADT\)/i',
         'frequent_flyer' => '/FREQUENT FLYER\s+(.+?)\s+TICKET NO\./i',
         'ticket_number' => '/TICKET NO\.\s*(\d+)/i',
+        'document_title' => '/(Itinerary Receipt)/i',
     ],
 
 ];
