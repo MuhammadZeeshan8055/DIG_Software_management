@@ -32,7 +32,7 @@ return [
             'status' => 'active',
             'children' => [
                 ['key' => 'issue-ticket', 'label' => 'Issue Ticket', 'route' => null],
-                ['key' => 'import-export', 'label' => 'Import / Export Ticket Details', 'route' => null],
+                ['key' => 'import-ticket-details', 'label' => 'Import Ticket Details', 'route' => null],
                 ['key' => 'ticket-history', 'label' => 'Ticket History', 'route' => null],
                 ['key' => 'pnr-search', 'label' => 'PNR Search', 'route' => null],
             ],

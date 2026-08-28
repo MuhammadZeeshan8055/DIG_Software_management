@@ -42,8 +42,8 @@ return [
                     ['TK-10424', 'Fatima Noor', 'LHE → RUH', '28 Aug 2026', 'Ready'],
                 ],
             ],
-            'import-export' => [
-                'title' => 'Import / Export Ticket Details',
+            'import-ticket-details' => [
+                'title' => 'Import Ticket Details',
                 'columns' => ['File', 'Type', 'Records', 'Uploaded By', 'Status'],
                 'rows' => [
                     ['tickets_aug.csv', 'Import', '120', 'Admin', 'Completed'],
