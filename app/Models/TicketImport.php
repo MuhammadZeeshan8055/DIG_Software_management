@@ -36,4 +36,34 @@ class TicketImport extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function routeLabel(): string
+    {
+        $segments = $this->flight_segments ?? [];
+
+        if ($segments === []) {
+            return '—';
+        }
+
+        $parts = [];
+
+        foreach ($segments as $index => $segment) {
+            if ($index === 0 && ! empty($segment['departure_location'])) {
+                $parts[] = $segment['departure_location'];
+            }
+
+            if (! empty($segment['arrival_location'])) {
+                $parts[] = $segment['arrival_location'];
+            }
+        }
+
+        return $parts === [] ? '—' : implode(' → ', $parts);
+    }
+
+    public function flightNumbersLabel(): string
+    {
+        $numbers = array_filter(array_column($this->flight_segments ?? [], 'flight_number'));
+
+        return $numbers === [] ? '—' : implode(', ', $numbers);
+    }
 }

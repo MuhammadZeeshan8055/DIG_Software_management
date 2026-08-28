@@ -212,13 +212,16 @@
             <h3 class="data-panel__title">Recent Confirmed Imports</h3>
         </div>
 
-        <div class="data-table-wrap">
+        <div class="data-table-wrap import-ticket__history-table">
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>File</th>
                         <th>Passenger</th>
-                        <th>Agency PNR</th>
+                        <th>Booking Ref</th>
+                        <th>PNR</th>
+                        <th>Ticket No.</th>
+                        <th>Route</th>
                         <th>Flights</th>
                         <th>Confirmed By</th>
                         <th>Confirmed At</th>
@@ -227,16 +230,19 @@
                 <tbody>
                     @forelse ($recentImports as $import)
                         <tr>
-                            <td>{{ $import->original_filename }}</td>
-                            <td>{{ $import->passenger_name }}</td>
+                            <td class="import-ticket__history-file">{{ $import->original_filename }}</td>
+                            <td>{{ $import->passenger_name ?? '—' }}</td>
+                            <td>{{ $import->booking_reference ?? '—' }}</td>
                             <td>{{ $import->agency_pnr ?? '—' }}</td>
-                            <td>{{ count($import->flight_segments ?? []) }}</td>
+                            <td>{{ $import->ticket_number ?? '—' }}</td>
+                            <td class="import-ticket__history-route">{{ $import->routeLabel() }}</td>
+                            <td>{{ $import->flightNumbersLabel() }}</td>
                             <td>{{ $import->user?->name ?? '—' }}</td>
                             <td>{{ $import->confirmed_at?->format('d M Y, H:i') ?? '—' }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6">No confirmed imports yet.</td>
+                            <td colspan="9">No confirmed imports yet.</td>
                         </tr>
                     @endforelse
                 </tbody>

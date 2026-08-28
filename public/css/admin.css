@@ -2270,6 +2270,27 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     margin: 0;
 }
 
+.import-ticket__history-table .data-table {
+    font-size: 0.76rem;
+}
+
+.import-ticket__history-table .data-table th {
+    white-space: nowrap;
+}
+
+.import-ticket__history-file {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.import-ticket__history-route {
+    white-space: nowrap;
+    font-weight: 600;
+    color: var(--brand-navy);
+}
+
 .import-ticket__hint {
     margin: 6px 0 0;
     font-size: 0.85rem;
