@@ -97,31 +97,94 @@ return [
             ],
         ],
         'tables' => [
-            'create-voucher' => [
-                'title' => 'Create Hotel Voucher',
+            'management' => [
+                'title' => 'Management',
+                'columns' => ['Ref', 'Group', 'Hotel', 'Nights', 'Status'],
+                'rows' => [
+                    ['MG-1101', 'Group A', 'Makarem Ajyad', '5', 'Active'],
+                    ['MG-1102', 'Group B', 'Pullman ZamZam', '7', 'Confirmed'],
+                    ['MG-1103', 'Mr. Tariq', 'Hilton Suites', '4', 'Pending'],
+                    ['MG-1104', 'Group C', 'Anwar Al Madinah', '6', 'Active'],
+                ],
+            ],
+            'quotations' => [
+                'title' => 'Quotations',
+                'columns' => ['Quote No', 'Client', 'Package', 'Amount', 'Status'],
+                'rows' => [
+                    ['QT-3301', 'Al Noor Travels', 'Umrah 7N', '185,000', 'Sent'],
+                    ['QT-3302', 'Hajj Group PK', 'Haj 14N', '420,000', 'Draft'],
+                    ['QT-3303', 'Ms. Sana', 'Umrah 10N', '245,000', 'Accepted'],
+                    ['QT-3304', 'Family Iqbal', 'Madinah 5N', '98,000', 'Expired'],
+                ],
+            ],
+            'hotel-vouchers' => [
+                'title' => 'Hotel Vouchers',
                 'columns' => ['Voucher No', 'Guest', 'Hotel', 'Nights', 'Status'],
                 'rows' => [
                     ['HV-2201', 'Group A', 'Makarem Ajyad', '5', 'Draft'],
                     ['HV-2202', 'Group B', 'Pullman ZamZam', '7', 'Issued'],
                     ['HV-2203', 'Mr. Tariq', 'Hilton Suites', '4', 'Draft'],
+                    ['HV-2204', 'Ms. Sana', 'Anwar Al Madinah', '3', 'Issued'],
                 ],
             ],
-            'manage-allotments' => [
-                'title' => 'Manage Allotments',
+            'hotel-allotement-system' => [
+                'title' => 'Hotel Allotement System',
                 'columns' => ['Hotel', 'City', 'Rooms', 'Available', 'Status'],
                 'rows' => [
                     ['Makarem Ajyad', 'Makkah', '40', '12', 'Open'],
                     ['Pullman ZamZam', 'Makkah', '25', '3', 'Limited'],
                     ['Anwar Al Madinah', 'Madinah', '30', '18', 'Open'],
+                    ['Hilton Suites', 'Makkah', '20', '0', 'Full'],
                 ],
             ],
-            'voucher-records' => [
+            'umrah-package' => [
+                'title' => 'Umrah Package',
+                'columns' => ['Package', 'Nights', 'Hotel', 'Price', 'Status'],
+                'rows' => [
+                    ['Economy 7N', '7', 'Dar Al Eiman', '95,000', 'Open'],
+                    ['Standard 10N', '10', 'Makarem Ajyad', '165,000', 'Open'],
+                    ['Premium 14N', '14', 'Pullman ZamZam', '285,000', 'Limited'],
+                    ['Family 10N', '10', 'Hilton Suites', '210,000', 'Open'],
+                ],
+            ],
+            'umrah-documents' => [
+                'title' => 'Umrah Documents',
+                'columns' => ['Doc No', 'Passenger', 'Type', 'Submitted', 'Status'],
+                'rows' => [
+                    ['UD-801', 'Ahmed Khan', 'Passport Copy', '20 Aug 2026', 'Verified'],
+                    ['UD-802', 'Sara Ali', 'Visa Form', '21 Aug 2026', 'Pending'],
+                    ['UD-803', 'Bilal Hussain', 'Photo', '22 Aug 2026', 'Verified'],
+                    ['UD-804', 'Fatima Noor', 'Mahram Letter', '23 Aug 2026', 'Missing'],
+                ],
+            ],
+            'monthly-hotel-bookings-rates' => [
                 'title' => 'Voucher Records',
                 'columns' => ['Voucher No', 'Guest', 'Check-in', 'Agent', 'Status'],
                 'rows' => [
                     ['HV-2180', 'Group C', '01 Sep 2026', 'Ayesha', 'Used'],
                     ['HV-2181', 'Ms. Sana', '03 Sep 2026', 'Omar', 'Active'],
                     ['HV-2182', 'Group D', '05 Sep 2026', 'Ayesha', 'Cancelled'],
+                    ['HV-2183', 'Mr. Tariq', '08 Sep 2026', 'Omar', 'Active'],
+                ],
+            ],
+            'insurance' => [
+                'title' => 'Insurance',
+                'columns' => ['Policy No', 'Passenger', 'Cover', 'Premium', 'Status'],
+                'rows' => [
+                    ['INS-401', 'Ahmed Khan', 'Travel + Medical', '4,500', 'Active'],
+                    ['INS-402', 'Sara Ali', 'Travel', '2,800', 'Active'],
+                    ['INS-403', 'Group B', 'Group Cover', '18,000', 'Pending'],
+                    ['INS-404', 'Fatima Noor', 'Travel + Medical', '4,500', 'Expired'],
+                ],
+            ],
+            'haj-packages' => [
+                'title' => 'Haj Packages',
+                'columns' => ['Package', 'Duration', 'Camp', 'Price', 'Status'],
+                'rows' => [
+                    ['Shifting Haj', '21 days', 'Aziziyah', '650,000', 'Open'],
+                    ['Maktab 1', '25 days', 'Mina', '890,000', 'Limited'],
+                    ['VIP Haj', '18 days', 'Clock Tower', '1,250,000', 'Open'],
+                    ['Economy Haj', '28 days', 'Aziziyah', '480,000', 'Waitlist'],
                 ],
             ],
         ],
@@ -174,6 +237,116 @@ return [
                     ['Ali Raza', 'AB1234567', 'UCL', 'Sep 2026', 'Active'],
                     ['Mariam Khan', 'CD7654321', 'Toronto', 'Jan 2027', 'Pending'],
                     ['Hassan Ali', 'EF9988776', 'Melbourne', 'Feb 2027', 'Active'],
+                ],
+            ],
+        ],
+    ],
+
+    'travel-tourism' => [
+        'stats' => [
+            ['label' => 'Visit Visas', 'value' => '156', 'hint' => '+9 this week', 'tone' => 'blue'],
+            ['label' => 'Packages Sold', 'value' => '84', 'hint' => 'This month', 'tone' => 'green'],
+            ['label' => 'Pending', 'value' => '23', 'hint' => 'Awaiting docs', 'tone' => 'amber'],
+            ['label' => 'Rejected', 'value' => '7', 'hint' => '4.3% rate', 'tone' => 'red'],
+        ],
+        'trend' => [
+            'title' => 'Weekly booking volume',
+            'labels' => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            'values' => [12, 18, 14, 22, 19, 9, 11],
+        ],
+        'share' => [
+            'title' => 'Product mix',
+            'items' => [
+                ['label' => 'Visit Visa', 'value' => 48, 'tone' => 'blue'],
+                ['label' => 'Packages', 'value' => 32, 'tone' => 'green'],
+                ['label' => 'Pending', 'value' => 14, 'tone' => 'amber'],
+                ['label' => 'Rejected', 'value' => 6, 'tone' => 'red'],
+            ],
+        ],
+        'tables' => [
+            'visit-visa' => [
+                'title' => 'Visit Visa',
+                'columns' => ['Case ID', 'Applicant', 'Country', 'Submitted', 'Status'],
+                'rows' => [
+                    ['VV-2101', 'Imran Sheikh', 'UAE', '22 Aug 2026', 'In Review'],
+                    ['VV-2102', 'Hira Naveed', 'UK', '23 Aug 2026', 'Approved'],
+                    ['VV-2103', 'Kamran Malik', 'Turkey', '24 Aug 2026', 'Pending'],
+                    ['VV-2104', 'Ayesha Rauf', 'Malaysia', '25 Aug 2026', 'Rejected'],
+                ],
+            ],
+            'packages' => [
+                'title' => 'Packages',
+                'columns' => ['Package', 'Destination', 'Days', 'Price', 'Status'],
+                'rows' => [
+                    ['Dubai Explorer', 'UAE', '5', '125,000', 'Open'],
+                    ['Istanbul City', 'Turkey', '7', '165,000', 'Open'],
+                    ['Malaysia Family', 'Malaysia', '8', '198,000', 'Limited'],
+                    ['UK Highlights', 'United Kingdom', '10', '385,000', 'Open'],
+                ],
+            ],
+        ],
+    ],
+
+    'consultancy' => [
+        'stats' => [
+            ['label' => 'Active Clients', 'value' => '128', 'hint' => '+11 this month', 'tone' => 'blue'],
+            ['label' => 'Consultations', 'value' => '64', 'hint' => 'This week', 'tone' => 'navy'],
+            ['label' => 'Converted', 'value' => '41', 'hint' => '64% close rate', 'tone' => 'green'],
+            ['label' => 'Follow-ups', 'value' => '19', 'hint' => 'Due this week', 'tone' => 'amber'],
+        ],
+        'trend' => [
+            'title' => 'Weekly consultations',
+            'labels' => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            'values' => [8, 11, 9, 14, 12, 5, 7],
+        ],
+        'share' => [
+            'title' => 'Service mix',
+            'items' => [
+                ['label' => 'Visit Visa', 'value' => 34, 'tone' => 'blue'],
+                ['label' => 'Student', 'value' => 28, 'tone' => 'navy'],
+                ['label' => 'Group Tour', 'value' => 22, 'tone' => 'green'],
+                ['label' => 'Follow-ups', 'value' => 16, 'tone' => 'amber'],
+            ],
+        ],
+        'tables' => [
+            'visit-visa-consultancy' => [
+                'title' => 'Visit Visa Consultancy',
+                'columns' => ['Case ID', 'Client', 'Country', 'Consultant', 'Status'],
+                'rows' => [
+                    ['VC-601', 'Raza Ahmed', 'Schengen', 'Ayesha', 'In Progress'],
+                    ['VC-602', 'Nadia Shah', 'UK', 'Omar', 'Scheduled'],
+                    ['VC-603', 'Tariq Mehmood', 'USA', 'Ayesha', 'Documents Due'],
+                    ['VC-604', 'Sana Iqbal', 'Canada', 'Omar', 'Closed'],
+                ],
+            ],
+            'group-tour-consultancy' => [
+                'title' => 'Group Tour Consultancy',
+                'columns' => ['Tour ID', 'Group', 'Destination', 'Pax', 'Status'],
+                'rows' => [
+                    ['GT-301', 'Corporate IT', 'Dubai', '18', 'Quoted'],
+                    ['GT-302', 'Family Club', 'Turkey', '24', 'Confirmed'],
+                    ['GT-303', 'School Trip', 'Malaysia', '32', 'Planning'],
+                    ['GT-304', 'Ladies Group', 'Istanbul', '14', 'Follow-up'],
+                ],
+            ],
+            'student-consultancy' => [
+                'title' => 'Student Consultancy',
+                'columns' => ['Case ID', 'Student', 'Country', 'Intake', 'Status'],
+                'rows' => [
+                    ['SC-701', 'Ali Raza', 'UK', 'Sep 2026', 'Counselling'],
+                    ['SC-702', 'Mariam Khan', 'Canada', 'Jan 2027', 'Offer Letter'],
+                    ['SC-703', 'Hassan Ali', 'Australia', 'Feb 2027', 'Visa Filed'],
+                    ['SC-704', 'Noor Fatima', 'Germany', 'Oct 2026', 'New'],
+                ],
+            ],
+            'client-details' => [
+                'title' => 'Client Details',
+                'columns' => ['Client ID', 'Name', 'Phone', 'Service', 'Status'],
+                'rows' => [
+                    ['CL-901', 'Raza Ahmed', '0300-1112233', 'Visit Visa', 'Active'],
+                    ['CL-902', 'Nadia Shah', '0321-4455667', 'Student', 'Active'],
+                    ['CL-903', 'Tariq Mehmood', '0333-7788990', 'Group Tour', 'Lead'],
+                    ['CL-904', 'Sana Iqbal', '0345-1122334', 'Visit Visa', 'Closed'],
                 ],
             ],
         ],
