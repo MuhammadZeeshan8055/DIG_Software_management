@@ -38,7 +38,7 @@ return [
             'type' => 'text',
             'required' => true,
             'full' => true,
-            'placeholder' => 'e.g. Mr MUDDASIR IMTIAZ',
+            'placeholder' => 'e.g. Mr MUDDASIR IMTIAZ (ADT)',
         ],
         'frequent_flyer' => [
             'label' => 'Frequent Flyer',
@@ -80,7 +80,7 @@ return [
         'agency_phone' => '/(\+\d{10,15})/',
         'booking_reference' => '/Booking Reference:\s*([A-Z0-9_\-]+(?:\s*-?\s*[0-9]+)?)/i',
         'agency_pnr' => '/Agency PNR:\s*([A-Z0-9]+)/i',
-        'passenger_name' => '/TRAVELLER NAME\s+(.+?)\s*\(ADT\)/i',
+        'passenger_name' => '/TRAVELLER NAME\s+(.+?\((?:ADT|CHD|INF)\))/i',
         'frequent_flyer' => '/FREQUENT FLYER\s+(.+?)\s+TICKET NO\./i',
         'ticket_number' => '/TICKET NO\.\s*(\d+)/i',
         'document_title' => '/(Itinerary Receipt)/i',

@@ -172,7 +172,7 @@
                                 <span>Ticket No.</span>
                             </div>
                             <div class="itinerary-receipt__passenger-row">
-                                <input type="text" wire:model="form.passenger_name" class="itinerary-receipt__inline" placeholder="Traveller name">
+                                <input type="text" wire:model="form.passenger_name" class="itinerary-receipt__inline" placeholder="Mr MUDDASIR IMTIAZ (ADT)">
                                 <input type="text" wire:model="form.frequent_flyer" class="itinerary-receipt__inline" placeholder="-">
                                 <input type="text" wire:model="form.ticket_number" class="itinerary-receipt__inline" placeholder="Ticket number">
                             </div>
