@@ -287,7 +287,7 @@ return [
         ],
     ],
 
-    'consultancy' => [
+    'study-visit-visa' => [
         'stats' => [
             ['label' => 'Active Clients', 'value' => '128', 'hint' => '+11 this month', 'tone' => 'blue'],
             ['label' => 'Consultations', 'value' => '64', 'hint' => 'This week', 'tone' => 'navy'],
