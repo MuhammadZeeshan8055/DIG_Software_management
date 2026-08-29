@@ -1,4 +1,11 @@
-<div class="import-ticket" @import-ticket-panel-opened.window="$wire.$refresh()">
+<div
+    class="import-ticket"
+    @import-ticket-panel-opened.window="$wire.$refresh()"
+    @close-ticket-view.window="$wire.closeView()"
+    x-data
+    x-effect="document.body.classList.toggle('ticket-view-modal-open', $wire.viewingImportId !== null)"
+    x-on:destroy="document.body.classList.remove('ticket-view-modal-open')"
+>
     @if ($successMessage)
         <x-admin-alert type="success" wire-property="successMessage">
             {{ $successMessage }}
@@ -395,9 +402,6 @@
     @if ($viewingImport)
         <div
             class="ticket-view-modal"
-            x-data
-            x-init="document.body.classList.add('ticket-view-modal-open')"
-            x-on:destroy="document.body.classList.remove('ticket-view-modal-open')"
             x-on:keydown.escape.window="$wire.closeView()"
             wire:key="ticket-view-modal-{{ $viewingImport->id }}"
         >

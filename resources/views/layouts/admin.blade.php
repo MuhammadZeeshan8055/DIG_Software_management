@@ -130,6 +130,7 @@
         },
         openModule(key) {
             if (!key || !this.modules[key]) return;
+            window.dispatchEvent(new CustomEvent('close-ticket-view'));
             this.activeModule = key;
             this.activeOption = null;
             this.saveLastPage();
@@ -138,12 +139,16 @@
             }
         },
         closeModule() {
+            window.dispatchEvent(new CustomEvent('close-ticket-view'));
             this.activeModule = null;
             this.activeOption = null;
             this.sidebarOpen = false;
             this.saveLastPage();
         },
         selectOption(key) {
+            if (key !== 'import-ticket-details') {
+                window.dispatchEvent(new CustomEvent('close-ticket-view'));
+            }
             this.activeOption = key;
             this.saveLastPage();
             if (key === 'import-ticket-details') {

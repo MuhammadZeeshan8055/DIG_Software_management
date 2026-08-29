@@ -3553,6 +3553,8 @@ body.ticket-view-modal-open {
     align-items: center;
     justify-content: center;
     padding: 20px;
+    overflow: hidden;
+    overscroll-behavior: contain;
 }
 
 .ticket-view-modal__backdrop {
@@ -3621,8 +3623,12 @@ body.ticket-view-modal-open {
 }
 
 .ticket-view-modal__body {
+    flex: 1;
+    min-height: 0;
     padding: 16px 18px 18px;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Editable inline fields inside receipt */
