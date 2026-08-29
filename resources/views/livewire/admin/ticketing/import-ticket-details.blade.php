@@ -188,7 +188,7 @@
                     </div>
                 </div>
 
-                {{-- Payment ledger (demo — session only, no DB) --}}
+                {{-- Payment Details (demo — session only, no DB) --}}
                 <div
                     class="import-ticket__payment"
                     x-data="{
@@ -224,7 +224,7 @@
                     }"
                     @sync-ledger-amounts.window="syncAmounts()"
                 >
-                    <p class="import-ticket__label">Payment Ledger</p>
+                    <p class="import-ticket__label">Payment Details</p>
 
                     <div class="import-ticket__ledger-grid">
                         <label class="import-ticket__ledger-field">
@@ -299,65 +299,13 @@
         </div>
     </div>
 
-    <div class="data-panel import-ticket__history">
-        <div class="data-panel__head">
-            <h3 class="data-panel__title">Payment Ledger (This Session)</h3>
-            <p class="import-ticket__hint">Simple ledger — agreed, paid, balance per ticket. Session only until you add a migration.</p>
-        </div>
-
-        <div class="data-table-wrap import-ticket__history-table">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Passenger</th>
-                        <th>Booking Ref</th>
-                        <th>Agreed</th>
-                        <th>Paid</th>
-                        <th>Balance</th>
-                        <th>Status</th>
-                        <th>Saved At</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse (array_reverse($demoPayments) as $record)
-                        <tr>
-                            <td>{{ $record['passenger'] }}</td>
-                            <td>{{ $record['booking_reference'] }}</td>
-                            <td>{{ number_format($record['amount_agreed'] ?? 0, 0) }}</td>
-                            <td>{{ number_format($record['amount_paid'] ?? 0, 0) }}</td>
-                            <td>{{ number_format($record['balance'] ?? 0, 0) }}</td>
-                            <td>
-                                <span @class([
-                                    'payment-badge',
-                                    'payment-badge--paid' => ($record['payment_status'] ?? '') === 'PAID',
-                                    'payment-badge--pending' => ($record['payment_status'] ?? '') === 'PENDING',
-                                    'payment-badge--half' => ($record['payment_status'] ?? '') === 'HALF_RECEIVE',
-                                ])>
-                                    {{ $paymentStatuses[$record['payment_status']] ?? ($record['payment_status'] ?? '—') }}
-                                </span>
-                            </td>
-                            <td>{{ format_datetime($record['saved_at'] ?? null) }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7">Confirm an import above to see ledger entries here.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-                @if (count($demoPayments) > 0)
-                    <tfoot>
-                        <tr class="import-ticket__ledger-total">
-                            <td colspan="2"><strong>Total</strong></td>
-                            <td><strong>{{ number_format($ledgerTotals['agreed'], 0) }}</strong></td>
-                            <td><strong>{{ number_format($ledgerTotals['paid'], 0) }}</strong></td>
-                            <td><strong>{{ number_format($ledgerTotals['balance'], 0) }}</strong></td>
-                            <td colspan="2"></td>
-                        </tr>
-                    </tfoot>
-                @endif
-            </table>
-        </div>
-    </div>
+    <x-payment-entries-table
+        :entries="$paymentEntries"
+        :ledger-totals="$ledgerTotals"
+        :payment-statuses="$paymentStatuses"
+        title="Payment Details"
+        hint="Saved permanently in database."
+    />
 
     <div class="data-panel import-ticket__history">
         <div class="data-panel__head">

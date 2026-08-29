@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Ticketing;
 
 use App\Http\Requests\ConfirmTicketImportRequest;
+use App\Models\PaymentEntry;
 use App\Models\TicketImport;
 use App\Services\TicketPdfParser;
 use Livewire\Component;
@@ -142,7 +143,7 @@ class ImportTicketDetails extends Component
 
         $storedPath = $this->pdfFile->store('ticket-imports', 'local');
 
-        TicketImport::create([
+        $ticket = TicketImport::create([
             'user_id' => auth()->id(),
             'original_filename' => $this->pdfFile->getClientOriginalName(),
             'pdf_path' => $storedPath,
@@ -152,7 +153,19 @@ class ImportTicketDetails extends Component
             'confirmed_at' => now(),
         ]);
 
-        $this->saveDemoPaymentRecord($validated);
+        $agreed = $this->amountAgreedValue();
+        $paid = $this->amountPaidValue();
+
+        PaymentEntry::create([
+            'ticket_import_id' => $ticket->id,
+            'user_id' => auth()->id(),
+            'passenger_name' => $validated['passenger_name'],
+            'booking_reference' => $validated['booking_reference'] ?? null,
+            'amount_agreed' => $agreed,
+            'amount_paid' => $paid,
+            'balance' => max(0, $agreed - $paid),
+            'payment_status' => $this->payment_status,
+        ]);
 
         $statusLabel = config('payment_status.options.'.$this->payment_status, $this->payment_status);
         $currency = config('payment_status.currency', 'PKR');
@@ -185,8 +198,8 @@ class ImportTicketDetails extends Component
             'segmentFields' => config('ticket_import.flight_segment_fields', []),
             'paymentStatuses' => config('payment_status.options', []),
             'currency' => config('payment_status.currency', 'PKR'),
-            'demoPayments' => session('demo_ticket_payments', []),
-            'ledgerTotals' => $this->ledgerTotals(session('demo_ticket_payments', [])),
+            'paymentEntries' => PaymentEntry::query()->latest()->limit(15)->get(),
+            'ledgerTotals' => PaymentEntry::totals(),
             'recentImports' => TicketImport::query()
                 ->with('user')
                 ->latest()
@@ -213,21 +226,18 @@ class ImportTicketDetails extends Component
         $this->flightSegments = [];
     }
 
-    /** @param array<string, mixed> $validated */
-    private function saveDemoPaymentRecord(array $validated): void
+    /** @return array<string, string> */
+    private function fieldLabels(): array
     {
-        $agreed = $this->amountAgreedValue();
-        $paid = $this->amountPaidValue();
+        $labels = [];
 
-        session()->push('demo_ticket_payments', [
-            'passenger' => $validated['passenger_name'] ?? '—',
-            'booking_reference' => $validated['booking_reference'] ?? '—',
-            'amount_agreed' => $agreed,
-            'amount_paid' => $paid,
-            'balance' => max(0, $agreed - $paid),
-            'payment_status' => $this->payment_status,
-            'saved_at' => now()->toDateTimeString(),
-        ]);
+        foreach (config('ticket_import.form_fields', []) as $key => $field) {
+            $labels[$key] = $field['label'] ?? $key;
+        }
+
+        $labels['flight_segments'] = 'Flight segments';
+
+        return $labels;
     }
 
     private function syncPaymentStatusFromAmounts(): void
@@ -257,39 +267,5 @@ class ImportTicketDetails extends Component
     private function amountPaidValue(): float
     {
         return (float) $this->amount_paid;
-    }
-
-    /** @param array<int, array<string, mixed>> $records */
-    private function ledgerTotals(array $records): array
-    {
-        $agreed = 0.0;
-        $paid = 0.0;
-        $balance = 0.0;
-
-        foreach ($records as $record) {
-            $agreed += (float) ($record['amount_agreed'] ?? 0);
-            $paid += (float) ($record['amount_paid'] ?? 0);
-            $balance += (float) ($record['balance'] ?? 0);
-        }
-
-        return [
-            'agreed' => $agreed,
-            'paid' => $paid,
-            'balance' => $balance,
-        ];
-    }
-
-    /** @return array<string, string> */
-    private function fieldLabels(): array
-    {
-        $labels = [];
-
-        foreach (config('ticket_import.form_fields', []) as $key => $field) {
-            $labels[$key] = $field['label'] ?? $key;
-        }
-
-        $labels['flight_segments'] = 'Flight segments';
-
-        return $labels;
     }
 }

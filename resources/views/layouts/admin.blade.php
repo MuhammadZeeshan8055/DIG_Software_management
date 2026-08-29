@@ -76,6 +76,12 @@
                     window.dispatchEvent(new CustomEvent('import-ticket-panel-opened'));
                 });
             }
+
+            if (this.activeOption === 'payments') {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('payments-panel-opened'));
+                });
+            }
         },
 
         currentModule() {
@@ -136,6 +142,9 @@
             this.saveLastPage();
             if (key === 'import-ticket-details') {
                 window.dispatchEvent(new CustomEvent('import-ticket-panel-opened'));
+            }
+            if (key === 'payments') {
+                window.dispatchEvent(new CustomEvent('payments-panel-opened'));
             }
             if (window.matchMedia('(max-width: 1024px)').matches) {
                 this.sidebarOpen = false;

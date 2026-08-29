@@ -1,0 +1,89 @@
+@props([
+    'entries',
+    'ledgerTotals',
+    'paymentStatuses',
+    'showActions' => false,
+    'title' => 'Payment Entries',
+    'hint' => null,
+])
+
+<div class="data-panel import-ticket__history">
+    <div class="data-panel__head">
+        <h3 class="data-panel__title">{{ $title }}</h3>
+        @if ($hint)
+            <p class="import-ticket__hint">{{ $hint }}</p>
+        @endif
+    </div>
+
+    <div class="data-table-wrap import-ticket__history-table">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Passenger</th>
+                    <th>Booking Ref</th>
+                    <th>Agreed</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th>Saved At</th>
+                    @if ($showActions)
+                        <th>Actions</th>
+                    @endif
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($entries as $entry)
+                    <tr wire:key="payment-entry-{{ $entry->id }}">
+                        <td>{{ $entry->passenger_name }}</td>
+                        <td>{{ $entry->booking_reference ?? '—' }}</td>
+                        <td>{{ number_format($entry->amount_agreed, 0) }}</td>
+                        <td>{{ number_format($entry->amount_paid, 0) }}</td>
+                        <td>{{ number_format($entry->balance, 0) }}</td>
+                        <td>
+                            <span @class([
+                                'payment-badge',
+                                'payment-badge--paid' => $entry->payment_status === 'PAID',
+                                'payment-badge--pending' => $entry->payment_status === 'PENDING',
+                                'payment-badge--half' => $entry->payment_status === 'HALF_RECEIVE',
+                            ])>
+                                {{ $paymentStatuses[$entry->payment_status] ?? $entry->payment_status }}
+                            </span>
+                        </td>
+                        <td>{{ format_datetime($entry->created_at) }}</td>
+                        @if ($showActions)
+                            <td class="payment-actions">
+                                <button
+                                    type="button"
+                                    class="payment-actions__btn payment-actions__btn--muted"
+                                    disabled
+                                    title="Edit — coming soon"
+                                >Edit</button>
+                                <button
+                                    type="button"
+                                    class="payment-actions__btn payment-actions__btn--danger"
+                                    wire:click="deleteEntry({{ $entry->id }})"
+                                    wire:confirm="Delete this payment entry?"
+                                >Delete</button>
+                            </td>
+                        @endif
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="{{ $showActions ? 8 : 7 }}">No payment entries yet.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+            @if ($entries->count() > 0)
+                <tfoot>
+                    <tr class="import-ticket__ledger-total">
+                        <td colspan="2"><strong>Total</strong></td>
+                        <td><strong>{{ number_format($ledgerTotals['agreed'], 0) }}</strong></td>
+                        <td><strong>{{ number_format($ledgerTotals['paid'], 0) }}</strong></td>
+                        <td><strong>{{ number_format($ledgerTotals['balance'], 0) }}</strong></td>
+                        <td colspan="{{ $showActions ? 3 : 2 }}"></td>
+                    </tr>
+                </tfoot>
+            @endif
+        </table>
+    </div>
+</div>

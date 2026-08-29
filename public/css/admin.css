@@ -857,6 +857,10 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     width: 100%;
 }
 
+.dashboard-view--panel {
+    z-index: 2;
+}
+
 .dashboard-view.dash-leave {
     position: absolute;
 }
@@ -2710,6 +2714,39 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     background: linear-gradient(135deg, #fde68a 0%, #fbbf24 100%);
     border-color: #d97706;
     box-shadow: 0 1px 4px rgba(251, 191, 36, 0.35);
+}
+
+.payment-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.payment-actions__btn {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.payment-actions__btn--muted {
+    color: #94a3b8;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    cursor: not-allowed;
+}
+
+.payment-actions__btn--danger {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.payment-actions__btn--danger:hover {
+    background: #fee2e2;
 }
 
 .import-ticket__ledger-grid {
