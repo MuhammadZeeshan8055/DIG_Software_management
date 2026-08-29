@@ -359,11 +359,12 @@
                         <th>Flights</th>
                         <th>Confirmed By</th>
                         <th>Confirmed At</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($recentImports as $import)
-                        <tr>
+                        <tr wire:key="import-row-{{ $import->id }}">
                             <td class="import-ticket__history-file">{{ $import->original_filename }}</td>
                             <td>{{ $import->passenger_name ?? '—' }}</td>
                             <td>{{ $import->booking_reference ?? '—' }}</td>
@@ -373,14 +374,48 @@
                             <td>{{ $import->flightNumbersLabel() }}</td>
                             <td>{{ $import->user?->name ?? '—' }}</td>
                             <td>{{ format_datetime($import->confirmed_at) }}</td>
+                            <td>
+                                <button
+                                    type="button"
+                                    class="payment-actions__pill payment-actions__pill--edit"
+                                    wire:click="viewImport({{ $import->id }})"
+                                >View</button>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9">No confirmed imports yet.</td>
+                            <td colspan="10">No confirmed imports yet.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
     </div>
+
+    @if ($viewingImport)
+        <div
+            class="ticket-view-modal"
+            x-data
+            x-init="document.body.classList.add('ticket-view-modal-open')"
+            x-on:destroy="document.body.classList.remove('ticket-view-modal-open')"
+            x-on:keydown.escape.window="$wire.closeView()"
+            wire:key="ticket-view-modal-{{ $viewingImport->id }}"
+        >
+            <button type="button" class="ticket-view-modal__backdrop" wire:click="closeView" aria-label="Close"></button>
+
+            <div class="ticket-view-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="ticket-view-title">
+                <div class="ticket-view-modal__head">
+                    <div>
+                        <p class="ticket-view-modal__eyebrow">Confirmed Import</p>
+                        <h3 id="ticket-view-title" class="ticket-view-modal__title">{{ $viewingImport->original_filename }}</h3>
+                    </div>
+                    <button type="button" class="ticket-view-modal__close" wire:click="closeView" aria-label="Close">&times;</button>
+                </div>
+
+                <div class="ticket-view-modal__body">
+                    <x-itinerary-receipt-view :import="$viewingImport" />
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

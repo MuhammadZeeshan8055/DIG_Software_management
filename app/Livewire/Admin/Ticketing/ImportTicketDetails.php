@@ -44,6 +44,8 @@ class ImportTicketDetails extends Component
 
     public ?int $receiving_account_id = null;
 
+    public ?int $viewingImportId = null;
+
     protected TicketPdfParser $parser;
 
     public function boot(TicketPdfParser $parser): void
@@ -113,6 +115,16 @@ class ImportTicketDetails extends Component
 
         unset($this->flightSegments[$index]);
         $this->flightSegments = array_values($this->flightSegments);
+    }
+
+    public function viewImport(int $id): void
+    {
+        $this->viewingImportId = $id;
+    }
+
+    public function closeView(): void
+    {
+        $this->viewingImportId = null;
     }
 
     public function confirmWithLedger(
@@ -232,6 +244,9 @@ class ImportTicketDetails extends Component
                 ->latest()
                 ->limit(15)
                 ->get(),
+            'viewingImport' => $this->viewingImportId
+                ? TicketImport::query()->find($this->viewingImportId)
+                : null,
         ]);
     }
 

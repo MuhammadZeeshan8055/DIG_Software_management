@@ -3457,6 +3457,158 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     margin: 0;
 }
 
+/* Read-only receipt (view modal) */
+.itinerary-receipt--view {
+    margin-top: 0;
+}
+
+.itinerary-receipt__title-display {
+    margin: 0 0 2px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--brand-navy);
+    line-height: 1.15;
+}
+
+.itinerary-receipt__value {
+    display: inline;
+    color: inherit;
+}
+
+.itinerary-receipt__value--agency {
+    display: block;
+    max-width: 280px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.itinerary-receipt__value--phone {
+    display: block;
+    max-width: 200px;
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.itinerary-receipt__value--bold {
+    display: block;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.itinerary-receipt__hero-right .itinerary-receipt__value {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.itinerary-receipt__passenger-row--view {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 0;
+    padding: 5px 10px;
+}
+
+.itinerary-receipt__passenger-row--view .itinerary-receipt__value {
+    padding-right: 8px;
+}
+
+.itinerary-receipt__passenger-row--view .itinerary-receipt__value:first-child {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.itinerary-receipt__empty {
+    margin: 0;
+    padding: 12px 10px;
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+/* Ticket view modal */
+body.ticket-view-modal-open {
+    overflow: hidden;
+}
+
+.ticket-view-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.ticket-view-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    border: none;
+    background: rgba(15, 23, 42, 0.55);
+    cursor: pointer;
+}
+
+.ticket-view-modal__dialog {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    width: min(920px, 100%);
+    max-height: calc(100vh - 40px);
+    border-radius: 14px;
+    background: #f8fafc;
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.22);
+    overflow: hidden;
+}
+
+.ticket-view-modal__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+    background: #fff;
+}
+
+.ticket-view-modal__eyebrow {
+    margin: 0 0 2px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.ticket-view-modal__title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--brand-navy);
+    word-break: break-word;
+}
+
+.ticket-view-modal__close {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(148, 163, 184, 0.15);
+    color: #475569;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.ticket-view-modal__close:hover {
+    background: rgba(148, 163, 184, 0.28);
+}
+
+.ticket-view-modal__body {
+    padding: 16px 18px 18px;
+    overflow-y: auto;
+}
+
 /* Editable inline fields inside receipt */
 .itinerary-receipt__inline {
     box-sizing: border-box;
