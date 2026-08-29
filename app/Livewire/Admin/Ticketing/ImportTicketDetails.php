@@ -28,8 +28,15 @@ class ImportTicketDetails extends Component
 
     public ?string $parseError = null;
 
+    public string $payment_status = 'PENDING';
+
+    public string $amount_agreed = '';
+
+    public string $amount_paid = '';
+
     public function mount(): void
     {
+        $this->payment_status = config('payment_status.default', 'PENDING');
         $this->resetFormFields();
     }
 
@@ -90,6 +97,21 @@ class ImportTicketDetails extends Component
         $this->flightSegments = array_values($this->flightSegments);
     }
 
+    public function updatedAmountAgreed(): void
+    {
+        $this->syncPaymentStatusFromAmounts();
+    }
+
+    public function updatedAmountPaid(): void
+    {
+        $this->syncPaymentStatusFromAmounts();
+    }
+
+    public function getBalanceProperty(): float
+    {
+        return max(0, $this->amountAgreedValue() - $this->amountPaidValue());
+    }
+
     public function confirm(): void
     {
         $payload = [
@@ -103,6 +125,14 @@ class ImportTicketDetails extends Component
             [],
             $this->fieldLabels()
         )->validate();
+
+        $this->validate([
+            'amount_agreed' => ['required', 'numeric', 'min:0'],
+            'amount_paid' => ['required', 'numeric', 'min:0', 'lte:amount_agreed'],
+            'payment_status' => ['required', 'in:'.implode(',', array_keys(config('payment_status.options', [])))],
+        ], [
+            'amount_paid.lte' => 'Amount paid cannot be more than amount agreed.',
+        ]);
 
         if (! $this->pdfFile) {
             $this->addError('pdfFile', 'Please upload a PDF first.');
@@ -122,8 +152,14 @@ class ImportTicketDetails extends Component
             'confirmed_at' => now(),
         ]);
 
+        $this->saveDemoPaymentRecord($validated);
+
+        $statusLabel = config('payment_status.options.'.$this->payment_status, $this->payment_status);
+        $currency = config('payment_status.currency', 'PKR');
+        $balance = $this->balance;
+
         $this->resetForm();
-        $this->successMessage = 'Ticket details confirmed and saved.';
+        $this->successMessage = "Ticket saved. {$statusLabel} — Balance: {$currency} ".number_format($balance, 0);
     }
 
     public function resetForm(): void
@@ -134,8 +170,11 @@ class ImportTicketDetails extends Component
             'parsed',
             'parseError',
             'flightSegments',
+            'amount_agreed',
+            'amount_paid',
         ]);
 
+        $this->payment_status = config('payment_status.default', 'PENDING');
         $this->resetFormFields();
     }
 
@@ -144,6 +183,10 @@ class ImportTicketDetails extends Component
         return view('livewire.admin.ticketing.import-ticket-details', [
             'formFields' => config('ticket_import.form_fields', []),
             'segmentFields' => config('ticket_import.flight_segment_fields', []),
+            'paymentStatuses' => config('payment_status.options', []),
+            'currency' => config('payment_status.currency', 'PKR'),
+            'demoPayments' => session('demo_ticket_payments', []),
+            'ledgerTotals' => $this->ledgerTotals(session('demo_ticket_payments', [])),
             'recentImports' => TicketImport::query()
                 ->with('user')
                 ->latest()
@@ -168,6 +211,72 @@ class ImportTicketDetails extends Component
     {
         $this->form = $this->emptyFormFields();
         $this->flightSegments = [];
+    }
+
+    /** @param array<string, mixed> $validated */
+    private function saveDemoPaymentRecord(array $validated): void
+    {
+        $agreed = $this->amountAgreedValue();
+        $paid = $this->amountPaidValue();
+
+        session()->push('demo_ticket_payments', [
+            'passenger' => $validated['passenger_name'] ?? '—',
+            'booking_reference' => $validated['booking_reference'] ?? '—',
+            'amount_agreed' => $agreed,
+            'amount_paid' => $paid,
+            'balance' => max(0, $agreed - $paid),
+            'payment_status' => $this->payment_status,
+            'saved_at' => now()->format('d M Y, H:i'),
+        ]);
+    }
+
+    private function syncPaymentStatusFromAmounts(): void
+    {
+        $agreed = $this->amountAgreedValue();
+
+        if ($agreed <= 0) {
+            return;
+        }
+
+        $paid = $this->amountPaidValue();
+
+        if ($paid >= $agreed) {
+            $this->payment_status = 'PAID';
+        } elseif ($paid <= 0) {
+            $this->payment_status = 'PENDING';
+        } else {
+            $this->payment_status = 'HALF_RECEIVE';
+        }
+    }
+
+    private function amountAgreedValue(): float
+    {
+        return (float) $this->amount_agreed;
+    }
+
+    private function amountPaidValue(): float
+    {
+        return (float) $this->amount_paid;
+    }
+
+    /** @param array<int, array<string, mixed>> $records */
+    private function ledgerTotals(array $records): array
+    {
+        $agreed = 0.0;
+        $paid = 0.0;
+        $balance = 0.0;
+
+        foreach ($records as $record) {
+            $agreed += (float) ($record['amount_agreed'] ?? 0);
+            $paid += (float) ($record['amount_paid'] ?? 0);
+            $balance += (float) ($record['balance'] ?? 0);
+        }
+
+        return [
+            'agreed' => $agreed,
+            'paid' => $paid,
+            'balance' => $balance,
+        ];
     }
 
     /** @return array<string, string> */

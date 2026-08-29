@@ -188,6 +188,62 @@
                     </div>
                 </div>
 
+                {{-- Payment ledger (demo — session only, no DB) --}}
+                <div class="import-ticket__payment">
+                    <p class="import-ticket__label">Payment Ledger</p>
+
+                    <div class="import-ticket__ledger-grid">
+                        <label class="import-ticket__ledger-field">
+                            <span>Amount Agreed ({{ $currency }})</span>
+                            <input
+                                type="number"
+                                min="0"
+                                step="1"
+                                wire:model.live="amount_agreed"
+                                class="import-ticket__input"
+                                placeholder="e.g. 85000"
+                            >
+                            @error('amount_agreed')
+                                <p class="import-ticket__error">{{ $message }}</p>
+                            @enderror
+                        </label>
+
+                        <label class="import-ticket__ledger-field">
+                            <span>Amount Paid ({{ $currency }})</span>
+                            <input
+                                type="number"
+                                min="0"
+                                step="1"
+                                wire:model.live="amount_paid"
+                                class="import-ticket__input"
+                                placeholder="e.g. 42500"
+                            >
+                            @error('amount_paid')
+                                <p class="import-ticket__error">{{ $message }}</p>
+                            @enderror
+                        </label>
+
+                        <div class="import-ticket__ledger-field import-ticket__ledger-field--balance">
+                            <span>Balance ({{ $currency }})</span>
+                            <strong>{{ number_format($this->balance, 0) }}</strong>
+                            <small>Agreed − Paid</small>
+                        </div>
+                    </div>
+
+                    <label class="import-ticket__ledger-status">
+                        <span>Payment Status</span>
+                        <select wire:model="payment_status" class="import-ticket__select">
+                            @foreach ($paymentStatuses as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+
+                    <p class="import-ticket__payment-hint">
+                        Status auto-updates from amounts: 0 paid = Pending, partial = Half Receive, full = Paid. You can override the dropdown.
+                    </p>
+                </div>
+
                 <details class="import-ticket__raw">
                     <summary>Raw PDF text (for tracing import errors)</summary>
                     <pre>{{ $raw_pdf_text }}</pre>
@@ -204,6 +260,66 @@
                 </div>
                 </div>
             @endif
+        </div>
+    </div>
+
+    <div class="data-panel import-ticket__history">
+        <div class="data-panel__head">
+            <h3 class="data-panel__title">Payment Ledger (This Session)</h3>
+            <p class="import-ticket__hint">Simple ledger — agreed, paid, balance per ticket. Session only until you add a migration.</p>
+        </div>
+
+        <div class="data-table-wrap import-ticket__history-table">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Passenger</th>
+                        <th>Booking Ref</th>
+                        <th>Agreed</th>
+                        <th>Paid</th>
+                        <th>Balance</th>
+                        <th>Status</th>
+                        <th>Saved At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse (array_reverse($demoPayments) as $record)
+                        <tr>
+                            <td>{{ $record['passenger'] }}</td>
+                            <td>{{ $record['booking_reference'] }}</td>
+                            <td>{{ number_format($record['amount_agreed'] ?? 0, 0) }}</td>
+                            <td>{{ number_format($record['amount_paid'] ?? 0, 0) }}</td>
+                            <td>{{ number_format($record['balance'] ?? 0, 0) }}</td>
+                            <td>
+                                <span @class([
+                                    'payment-badge',
+                                    'payment-badge--paid' => ($record['payment_status'] ?? '') === 'PAID',
+                                    'payment-badge--pending' => ($record['payment_status'] ?? '') === 'PENDING',
+                                    'payment-badge--half' => ($record['payment_status'] ?? '') === 'HALF_RECEIVE',
+                                ])>
+                                    {{ $paymentStatuses[$record['payment_status']] ?? ($record['payment_status'] ?? '—') }}
+                                </span>
+                            </td>
+                            <td>{{ $record['saved_at'] }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7">Confirm an import above to see ledger entries here.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+                @if (count($demoPayments) > 0)
+                    <tfoot>
+                        <tr class="import-ticket__ledger-total">
+                            <td colspan="2"><strong>Total</strong></td>
+                            <td><strong>{{ number_format($ledgerTotals['agreed'], 0) }}</strong></td>
+                            <td><strong>{{ number_format($ledgerTotals['paid'], 0) }}</strong></td>
+                            <td><strong>{{ number_format($ledgerTotals['balance'], 0) }}</strong></td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                @endif
+            </table>
         </div>
     </div>
 
