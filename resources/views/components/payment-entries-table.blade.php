@@ -54,15 +54,25 @@
                             <td class="payment-actions">
                                 <button
                                     type="button"
-                                    class="payment-actions__btn payment-actions__btn--edit"
+                                    class="payment-actions__pill payment-actions__pill--edit"
                                     wire:click="startEdit({{ $entry->id }})"
-                                >Edit</button>
+                                >
+                                    <svg class="payment-actions__icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                        <path d="M11.3 2.3a1 1 0 0 1 1.4 0l1 1a1 1 0 0 1 0 1.4L5.6 12.8l-2.4.6.6-2.4L11.3 2.3Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                                    </svg>
+                                    Edit
+                                </button>
                                 <button
                                     type="button"
-                                    class="payment-actions__btn payment-actions__btn--danger"
+                                    class="payment-actions__pill payment-actions__pill--delete"
                                     wire:click="deleteEntry({{ $entry->id }})"
                                     wire:confirm="Delete this payment entry?"
-                                >Delete</button>
+                                >
+                                    <svg class="payment-actions__icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                        <path d="M3.5 4.5h9M6 4.5V3.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1M6.5 7v4.5M9.5 7v4.5M4.5 4.5l.5 8a1 1 0 0 0 1 .9h4a1 1 0 0 0 1-.9l.5-8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    Delete
+                                </button>
                             </td>
                         @endif
                     </tr>
