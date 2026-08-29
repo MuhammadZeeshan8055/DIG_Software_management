@@ -192,6 +192,12 @@
                         <strong>Notice:</strong>
                         <p>Refund and Cancellation policies are Governed by the respective Fare Rules applicable</p>
                     </div>
+
+                    <details class="import-ticket__raw">
+                        <summary>Raw PDF text (for tracing import errors)</summary>
+                        <pre>{{ $raw_pdf_text }}</pre>
+                    </details>
+
                 </div>
 
                 {{-- Payment Details --}}
@@ -312,11 +318,6 @@
                     </div>
 
                     <x-validation-errors class="import-ticket__validation-errors" />
-
-                    <details class="import-ticket__raw">
-                        <summary>Raw PDF text (for tracing import errors)</summary>
-                        <pre>{{ $raw_pdf_text }}</pre>
-                    </details>
 
                     <div class="import-ticket__actions">
                         <button type="button" @click="confirmSave()" wire:loading.attr="disabled" class="hero-btn hero-btn--primary">
