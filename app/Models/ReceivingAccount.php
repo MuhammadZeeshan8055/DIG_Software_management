@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -48,14 +47,15 @@ class ReceivingAccount extends Model
         ];
     }
 
-    /** @return Collection<int, array{id: int, method: string, name: string, type: string}> */
-    public static function pickerOptions(): Collection
+    /** @return list<array{id: int, method: string, name: string, type: string}> */
+    public static function pickerOptions(): array
     {
         return static::query()
             ->active()
             ->orderBy('name')
             ->get()
             ->map(fn (self $account) => $account->toPickerArray())
-            ->values();
+            ->values()
+            ->all();
     }
 }
