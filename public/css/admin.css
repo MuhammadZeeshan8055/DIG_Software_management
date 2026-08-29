@@ -657,11 +657,13 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     margin: 0 auto;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    min-height: 40px;
+    height: 40px;
     background: rgba(255, 255, 255, 0.55);
     border: 1px solid rgba(226, 232, 240, 0.9);
-    border-radius: 14px;
-    padding: 0px 18px;
+    border-radius: 999px;
+    padding: 0 16px;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
@@ -675,23 +677,37 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 }
 
 .admin-header__search svg {
-    color: #94a3b8;
+    display: block;
     flex-shrink: 0;
+    color: #94a3b8;
 }
 
 .admin-header__search input {
     flex: 1;
     min-width: 0;
+    height: 100%;
+    margin: 0;
+    padding: 0;
     border: none;
     background: transparent;
-    font-size: 0.88rem;
+    font-size: 0.875rem;
+    line-height: 1;
     font-family: inherit;
     color: var(--brand-navy);
     outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.admin-header__search input::-webkit-search-decoration,
+.admin-header__search input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .admin-header__search input::placeholder {
     color: #94a3b8;
+    line-height: 1;
 }
 
 .admin-header__right {
