@@ -1,8 +1,8 @@
 <div class="import-ticket" @import-ticket-panel-opened.window="$wire.$refresh()">
     @if ($successMessage)
-        <div class="import-ticket__alert import-ticket__alert--success">
+        <x-admin-alert type="success" wire-property="successMessage">
             {{ $successMessage }}
-        </div>
+        </x-admin-alert>
     @endif
 
     <div class="data-panel import-ticket__panel">
@@ -69,9 +69,9 @@
             </div>
 
             @if ($parseError)
-                <div class="import-ticket__alert import-ticket__alert--error">
+                <x-admin-alert type="error" :seconds="7" wire-property="parseError">
                     {{ $parseError }}
-                </div>
+                </x-admin-alert>
             @endif
 
             @if ($parsed)

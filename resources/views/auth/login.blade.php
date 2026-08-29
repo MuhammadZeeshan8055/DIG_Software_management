@@ -26,7 +26,16 @@
                         </div>
 
                         @if (session('status'))
-                            <div class="login-status">{{ session('status') }}</div>
+                            <div
+                                class="login-status"
+                                x-data="{ show: true }"
+                                x-show="show"
+                                x-transition:leave="transition ease-in duration-300"
+                                x-transition:leave-start="opacity-100"
+                                x-transition:leave-end="opacity-0"
+                                x-init="setTimeout(() => show = false, 5000)"
+                                role="status"
+                            >{{ session('status') }}</div>
                         @endif
 
                         <form class="login-form" method="POST" action="{{ route('login') }}">

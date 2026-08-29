@@ -2599,20 +2599,23 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     color: #dc2626;
 }
 
-.import-ticket__alert {
+.import-ticket__alert,
+.admin-alert {
     margin-bottom: 14px;
     padding: 12px 14px;
     border-radius: 10px;
     font-size: 0.88rem;
 }
 
-.import-ticket__alert--success {
+.import-ticket__alert--success,
+.admin-alert--success {
     background: rgba(34, 197, 94, 0.12);
     border: 1px solid rgba(34, 197, 94, 0.25);
     color: #166534;
 }
 
-.import-ticket__alert--error {
+.import-ticket__alert--error,
+.admin-alert--error {
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.22);
     color: #991b1b;
