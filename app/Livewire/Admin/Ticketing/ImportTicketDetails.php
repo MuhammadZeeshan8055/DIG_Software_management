@@ -226,7 +226,7 @@ class ImportTicketDetails extends Component
             'amount_paid' => $paid,
             'balance' => max(0, $agreed - $paid),
             'payment_status' => $this->payment_status,
-            'saved_at' => now()->format('d M Y, H:i'),
+            'saved_at' => now()->toDateTimeString(),
         ]);
     }
 

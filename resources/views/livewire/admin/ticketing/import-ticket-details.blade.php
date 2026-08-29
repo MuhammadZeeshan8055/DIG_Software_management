@@ -300,7 +300,7 @@
                                     {{ $paymentStatuses[$record['payment_status']] ?? ($record['payment_status'] ?? '—') }}
                                 </span>
                             </td>
-                            <td>{{ $record['saved_at'] }}</td>
+                            <td>{{ format_datetime($record['saved_at'] ?? null) }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -354,7 +354,7 @@
                             <td class="import-ticket__history-route">{{ $import->routeLabel() }}</td>
                             <td>{{ $import->flightNumbersLabel() }}</td>
                             <td>{{ $import->user?->name ?? '—' }}</td>
-                            <td>{{ $import->confirmed_at?->format('d M Y, H:i') ?? '—' }}</td>
+                            <td>{{ format_datetime($import->confirmed_at) }}</td>
                         </tr>
                     @empty
                         <tr>
