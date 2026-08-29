@@ -30,6 +30,54 @@
         activeOption: null,
         modules: @js($modulesMap),
         workspace: @js($workspace),
+        lastPageKey: 'dhothar_last_page',
+
+        init() {
+            this.openLastPage();
+        },
+
+        // Remember current page in browser (survives refresh)
+        saveLastPage() {
+            if (! this.activeModule) {
+                localStorage.removeItem(this.lastPageKey);
+                return;
+            }
+
+            localStorage.setItem(this.lastPageKey, JSON.stringify({
+                module: this.activeModule,
+                option: this.activeOption,
+            }));
+        },
+
+        // Open last page after refresh
+        openLastPage() {
+            const saved = localStorage.getItem(this.lastPageKey);
+            if (! saved) {
+                return;
+            }
+
+            let page;
+            try {
+                page = JSON.parse(saved);
+            } catch (e) {
+                localStorage.removeItem(this.lastPageKey);
+                return;
+            }
+
+            if (! page.module || ! this.modules[page.module]) {
+                return;
+            }
+
+            this.activeModule = page.module;
+            this.activeOption = page.option || null;
+
+            if (this.activeOption === 'import-ticket-details') {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('import-ticket-panel-opened'));
+                });
+            }
+        },
+
         currentModule() {
             return this.activeModule ? (this.modules[this.activeModule] || null) : null;
         },
@@ -72,6 +120,7 @@
             if (!key || !this.modules[key]) return;
             this.activeModule = key;
             this.activeOption = null;
+            this.saveLastPage();
             if (window.matchMedia('(max-width: 1024px)').matches) {
                 this.sidebarOpen = true;
             }
@@ -80,9 +129,11 @@
             this.activeModule = null;
             this.activeOption = null;
             this.sidebarOpen = false;
+            this.saveLastPage();
         },
         selectOption(key) {
             this.activeOption = key;
+            this.saveLastPage();
             if (key === 'import-ticket-details') {
                 window.dispatchEvent(new CustomEvent('import-ticket-panel-opened'));
             }
@@ -92,6 +143,7 @@
         },
         clearOption() {
             this.activeOption = null;
+            this.saveLastPage();
         }
     }"
 >
