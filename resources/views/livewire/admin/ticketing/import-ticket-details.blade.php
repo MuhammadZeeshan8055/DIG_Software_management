@@ -400,26 +400,28 @@
     </div>
 
     @if ($viewingImport)
-        <div
-            class="ticket-view-modal"
-            x-on:keydown.escape.window="$wire.closeView()"
-            wire:key="ticket-view-modal-{{ $viewingImport->id }}"
-        >
-            <button type="button" class="ticket-view-modal__backdrop" wire:click="closeView" aria-label="Close"></button>
+        <template x-teleport="body">
+            <div
+                class="ticket-view-modal"
+                x-on:keydown.escape.window="$wire.closeView()"
+                wire:key="ticket-view-modal-{{ $viewingImport->id }}"
+            >
+                <button type="button" class="ticket-view-modal__backdrop" wire:click="closeView" aria-label="Close"></button>
 
-            <div class="ticket-view-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="ticket-view-title">
-                <div class="ticket-view-modal__head">
-                    <div>
-                        <p class="ticket-view-modal__eyebrow">Confirmed Import</p>
-                        <h3 id="ticket-view-title" class="ticket-view-modal__title">{{ $viewingImport->original_filename }}</h3>
+                <div class="ticket-view-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="ticket-view-title">
+                    <div class="ticket-view-modal__head">
+                        <div>
+                            <p class="ticket-view-modal__eyebrow">Confirmed Import</p>
+                            <h3 id="ticket-view-title" class="ticket-view-modal__title">{{ $viewingImport->original_filename }}</h3>
+                        </div>
+                        <button type="button" class="ticket-view-modal__close" wire:click="closeView" aria-label="Close">&times;</button>
                     </div>
-                    <button type="button" class="ticket-view-modal__close" wire:click="closeView" aria-label="Close">&times;</button>
-                </div>
 
-                <div class="ticket-view-modal__body">
-                    <x-itinerary-receipt-view :import="$viewingImport" />
+                    <div class="ticket-view-modal__body">
+                        <x-itinerary-receipt-view :import="$viewingImport" />
+                    </div>
                 </div>
             </div>
-        </div>
+        </template>
     @endif
 </div>
