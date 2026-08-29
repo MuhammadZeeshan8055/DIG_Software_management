@@ -189,7 +189,41 @@
                 </div>
 
                 {{-- Payment ledger (demo — session only, no DB) --}}
-                <div class="import-ticket__payment">
+                <div
+                    class="import-ticket__payment"
+                    x-data="{
+                        agreed: @js($amount_agreed),
+                        paid: @js($amount_paid),
+                        get balance() {
+                            const a = parseFloat(this.agreed) || 0;
+                            const p = parseFloat(this.paid) || 0;
+                            return Math.max(0, a - p);
+                        },
+                        formatAmount(value) {
+                            return (parseFloat(value) || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
+                        },
+                        syncStatus() {
+                            const a = parseFloat(this.agreed) || 0;
+                            const p = parseFloat(this.paid) || 0;
+                            if (a <= 0) {
+                                return;
+                            }
+                            let status = 'PENDING';
+                            if (p >= a) {
+                                status = 'PAID';
+                            } else if (p > 0) {
+                                status = 'HALF_RECEIVE';
+                            }
+                            $wire.set('payment_status', status);
+                        },
+                        syncAmounts() {
+                            $wire.set('amount_agreed', this.agreed);
+                            $wire.set('amount_paid', this.paid);
+                            this.syncStatus();
+                        }
+                    }"
+                    @sync-ledger-amounts.window="syncAmounts()"
+                >
                     <p class="import-ticket__label">Payment Ledger</p>
 
                     <div class="import-ticket__ledger-grid">
@@ -199,7 +233,8 @@
                                 type="number"
                                 min="0"
                                 step="1"
-                                wire:model.live="amount_agreed"
+                                x-model="agreed"
+                                @input.debounce.300ms="syncAmounts()"
                                 class="import-ticket__input"
                                 placeholder="e.g. 85000"
                             >
@@ -214,7 +249,8 @@
                                 type="number"
                                 min="0"
                                 step="1"
-                                wire:model.live="amount_paid"
+                                x-model="paid"
+                                @input.debounce.300ms="syncAmounts()"
                                 class="import-ticket__input"
                                 placeholder="e.g. 42500"
                             >
@@ -225,7 +261,7 @@
 
                         <div class="import-ticket__ledger-field import-ticket__ledger-field--balance">
                             <span>Balance ({{ $currency }})</span>
-                            <strong>{{ number_format($this->balance, 0) }}</strong>
+                            <strong x-text="formatAmount(balance)">0</strong>
                             <small>Agreed − Paid</small>
                         </div>
                     </div>
@@ -250,7 +286,7 @@
                 </details>
 
                 <div class="import-ticket__actions">
-                    <button type="button" wire:click="confirm" wire:loading.attr="disabled" class="hero-btn hero-btn--primary">
+                    <button type="button" @click="$dispatch('sync-ledger-amounts')" wire:click="confirm" wire:loading.attr="disabled" class="hero-btn hero-btn--primary">
                         <span wire:loading.remove wire:target="confirm">Confirm Details</span>
                         <span wire:loading wire:target="confirm">Saving...</span>
                     </button>
