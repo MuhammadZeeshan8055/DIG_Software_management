@@ -54,9 +54,8 @@
                             <td class="payment-actions">
                                 <button
                                     type="button"
-                                    class="payment-actions__btn payment-actions__btn--muted"
-                                    disabled
-                                    title="Edit — coming soon"
+                                    class="payment-actions__btn payment-actions__btn--edit"
+                                    wire:click="startEdit({{ $entry->id }})"
                                 >Edit</button>
                                 <button
                                     type="button"

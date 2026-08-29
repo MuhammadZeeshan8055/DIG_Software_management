@@ -2732,6 +2732,16 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     font-family: inherit;
 }
 
+.payment-actions__btn--edit {
+    color: var(--brand-navy-dark);
+    background: rgba(0, 145, 212, 0.1);
+    border-color: rgba(0, 145, 212, 0.25);
+}
+
+.payment-actions__btn--edit:hover {
+    background: rgba(0, 145, 212, 0.18);
+}
+
 .payment-actions__btn--muted {
     color: #94a3b8;
     background: #f1f5f9;
