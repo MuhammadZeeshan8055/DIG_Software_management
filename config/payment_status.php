@@ -13,7 +13,7 @@ return [
     'options' => [
         'PAID' => 'Paid',
         'PENDING' => 'Pending',
-        'HALF_RECEIVE' => 'Half Receive',
+        'HALF_RECEIVE' => 'Partially Paid',
     ],
 
 ];

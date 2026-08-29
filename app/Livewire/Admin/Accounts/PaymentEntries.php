@@ -11,6 +11,8 @@ class PaymentEntries extends Component
 {
     public ?string $successMessage = null;
 
+    public ?string $errorMessage = null;
+
     public ?int $editingId = null;
 
     public string $edit_amount_agreed = '';
@@ -39,6 +41,7 @@ class PaymentEntries extends Component
         $this->edit_receiving_account_id = $entry->receiving_account_id;
         $this->ensureEditReceivingAccount();
         $this->successMessage = null;
+        $this->errorMessage = null;
     }
 
     public function updatedEditPaymentMethod(): void
@@ -54,16 +57,7 @@ class PaymentEntries extends Component
         $this->edit_payment_status = config('payment_status.default', 'PENDING');
         $this->edit_payment_method = config('payment_accounts.default', 'BANK');
         $this->edit_receiving_account_id = null;
-    }
-
-    public function updatedEditAmountAgreed(): void
-    {
-        $this->syncEditPaymentStatus();
-    }
-
-    public function updatedEditAmountPaid(): void
-    {
-        $this->syncEditPaymentStatus();
+        $this->errorMessage = null;
     }
 
     public function getEditBalanceProperty(): float
@@ -71,11 +65,31 @@ class PaymentEntries extends Component
         return max(0, (float) $this->edit_amount_agreed - (float) $this->edit_amount_paid);
     }
 
+    public function saveEditWithLedger(
+        string $amountAgreed,
+        string $amountPaid,
+        string $paymentStatus,
+        string $paymentMethod,
+        int|string|null $receivingAccountId = null,
+    ): void {
+        $this->edit_amount_agreed = $amountAgreed;
+        $this->edit_amount_paid = $amountPaid === '' ? '0' : $amountPaid;
+        $this->edit_payment_status = $paymentStatus;
+        $this->edit_payment_method = $paymentMethod;
+        $this->edit_receiving_account_id = $receivingAccountId !== null && $receivingAccountId !== ''
+            ? (int) $receivingAccountId
+            : null;
+
+        $this->saveEdit();
+    }
+
     public function saveEdit(): void
     {
         if (! $this->editingId) {
             return;
         }
+
+        $this->errorMessage = null;
 
         $this->validate([
             'edit_amount_agreed' => ['required', 'numeric', 'min:0'],
@@ -89,25 +103,36 @@ class PaymentEntries extends Component
                 }),
             ],
         ], [
+            'edit_amount_agreed.required' => 'Please enter the amount agreed.',
+            'edit_amount_agreed.min' => 'Amount agreed cannot be negative.',
+            'edit_amount_paid.required' => 'Please enter the amount paid.',
+            'edit_amount_paid.min' => 'Amount paid cannot be negative.',
             'edit_amount_paid.lte' => 'Amount paid cannot be more than amount agreed.',
+            'edit_receiving_account_id.required' => 'Please select a payment account.',
+            'edit_receiving_account_id.exists' => 'The selected payment account is not valid.',
         ]);
 
-        $account = ReceivingAccount::find($this->edit_receiving_account_id);
-        $agreed = (float) $this->edit_amount_agreed;
-        $paid = (float) $this->edit_amount_paid;
+        try {
+            $account = ReceivingAccount::find($this->edit_receiving_account_id);
+            $agreed = (float) $this->edit_amount_agreed;
+            $paid = (float) $this->edit_amount_paid;
 
-        PaymentEntry::where('id', $this->editingId)->update([
-            'amount_agreed' => $agreed,
-            'amount_paid' => $paid,
-            'balance' => max(0, $agreed - $paid),
-            'payment_status' => $this->edit_payment_status,
-            'receiving_account_id' => $account?->id,
-            'received_in' => $account?->method,
-            'received_account' => $account?->name,
-        ]);
+            PaymentEntry::where('id', $this->editingId)->update([
+                'amount_agreed' => $agreed,
+                'amount_paid' => $paid,
+                'balance' => max(0, $agreed - $paid),
+                'payment_status' => $this->edit_payment_status,
+                'receiving_account_id' => $account?->id,
+                'received_in' => $account?->method,
+                'received_account' => $account?->name,
+            ]);
 
-        $this->cancelEdit();
-        $this->successMessage = 'Payment updated.';
+            $this->cancelEdit();
+            $this->successMessage = 'Payment updated.';
+        } catch (\Throwable $exception) {
+            report($exception);
+            $this->errorMessage = 'Could not save payment. Please check all fields and try again.';
+        }
     }
 
     public function deleteEntry(int $id): void

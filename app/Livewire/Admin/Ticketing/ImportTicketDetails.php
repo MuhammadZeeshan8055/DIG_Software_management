@@ -29,13 +29,15 @@ class ImportTicketDetails extends Component
 
     public ?string $successMessage = null;
 
+    public ?string $errorMessage = null;
+
     public ?string $parseError = null;
 
     public string $payment_status = 'PENDING';
 
     public string $amount_agreed = '';
 
-    public string $amount_paid = '';
+    public string $amount_paid = '0';
 
     public string $payment_method = 'BANK';
 
@@ -130,8 +132,34 @@ class ImportTicketDetails extends Component
         return max(0, $this->amountAgreedValue() - $this->amountPaidValue());
     }
 
+    public function confirmWithLedger(
+        string $amountAgreed,
+        string $amountPaid,
+        string $paymentStatus,
+        string $paymentMethod,
+        int|string|null $receivingAccountId = null,
+    ): void {
+        $this->amount_agreed = $amountAgreed;
+        $this->amount_paid = $amountPaid === '' ? '0' : $amountPaid;
+        $this->payment_status = $paymentStatus;
+        $this->payment_method = $paymentMethod;
+        $this->receiving_account_id = $receivingAccountId !== null && $receivingAccountId !== ''
+            ? (int) $receivingAccountId
+            : null;
+
+        $this->confirm();
+    }
+
     public function confirm(): void
     {
+        $this->errorMessage = null;
+
+        if (! $this->pdfFile) {
+            $this->addError('pdfFile', 'Please upload a PDF first.');
+
+            return;
+        }
+
         $payload = [
             ...$this->form,
             'flight_segments' => $this->flightSegments,
@@ -156,51 +184,56 @@ class ImportTicketDetails extends Component
                 }),
             ],
         ], [
+            'amount_agreed.required' => 'Please enter the amount agreed.',
+            'amount_agreed.min' => 'Amount agreed cannot be negative.',
+            'amount_paid.required' => 'Please enter the amount paid.',
+            'amount_paid.min' => 'Amount paid cannot be negative.',
             'amount_paid.lte' => 'Amount paid cannot be more than amount agreed.',
+            'receiving_account_id.required' => 'Please select a payment account.',
+            'receiving_account_id.exists' => 'The selected payment account is not valid.',
         ]);
 
-        if (! $this->pdfFile) {
-            $this->addError('pdfFile', 'Please upload a PDF first.');
+        try {
+            $account = ReceivingAccount::find($this->receiving_account_id);
+            $storedPath = $this->pdfFile->store('ticket-imports', 'local');
 
-            return;
+            $ticket = TicketImport::create([
+                'user_id' => auth()->id(),
+                'original_filename' => $this->pdfFile->getClientOriginalName(),
+                'pdf_path' => $storedPath,
+                'raw_pdf_text' => $this->raw_pdf_text,
+                ...$validated,
+                'status' => 'confirmed',
+                'confirmed_at' => now(),
+            ]);
+
+            $agreed = $this->amountAgreedValue();
+            $paid = $this->amountPaidValue();
+
+            PaymentEntry::create([
+                'ticket_import_id' => $ticket->id,
+                'user_id' => auth()->id(),
+                'passenger_name' => $validated['passenger_name'],
+                'booking_reference' => $validated['booking_reference'] ?? null,
+                'amount_agreed' => $agreed,
+                'amount_paid' => $paid,
+                'balance' => max(0, $agreed - $paid),
+                'payment_status' => $this->payment_status,
+                'receiving_account_id' => $account?->id,
+                'received_in' => $account?->method,
+                'received_account' => $account?->name,
+            ]);
+
+            $statusLabel = config('payment_status.options.'.$this->payment_status, $this->payment_status);
+            $currency = config('payment_status.currency', 'PKR');
+            $balance = $this->balance;
+
+            $this->resetForm();
+            $this->successMessage = "Ticket saved. {$statusLabel} — Balance: {$currency} ".number_format($balance, 0);
+        } catch (\Throwable $exception) {
+            report($exception);
+            $this->errorMessage = 'Could not save ticket. Please check all fields and try again.';
         }
-
-        $account = ReceivingAccount::find($this->receiving_account_id);
-        $storedPath = $this->pdfFile->store('ticket-imports', 'local');
-
-        $ticket = TicketImport::create([
-            'user_id' => auth()->id(),
-            'original_filename' => $this->pdfFile->getClientOriginalName(),
-            'pdf_path' => $storedPath,
-            'raw_pdf_text' => $this->raw_pdf_text,
-            ...$validated,
-            'status' => 'confirmed',
-            'confirmed_at' => now(),
-        ]);
-
-        $agreed = $this->amountAgreedValue();
-        $paid = $this->amountPaidValue();
-
-        PaymentEntry::create([
-            'ticket_import_id' => $ticket->id,
-            'user_id' => auth()->id(),
-            'passenger_name' => $validated['passenger_name'],
-            'booking_reference' => $validated['booking_reference'] ?? null,
-            'amount_agreed' => $agreed,
-            'amount_paid' => $paid,
-            'balance' => max(0, $agreed - $paid),
-            'payment_status' => $this->payment_status,
-            'receiving_account_id' => $account?->id,
-            'received_in' => $account?->method,
-            'received_account' => $account?->name,
-        ]);
-
-        $statusLabel = config('payment_status.options.'.$this->payment_status, $this->payment_status);
-        $currency = config('payment_status.currency', 'PKR');
-        $balance = $this->balance;
-
-        $this->resetForm();
-        $this->successMessage = "Ticket saved. {$statusLabel} — Balance: {$currency} ".number_format($balance, 0);
     }
 
     public function resetForm(): void
@@ -218,6 +251,7 @@ class ImportTicketDetails extends Component
 
         $this->payment_status = config('payment_status.default', 'PENDING');
         $this->payment_method = config('payment_accounts.default', 'BANK');
+        $this->amount_paid = '0';
         $this->selectFirstAccount();
         $this->resetFormFields();
     }

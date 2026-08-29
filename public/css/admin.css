@@ -2625,6 +2625,33 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     color: #991b1b;
 }
 
+.validation-errors,
+.import-ticket__validation-errors {
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.28);
+    color: #991b1b;
+}
+
+.validation-errors__title {
+    margin: 0 0 8px;
+    font-size: 0.84rem;
+    font-weight: 700;
+}
+
+.validation-errors__list {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.validation-errors__list li + li {
+    margin-top: 4px;
+}
+
 .import-ticket__raw {
     margin-top: 10px;
     padding: 8px 10px;

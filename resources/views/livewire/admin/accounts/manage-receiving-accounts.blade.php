@@ -46,9 +46,6 @@
                         class="add-account__input"
                         placeholder="e.g. HBL Main Account"
                     >
-                    @error('name')
-                        <p class="import-ticket__error">{{ $message }}</p>
-                    @enderror
                 </label>
 
                 <button type="submit" class="hero-btn hero-btn--primary add-account__submit" wire:loading.attr="disabled">
@@ -56,6 +53,8 @@
                     <span wire:loading wire:target="addAccount">Adding...</span>
                 </button>
             </div>
+
+            <x-validation-errors class="import-ticket__validation-errors" />
         </form>
     </div>
 

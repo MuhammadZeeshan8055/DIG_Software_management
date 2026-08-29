@@ -5,8 +5,10 @@
     'selectedAccountId' => null,
     'methodWire' => 'payment_method',
     'accountWire' => 'receiving_account_id',
+    'embedded' => false,
 ])
 
+@if (! $embedded)
 <div
     class="account-picker"
     wire:ignore
@@ -33,6 +35,9 @@
         }
     }"
 >
+@else
+<div class="account-picker">
+@endif
     <p class="account-picker__label">Payment Method</p>
     <div class="account-picker__methods">
         @foreach ($methods as $key => $label)
@@ -67,7 +72,9 @@
         </div>
     </div>
 
-    @error($accountWire)
-        <p class="import-ticket__error">{{ $message }}</p>
-    @enderror
+    @if (! $embedded)
+        @error($accountWire)
+            <p class="import-ticket__error">{{ $message }}</p>
+        @enderror
+    @endif
 </div>
