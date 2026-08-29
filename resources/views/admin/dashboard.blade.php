@@ -104,7 +104,7 @@
         {{-- Module workspace (replaces overview) --}}
         <div
             class="dashboard-view module-workspace"
-            x-show="activeModule && activeOption !== 'import-ticket-details' && activeOption !== 'payments'"
+            x-show="activeModule && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts'"
             x-cloak
             x-transition:enter="dash-enter"
             x-transition:enter-start="dash-enter-start"
@@ -215,7 +215,7 @@
                     {{-- Other option tables (static demo data) --}}
                     <div
                         class="module-panel"
-                        x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments'"
+                        x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts'"
                         x-cloak
                         x-transition.opacity.duration.200ms
                     >
@@ -270,6 +270,16 @@
             x-transition.opacity.duration.200ms
         >
             <livewire:admin.accounts.payment-entries />
+        </div>
+
+        {{-- Accounts → Bank Accounts (Livewire) --}}
+        <div
+            class="dashboard-view dashboard-view--panel"
+            x-show="activeModule === 'accounts' && activeOption === 'bank-accounts'"
+            x-cloak
+            x-transition.opacity.duration.200ms
+        >
+            <livewire:admin.accounts.manage-receiving-accounts />
         </div>
     </div>
 @endsection

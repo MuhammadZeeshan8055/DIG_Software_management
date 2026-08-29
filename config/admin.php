@@ -99,6 +99,7 @@ return [
             'status' => 'active',
             'children' => [
                 ['key' => 'create-invoice', 'label' => 'Create Invoice', 'route' => null],
+                ['key' => 'bank-accounts', 'label' => 'Bank Accounts', 'route' => null],
                 ['key' => 'payments', 'label' => 'Payments', 'route' => null],
                 ['key' => 'reports', 'label' => 'Reports', 'route' => null],
             ],

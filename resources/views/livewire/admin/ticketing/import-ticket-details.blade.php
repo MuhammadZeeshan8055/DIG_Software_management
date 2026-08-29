@@ -275,9 +275,12 @@
                         </select>
                     </label>
 
-                    <p class="import-ticket__payment-hint">
-                        Status auto-updates from amounts: 0 paid = Pending, partial = Half Receive, full = Paid. You can override the dropdown.
-                    </p>
+                    <x-receiving-account-picker
+                        :methods="$paymentMethods"
+                        :all-accounts="$allReceivingAccounts"
+                        :selected-method="$payment_method"
+                        :selected-account-id="$receiving_account_id"
+                    />
                 </div>
 
                 <details class="import-ticket__raw">
@@ -304,7 +307,6 @@
         :ledger-totals="$ledgerTotals"
         :payment-statuses="$paymentStatuses"
         title="Payment Details"
-        hint="Saved permanently in database."
     />
 
     <div class="data-panel import-ticket__history">

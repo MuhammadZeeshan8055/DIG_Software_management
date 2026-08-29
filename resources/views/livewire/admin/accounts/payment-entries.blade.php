@@ -6,7 +6,6 @@
                 Accounts
             </p>
             <h2 class="module-workspace__title">Payments</h2>
-            <p class="module-workspace__desc">Update agreed, paid, and balance when client pays again.</p>
         </div>
     </section>
 
@@ -54,6 +53,16 @@
                     @endforeach
                 </select>
             </label>
+
+            <x-receiving-account-picker
+                wire:key="edit-picker-{{ $editingId }}"
+                :methods="$paymentMethods"
+                :all-accounts="$allReceivingAccounts"
+                :selected-method="$edit_payment_method"
+                :selected-account-id="$edit_receiving_account_id"
+                method-wire="edit_payment_method"
+                account-wire="edit_receiving_account_id"
+            />
 
             <div class="import-ticket__actions" style="margin-top: 14px;">
                 <button type="button" wire:click="saveEdit" class="hero-btn hero-btn--primary">Save Changes</button>

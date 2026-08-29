@@ -16,6 +16,9 @@ class PaymentEntry extends Model
         'amount_paid',
         'balance',
         'payment_status',
+        'receiving_account_id',
+        'received_in',
+        'received_account',
     ];
 
     protected function casts(): array
@@ -37,6 +40,11 @@ class PaymentEntry extends Model
         return $this->belongsTo(TicketImport::class);
     }
 
+    public function receivingAccount(): BelongsTo
+    {
+        return $this->belongsTo(ReceivingAccount::class);
+    }
+
     /** @return array{agreed: float, paid: float, balance: float} */
     public static function totals(): array
     {
@@ -45,5 +53,16 @@ class PaymentEntry extends Model
             'paid' => (float) static::sum('amount_paid'),
             'balance' => (float) static::sum('balance'),
         ];
+    }
+
+    public function receivedAccountLabel(): string
+    {
+        return $this->receivingAccount?->name ?? ($this->received_account ?? '—');
+    }
+
+    public function receivedInLabel(): string
+    {
+        return $this->receivingAccount?->methodLabel()
+            ?? config('payment_accounts.options.'.$this->received_in, $this->received_in ?? '—');
     }
 }

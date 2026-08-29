@@ -2800,13 +2800,334 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     color: #475569;
 }
 
+.import-ticket__ledger-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.import-ticket__ledger-row .import-ticket__ledger-status {
+    margin-top: 0;
+}
+
+/* Receiving account picker */
+.account-picker {
+    margin-top: 14px;
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 251, 255, 0.92) 100%);
+    box-shadow: 0 4px 16px rgba(45, 58, 97, 0.06);
+}
+
+.account-picker__label {
+    margin: 0 0 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.account-picker__methods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.account-picker__method {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: #fff;
+    color: #475569;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.account-picker__method:hover {
+    border-color: rgba(0, 145, 212, 0.45);
+    color: var(--brand-navy);
+}
+
+.account-picker__method--active {
+    border-color: rgba(0, 145, 212, 0.65);
+    background: linear-gradient(135deg, rgba(0, 145, 212, 0.12), rgba(0, 145, 212, 0.06));
+    color: var(--brand-navy);
+    box-shadow: 0 0 0 1px rgba(0, 145, 212, 0.15), 0 4px 12px rgba(0, 145, 212, 0.12);
+}
+
+.account-picker__accounts {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px;
+}
+
+.account-picker__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px 28px;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    font: inherit;
+    appearance: none;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.account-picker__card:hover {
+    border-color: rgba(0, 145, 212, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(45, 58, 97, 0.08);
+}
+
+.account-picker__card--selected {
+    border-color: rgba(22, 163, 74, 0.55);
+    background: linear-gradient(145deg, rgba(22, 163, 74, 0.08), rgba(255, 255, 255, 0.98));
+    box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.18), 0 4px 14px rgba(22, 163, 74, 0.1);
+}
+
+.account-picker__radio {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.account-picker__tick {
+    position: absolute;
+    bottom: 8px;
+    right: 10px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #16a34a;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.35);
+}
+
+.account-picker__card-type {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
+.account-picker__card-name {
+    font-size: 0.92rem;
+    color: var(--brand-navy);
+    line-height: 1.35;
+}
+
+.account-picker__empty {
+    grid-column: 1 / -1;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px dashed rgba(148, 163, 184, 0.4);
+    color: #64748b;
+    font-size: 0.88rem;
+    text-align: center;
+    background: rgba(248, 250, 252, 0.8);
+}
+
+/* Add account form */
+.add-account-panel .add-account {
+    padding: 18px 20px 20px;
+}
+
+.add-account__section {
+    margin-bottom: 18px;
+}
+
+.add-account__label {
+    margin: 0 0 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.add-account__methods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.add-account__method {
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: #fff;
+    color: #475569;
+    font-size: 0.84rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.add-account__method:hover {
+    border-color: rgba(0, 145, 212, 0.45);
+    color: var(--brand-navy);
+    transform: translateY(-1px);
+}
+
+.add-account__method--active {
+    border-color: rgba(0, 145, 212, 0.65);
+    background: linear-gradient(135deg, rgba(0, 145, 212, 0.12), rgba(0, 145, 212, 0.05));
+    color: var(--brand-navy);
+    box-shadow: 0 0 0 1px rgba(0, 145, 212, 0.15), 0 4px 12px rgba(0, 145, 212, 0.12);
+}
+
+.add-account__row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+    align-items: end;
+    padding-top: 4px;
+    border-top: 1px solid rgba(45, 58, 97, 0.06);
+}
+
+.add-account__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.add-account__field > span {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.add-account__input {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 14px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 10px;
+    background: #fff;
+    font-size: 0.9rem;
+    color: var(--brand-navy);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.add-account__input:focus {
+    outline: none;
+    border-color: rgba(0, 145, 212, 0.55);
+    box-shadow: 0 0 0 3px rgba(0, 145, 212, 0.12);
+}
+
+.add-account__input::placeholder {
+    color: #94a3b8;
+}
+
+.add-account__submit {
+    min-height: 42px;
+    padding-inline: 22px;
+    white-space: nowrap;
+}
+
+.add-account__count {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #64748b;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(45, 58, 97, 0.06);
+}
+
+.method-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.method-badge--bank {
+    color: #1d4ed8;
+    background: rgba(37, 99, 235, 0.1);
+    border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.method-badge--cash {
+    color: #15803d;
+    background: rgba(22, 163, 74, 0.1);
+    border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+.method-badge--card {
+    color: #7c3aed;
+    background: rgba(124, 58, 237, 0.1);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.method-badge--easypaisa {
+    color: #b45309;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.method-badge--jazzcash {
+    color: #be123c;
+    background: rgba(225, 29, 72, 0.1);
+    border: 1px solid rgba(225, 29, 72, 0.2);
+}
+
+.receiving-accounts-table__name {
+    font-weight: 500;
+    color: var(--brand-navy);
+}
+
+.receiving-accounts-table__empty {
+    text-align: center;
+    color: #64748b;
+    padding: 24px 16px !important;
+}
+
 .import-ticket__ledger-total td {
     background: rgba(248, 250, 252, 0.95);
     border-top: 2px solid rgba(148, 163, 184, 0.35);
 }
 
 @media (max-width: 768px) {
-    .import-ticket__ledger-grid {
+    .import-ticket__ledger-grid,
+    .import-ticket__ledger-row {
+        grid-template-columns: 1fr;
+    }
+
+    .add-account__row {
+        grid-template-columns: 1fr;
+    }
+
+    .add-account__submit {
+        width: 100%;
+    }
+
+    .account-picker__accounts {
         grid-template-columns: 1fr;
     }
 }

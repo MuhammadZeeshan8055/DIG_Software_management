@@ -4,15 +4,11 @@
     'paymentStatuses',
     'showActions' => false,
     'title' => 'Payment Entries',
-    'hint' => null,
 ])
 
 <div class="data-panel import-ticket__history">
     <div class="data-panel__head">
         <h3 class="data-panel__title">{{ $title }}</h3>
-        @if ($hint)
-            <p class="import-ticket__hint">{{ $hint }}</p>
-        @endif
     </div>
 
     <div class="data-table-wrap import-ticket__history-table">
@@ -25,6 +21,8 @@
                     <th>Paid</th>
                     <th>Balance</th>
                     <th>Status</th>
+                    <th>Method</th>
+                    <th>Account</th>
                     <th>Saved At</th>
                     @if ($showActions)
                         <th>Actions</th>
@@ -49,6 +47,8 @@
                                 {{ $paymentStatuses[$entry->payment_status] ?? $entry->payment_status }}
                             </span>
                         </td>
+                        <td>{{ $entry->receivedInLabel() }}</td>
+                        <td>{{ $entry->receivedAccountLabel() }}</td>
                         <td>{{ format_datetime($entry->created_at) }}</td>
                         @if ($showActions)
                             <td class="payment-actions">
@@ -68,7 +68,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ $showActions ? 8 : 7 }}">No payment entries yet.</td>
+                        <td colspan="{{ $showActions ? 10 : 9 }}">No payment entries yet.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -79,7 +79,7 @@
                         <td><strong>{{ number_format($ledgerTotals['agreed'], 0) }}</strong></td>
                         <td><strong>{{ number_format($ledgerTotals['paid'], 0) }}</strong></td>
                         <td><strong>{{ number_format($ledgerTotals['balance'], 0) }}</strong></td>
-                        <td colspan="{{ $showActions ? 3 : 2 }}"></td>
+                        <td colspan="{{ $showActions ? 5 : 4 }}"></td>
                     </tr>
                 </tfoot>
             @endif

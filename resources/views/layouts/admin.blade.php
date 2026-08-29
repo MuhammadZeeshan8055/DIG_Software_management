@@ -82,6 +82,12 @@
                     window.dispatchEvent(new CustomEvent('payments-panel-opened'));
                 });
             }
+
+            if (this.activeOption === 'bank-accounts') {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('bank-accounts-panel-opened'));
+                });
+            }
         },
 
         currentModule() {
@@ -145,6 +151,9 @@
             }
             if (key === 'payments') {
                 window.dispatchEvent(new CustomEvent('payments-panel-opened'));
+            }
+            if (key === 'bank-accounts') {
+                window.dispatchEvent(new CustomEvent('bank-accounts-panel-opened'));
             }
             if (window.matchMedia('(max-width: 1024px)').matches) {
                 this.sidebarOpen = false;
