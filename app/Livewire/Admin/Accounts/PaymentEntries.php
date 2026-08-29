@@ -4,7 +4,7 @@ namespace App\Livewire\Admin\Accounts;
 
 use App\Models\PaymentEntry;
 use App\Models\ReceivingAccount;
-use Illuminate\Validation\Rule;
+use App\Support\PaymentLedgerRules;
 use Livewire\Component;
 
 class PaymentEntries extends Component
@@ -39,14 +39,8 @@ class PaymentEntries extends Component
         $this->edit_payment_status = $entry->payment_status;
         $this->edit_payment_method = $entry->receivingAccount?->method ?? $entry->received_in ?? config('payment_accounts.default', 'BANK');
         $this->edit_receiving_account_id = $entry->receiving_account_id;
-        $this->ensureEditReceivingAccount();
         $this->successMessage = null;
         $this->errorMessage = null;
-    }
-
-    public function updatedEditPaymentMethod(): void
-    {
-        $this->ensureEditReceivingAccount();
     }
 
     public function cancelEdit(): void
@@ -58,11 +52,6 @@ class PaymentEntries extends Component
         $this->edit_payment_method = config('payment_accounts.default', 'BANK');
         $this->edit_receiving_account_id = null;
         $this->errorMessage = null;
-    }
-
-    public function getEditBalanceProperty(): float
-    {
-        return max(0, (float) $this->edit_amount_agreed - (float) $this->edit_amount_paid);
     }
 
     public function saveEditWithLedger(
@@ -91,40 +80,23 @@ class PaymentEntries extends Component
 
         $this->errorMessage = null;
 
-        $this->validate([
-            'edit_amount_agreed' => ['required', 'numeric', 'min:0'],
-            'edit_amount_paid' => ['required', 'numeric', 'min:0', 'lte:edit_amount_agreed'],
-            'edit_payment_status' => ['required', 'in:'.implode(',', array_keys(config('payment_status.options', [])))],
-            'edit_payment_method' => ['required', 'in:'.implode(',', array_keys(config('payment_accounts.options', [])))],
-            'edit_receiving_account_id' => [
-                'required',
-                Rule::exists('receiving_accounts', 'id')->where(function ($query) {
-                    $query->where('method', $this->edit_payment_method)->where('is_active', true);
-                }),
-            ],
-        ], [
-            'edit_amount_agreed.required' => 'Please enter the amount agreed.',
-            'edit_amount_agreed.min' => 'Amount agreed cannot be negative.',
-            'edit_amount_paid.required' => 'Please enter the amount paid.',
-            'edit_amount_paid.min' => 'Amount paid cannot be negative.',
-            'edit_amount_paid.lte' => 'Amount paid cannot be more than amount agreed.',
-            'edit_receiving_account_id.required' => 'Please select a payment account.',
-            'edit_receiving_account_id.exists' => 'The selected payment account is not valid.',
-        ]);
+        $this->validate(
+            PaymentLedgerRules::rules('edit_'),
+            PaymentLedgerRules::messages('edit_')
+        );
 
         try {
-            $account = ReceivingAccount::find($this->edit_receiving_account_id);
-            $agreed = (float) $this->edit_amount_agreed;
-            $paid = (float) $this->edit_amount_paid;
+            $entry = PaymentEntry::find($this->editingId);
 
-            PaymentEntry::where('id', $this->editingId)->update([
-                'amount_agreed' => $agreed,
-                'amount_paid' => $paid,
-                'balance' => max(0, $agreed - $paid),
+            if (! $entry) {
+                return;
+            }
+
+            $entry->update([
+                'amount_agreed' => (float) $this->edit_amount_agreed,
+                'amount_paid' => (float) $this->edit_amount_paid,
                 'payment_status' => $this->edit_payment_status,
-                'receiving_account_id' => $account?->id,
-                'received_in' => $account?->method,
-                'received_account' => $account?->name,
+                'receiving_account_id' => $this->edit_receiving_account_id,
             ]);
 
             $this->cancelEdit();
@@ -155,45 +127,8 @@ class PaymentEntries extends Component
             'ledgerTotals' => PaymentEntry::totals(),
             'paymentStatuses' => config('payment_status.options', []),
             'paymentMethods' => config('payment_accounts.options', []),
-            'allReceivingAccounts' => ReceivingAccount::query()->active()->orderBy('name')->get()->map(fn ($account) => [
-                'id' => $account->id,
-                'method' => $account->method,
-                'name' => $account->name,
-                'type' => $account->methodLabel(),
-            ])->values(),
+            'allReceivingAccounts' => ReceivingAccount::pickerOptions(),
             'currency' => config('payment_status.currency', 'PKR'),
         ]);
-    }
-
-    private function syncEditPaymentStatus(): void
-    {
-        $agreed = (float) $this->edit_amount_agreed;
-
-        if ($agreed <= 0) {
-            return;
-        }
-
-        $paid = (float) $this->edit_amount_paid;
-
-        if ($paid >= $agreed) {
-            $this->edit_payment_status = 'PAID';
-        } elseif ($paid <= 0) {
-            $this->edit_payment_status = 'PENDING';
-        } else {
-            $this->edit_payment_status = 'HALF_RECEIVE';
-        }
-    }
-
-    private function ensureEditReceivingAccount(): void
-    {
-        $validIds = ReceivingAccount::query()
-            ->active()
-            ->where('method', $this->edit_payment_method)
-            ->pluck('id')
-            ->all();
-
-        if (! in_array((int) $this->edit_receiving_account_id, array_map('intval', $validIds), true)) {
-            $this->edit_receiving_account_id = $validIds[0] ?? null;
-        }
     }
 }

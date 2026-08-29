@@ -1,9 +1,5 @@
 <?php
 
-/**
- * Payment / ledger options for ticket import demo.
- * No database — session only until you add a migration.
- */
 return [
 
     'default' => 'PENDING',
@@ -13,7 +9,7 @@ return [
     'options' => [
         'PAID' => 'Paid',
         'PENDING' => 'Pending',
-        'HALF_RECEIVE' => 'Partially Paid',
+        'HALF_RECEIVE' => 'Half Receive',
     ],
 
 ];

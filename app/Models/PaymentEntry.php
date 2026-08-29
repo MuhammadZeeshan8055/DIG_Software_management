@@ -30,6 +30,25 @@ class PaymentEntry extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (PaymentEntry $entry) {
+            if ($entry->receiving_account_id) {
+                $account = ReceivingAccount::find($entry->receiving_account_id);
+
+                if ($account) {
+                    $entry->received_in = $account->method;
+                    $entry->received_account = $account->name;
+                }
+            }
+
+            $entry->balance = static::computeBalance(
+                (float) $entry->amount_agreed,
+                (float) $entry->amount_paid
+            );
+        });
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -43,6 +62,11 @@ class PaymentEntry extends Model
     public function receivingAccount(): BelongsTo
     {
         return $this->belongsTo(ReceivingAccount::class);
+    }
+
+    public static function computeBalance(float $agreed, float $paid): float
+    {
+        return max(0, $agreed - $paid);
     }
 
     /** @return array{agreed: float, paid: float, balance: float} */

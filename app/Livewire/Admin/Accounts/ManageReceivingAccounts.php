@@ -32,7 +32,7 @@ class ManageReceivingAccounts extends Component
 
     public function deleteAccount(int $id): void
     {
-        ReceivingAccount::find($id)?->delete();
+        ReceivingAccount::where('id', $id)->update(['is_active' => false]);
         $this->successMessage = 'Account removed.';
     }
 
@@ -40,7 +40,7 @@ class ManageReceivingAccounts extends Component
     {
         return view('livewire.admin.accounts.manage-receiving-accounts', [
             'methods' => config('payment_accounts.options', []),
-            'accounts' => ReceivingAccount::query()->latest()->get(),
+            'accounts' => ReceivingAccount::query()->active()->orderBy('name')->get(),
         ]);
     }
 }

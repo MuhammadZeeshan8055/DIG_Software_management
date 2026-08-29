@@ -7,7 +7,8 @@ use App\Models\PaymentEntry;
 use App\Models\ReceivingAccount;
 use App\Models\TicketImport;
 use App\Services\TicketPdfParser;
-use Illuminate\Validation\Rule;
+use App\Support\PaymentLedgerRules;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -43,21 +44,19 @@ class ImportTicketDetails extends Component
 
     public ?int $receiving_account_id = null;
 
+    protected TicketPdfParser $parser;
+
+    public function boot(TicketPdfParser $parser): void
+    {
+        $this->parser = $parser;
+    }
+
     public function mount(): void
     {
         $this->payment_status = config('payment_status.default', 'PENDING');
         $this->payment_method = config('payment_accounts.default', 'BANK');
         $this->selectFirstAccount();
         $this->resetFormFields();
-    }
-
-    public function updatedPaymentMethod(): void
-    {
-        $account = ReceivingAccount::find($this->receiving_account_id);
-
-        if (! $account || $account->method !== $this->payment_method || ! $account->is_active) {
-            $this->selectFirstAccount();
-        }
     }
 
     public function updatedPdfFile(): void
@@ -81,14 +80,13 @@ class ImportTicketDetails extends Component
         }
 
         try {
-            $parser = app(TicketPdfParser::class);
             $path = $this->pdfFile->getRealPath();
-            $text = $parser->extractText($path);
-            $parsed = $parser->parse($text);
+            $text = $this->parser->extractText($path);
+            $parsed = $this->parser->parse($text);
 
             $this->raw_pdf_text = $text;
             $this->form = array_merge($this->emptyFormFields(), $parsed['fields']);
-            $this->flightSegments = $parsed['flight_segments'] ?: [app(TicketPdfParser::class)->emptySegment()];
+            $this->flightSegments = $parsed['flight_segments'] ?: [$this->parser->emptySegment()];
 
             $this->parseError = $text === ''
                 ? 'No readable text found in this PDF. Fill the fields manually below.'
@@ -96,7 +94,7 @@ class ImportTicketDetails extends Component
             $this->parsed = true;
         } catch (\Throwable $exception) {
             $this->parseError = 'Could not read this PDF. Fill the fields manually below.';
-            $this->flightSegments = [app(TicketPdfParser::class)->emptySegment()];
+            $this->flightSegments = [$this->parser->emptySegment()];
             $this->parsed = true;
             report($exception);
         }
@@ -104,7 +102,7 @@ class ImportTicketDetails extends Component
 
     public function addFlightSegment(): void
     {
-        $this->flightSegments[] = app(TicketPdfParser::class)->emptySegment();
+        $this->flightSegments[] = $this->parser->emptySegment();
     }
 
     public function removeFlightSegment(int $index): void
@@ -115,21 +113,6 @@ class ImportTicketDetails extends Component
 
         unset($this->flightSegments[$index]);
         $this->flightSegments = array_values($this->flightSegments);
-    }
-
-    public function updatedAmountAgreed(): void
-    {
-        $this->syncPaymentStatusFromAmounts();
-    }
-
-    public function updatedAmountPaid(): void
-    {
-        $this->syncPaymentStatusFromAmounts();
-    }
-
-    public function getBalanceProperty(): float
-    {
-        return max(0, $this->amountAgreedValue() - $this->amountPaidValue());
     }
 
     public function confirmWithLedger(
@@ -160,73 +143,50 @@ class ImportTicketDetails extends Component
             return;
         }
 
-        $payload = [
-            ...$this->form,
-            'flight_segments' => $this->flightSegments,
-        ];
-
         $validated = validator(
-            $payload,
+            [...$this->form, 'flight_segments' => $this->flightSegments],
             (new ConfirmTicketImportRequest)->rules(),
             [],
             $this->fieldLabels()
         )->validate();
 
-        $this->validate([
-            'amount_agreed' => ['required', 'numeric', 'min:0'],
-            'amount_paid' => ['required', 'numeric', 'min:0', 'lte:amount_agreed'],
-            'payment_status' => ['required', 'in:'.implode(',', array_keys(config('payment_status.options', [])))],
-            'payment_method' => ['required', 'in:'.implode(',', array_keys(config('payment_accounts.options', [])))],
-            'receiving_account_id' => [
-                'required',
-                Rule::exists('receiving_accounts', 'id')->where(function ($query) {
-                    $query->where('method', $this->payment_method)->where('is_active', true);
-                }),
-            ],
-        ], [
-            'amount_agreed.required' => 'Please enter the amount agreed.',
-            'amount_agreed.min' => 'Amount agreed cannot be negative.',
-            'amount_paid.required' => 'Please enter the amount paid.',
-            'amount_paid.min' => 'Amount paid cannot be negative.',
-            'amount_paid.lte' => 'Amount paid cannot be more than amount agreed.',
-            'receiving_account_id.required' => 'Please select a payment account.',
-            'receiving_account_id.exists' => 'The selected payment account is not valid.',
-        ]);
+        $this->validate(
+            PaymentLedgerRules::rules(),
+            PaymentLedgerRules::messages()
+        );
 
         try {
-            $account = ReceivingAccount::find($this->receiving_account_id);
-            $storedPath = $this->pdfFile->store('ticket-imports', 'local');
+            $agreed = (float) $this->amount_agreed;
+            $paid = (float) $this->amount_paid;
+            $balance = PaymentEntry::computeBalance($agreed, $paid);
 
-            $ticket = TicketImport::create([
-                'user_id' => auth()->id(),
-                'original_filename' => $this->pdfFile->getClientOriginalName(),
-                'pdf_path' => $storedPath,
-                'raw_pdf_text' => $this->raw_pdf_text,
-                ...$validated,
-                'status' => 'confirmed',
-                'confirmed_at' => now(),
-            ]);
+            DB::transaction(function () use ($validated, $agreed, $paid) {
+                $storedPath = $this->pdfFile->store('ticket-imports', 'local');
 
-            $agreed = $this->amountAgreedValue();
-            $paid = $this->amountPaidValue();
+                $ticket = TicketImport::create([
+                    'user_id' => auth()->id(),
+                    'original_filename' => $this->pdfFile->getClientOriginalName(),
+                    'pdf_path' => $storedPath,
+                    'raw_pdf_text' => $this->raw_pdf_text,
+                    ...$validated,
+                    'status' => 'confirmed',
+                    'confirmed_at' => now(),
+                ]);
 
-            PaymentEntry::create([
-                'ticket_import_id' => $ticket->id,
-                'user_id' => auth()->id(),
-                'passenger_name' => $validated['passenger_name'],
-                'booking_reference' => $validated['booking_reference'] ?? null,
-                'amount_agreed' => $agreed,
-                'amount_paid' => $paid,
-                'balance' => max(0, $agreed - $paid),
-                'payment_status' => $this->payment_status,
-                'receiving_account_id' => $account?->id,
-                'received_in' => $account?->method,
-                'received_account' => $account?->name,
-            ]);
+                PaymentEntry::create([
+                    'ticket_import_id' => $ticket->id,
+                    'user_id' => auth()->id(),
+                    'passenger_name' => $validated['passenger_name'],
+                    'booking_reference' => $validated['booking_reference'] ?? null,
+                    'amount_agreed' => $agreed,
+                    'amount_paid' => $paid,
+                    'payment_status' => $this->payment_status,
+                    'receiving_account_id' => $this->receiving_account_id,
+                ]);
+            });
 
             $statusLabel = config('payment_status.options.'.$this->payment_status, $this->payment_status);
             $currency = config('payment_status.currency', 'PKR');
-            $balance = $this->balance;
 
             $this->resetForm();
             $this->successMessage = "Ticket saved. {$statusLabel} — Balance: {$currency} ".number_format($balance, 0);
@@ -263,12 +223,7 @@ class ImportTicketDetails extends Component
             'segmentFields' => config('ticket_import.flight_segment_fields', []),
             'paymentStatuses' => config('payment_status.options', []),
             'paymentMethods' => config('payment_accounts.options', []),
-            'allReceivingAccounts' => ReceivingAccount::query()->active()->orderBy('name')->get()->map(fn ($account) => [
-                'id' => $account->id,
-                'method' => $account->method,
-                'name' => $account->name,
-                'type' => $account->methodLabel(),
-            ])->values(),
+            'allReceivingAccounts' => ReceivingAccount::pickerOptions(),
             'currency' => config('payment_status.currency', 'PKR'),
             'paymentEntries' => PaymentEntry::query()->with('receivingAccount')->latest()->limit(15)->get(),
             'ledgerTotals' => PaymentEntry::totals(),
@@ -283,13 +238,7 @@ class ImportTicketDetails extends Component
     /** @return array<string, string> */
     private function emptyFormFields(): array
     {
-        $fields = [];
-
-        foreach (array_keys(config('ticket_import.form_fields', [])) as $key) {
-            $fields[$key] = '';
-        }
-
-        return $fields;
+        return array_fill_keys(array_keys(config('ticket_import.form_fields', [])), '');
     }
 
     private function resetFormFields(): void
@@ -312,43 +261,12 @@ class ImportTicketDetails extends Component
         return $labels;
     }
 
-    private function syncPaymentStatusFromAmounts(): void
-    {
-        $agreed = $this->amountAgreedValue();
-
-        if ($agreed <= 0) {
-            return;
-        }
-
-        $paid = $this->amountPaidValue();
-
-        if ($paid >= $agreed) {
-            $this->payment_status = 'PAID';
-        } elseif ($paid <= 0) {
-            $this->payment_status = 'PENDING';
-        } else {
-            $this->payment_status = 'HALF_RECEIVE';
-        }
-    }
-
-    private function amountAgreedValue(): float
-    {
-        return (float) $this->amount_agreed;
-    }
-
-    private function amountPaidValue(): float
-    {
-        return (float) $this->amount_paid;
-    }
-
     private function selectFirstAccount(): void
     {
-        $account = ReceivingAccount::query()
+        $this->receiving_account_id = ReceivingAccount::query()
             ->active()
             ->where('method', $this->payment_method)
             ->orderBy('name')
-            ->first();
-
-        $this->receiving_account_id = $account?->id;
+            ->value('id');
     }
 }
