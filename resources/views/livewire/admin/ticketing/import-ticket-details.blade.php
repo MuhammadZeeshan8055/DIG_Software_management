@@ -411,14 +411,23 @@
                 <div class="ticket-view-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="ticket-view-title">
                     <div class="ticket-view-modal__head">
                         <div>
-                            <p class="ticket-view-modal__eyebrow">Confirmed Import</p>
-                            <h3 id="ticket-view-title" class="ticket-view-modal__title">{{ $viewingImport->original_filename }}</h3>
+                            <p class="ticket-view-modal__eyebrow">Official Operations Document</p>
+                            <h3 id="ticket-view-title" class="ticket-view-modal__title">{{ $viewingImport->passenger_name ?: $viewingImport->original_filename }}</h3>
+                            <p class="ticket-view-modal__meta">{{ $viewingImport->documentSerial() }} · {{ $viewingImport->booking_reference ?: 'No CRM ref' }}</p>
                         </div>
-                        <button type="button" class="ticket-view-modal__close" wire:click="closeView" aria-label="Close">&times;</button>
+                        <div class="ticket-view-modal__head-actions">
+                            <a
+                                href="{{ route('ticket-imports.document', ['ticketImport' => $viewingImport, 'print' => 1]) }}"
+                                target="_blank"
+                                rel="noopener"
+                                class="hero-btn hero-btn--secondary ticket-view-modal__pdf-btn"
+                            >Download PDF</a>
+                            <button type="button" class="ticket-view-modal__close" wire:click="closeView" aria-label="Close">&times;</button>
+                        </div>
                     </div>
 
                     <div class="ticket-view-modal__body">
-                        <x-itinerary-receipt-view :import="$viewingImport" />
+                        <x-ticket-document :import="$viewingImport" />
                     </div>
                 </div>
             </div>

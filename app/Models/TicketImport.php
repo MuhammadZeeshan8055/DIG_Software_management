@@ -72,4 +72,39 @@ class TicketImport extends Model
 
         return $numbers === [] ? '—' : implode(', ', $numbers);
     }
+
+    public function documentSerial(): string
+    {
+        return 'DOC-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+    }
+
+    public function locationCode(?string $location): string
+    {
+        if (! $location) {
+            return '—';
+        }
+
+        if (preg_match('/\(([A-Z]{3})\)/', $location, $matches)) {
+            return $matches[1];
+        }
+
+        if (preg_match('/\b([A-Z]{3})\b/', $location, $matches)) {
+            return $matches[1];
+        }
+
+        return $location;
+    }
+
+    /** @param  array<string, string>  $segment */
+    public function segmentRouteCode(array $segment): string
+    {
+        $from = $this->locationCode($segment['departure_location'] ?? null);
+        $to = $this->locationCode($segment['arrival_location'] ?? null);
+
+        if ($from === '—' && $to === '—') {
+            return '—';
+        }
+
+        return "{$from}-{$to}";
+    }
 }

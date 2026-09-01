@@ -245,7 +245,7 @@ class ImportTicketDetails extends Component
                 ->limit(15)
                 ->get(),
             'viewingImport' => $this->viewingImportId
-                ? TicketImport::query()->find($this->viewingImportId)
+                ? TicketImport::query()->with(['user', 'paymentEntry'])->find($this->viewingImportId)
                 : null,
         ]);
     }
