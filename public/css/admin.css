@@ -3717,7 +3717,7 @@ body.ticket-view-modal-open {
 }
 
 .ticket-doc__brand-name {
-    font-size: 1.05rem;
+    font-size: 0.68rem;
     font-weight: 800;
     letter-spacing: 0.04em;
     color: #0191d4;
@@ -4204,6 +4204,10 @@ body.ticket-view-modal-open {
     font-weight: 600;
     text-align: center;
     letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    justify-content: center;
 }
 
 @media screen and (max-width: 768px) {
@@ -4353,7 +4357,7 @@ body.ticket-view-modal-open {
     }
 
     .ticket-doc__brand-name {
-        font-size: 10.5pt;
+        font-size: 7.5pt;
         color: #0091d4 !important;
     }
 

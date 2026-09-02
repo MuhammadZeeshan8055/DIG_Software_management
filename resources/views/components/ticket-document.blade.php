@@ -20,7 +20,8 @@
             <div class="ticket-doc__brand-text">
                 <strong class="ticket-doc__brand-name">DHOTHAR</strong>
                 <span class="ticket-doc__brand-group">International Group</span>
-                <small class="ticket-doc__brand-tagline">Travels &amp; Tours</small>
+                <small class="ticket-doc__brand-tagline">Travel &amp; Tours (Pvt Ltd)</small>
+                <!-- <small class="ticket-doc__brand-tagline">Private &amp; Limited</small> -->
             </div>
         </div>
 
@@ -249,6 +250,7 @@
             </div>
         </div>
         <p class="ticket-doc__footer-contact">
+            <x-admin-icon name="map-pin" :size="14" class="ticket-doc__footer-location-icon" />
             Office # 5, 2nd Floor,City Plaza, Main Commercial Market, Satellite Town, 5th Road Rawalpindi
             @if ($import->agency_phone)
                 · {{ $import->agency_phone }}
