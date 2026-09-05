@@ -7,7 +7,7 @@
         {{-- Main overview (default) --}}
         <div
             class="dashboard-view"
-            x-show="!activeModule"
+            x-show="!activeModule && !viewingMyAttendance"
             x-transition:enter="dash-enter"
             x-transition:enter-start="dash-enter-start"
             x-transition:enter-end="dash-enter-end"
@@ -96,7 +96,7 @@
         {{-- Module workspace (replaces overview) --}}
         <div
             class="dashboard-view module-workspace"
-            x-show="activeModule && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'users'"
+            x-show="activeModule && !viewingMyAttendance && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'users' && activeOption !== 'my-daily-attendance'"
             x-cloak
             x-transition:enter="dash-enter"
             x-transition:enter-start="dash-enter-start"
@@ -207,7 +207,7 @@
                     {{-- Other option tables (static demo data) --}}
                     <div
                         class="module-panel"
-                        x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts'"
+                        x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'my-daily-attendance'"
                         x-cloak
                         x-transition.opacity.duration.200ms
                     >
@@ -247,7 +247,7 @@
         {{-- Import Ticket Details (Livewire — must be in page HTML on load, not inside Alpine x-if) --}}
         <div
             class="dashboard-view dashboard-view--panel"
-            x-show="activeModule === 'ticketing' && activeOption === 'import-ticket-details'"
+            x-show="activeModule === 'ticketing' && activeOption === 'import-ticket-details' && !viewingMyAttendance"
             x-cloak
             x-transition.opacity.duration.200ms
         >
@@ -257,7 +257,7 @@
         {{-- Accounts → Payments (Livewire) --}}
         <div
             class="dashboard-view dashboard-view--panel"
-            x-show="activeModule === 'accounts' && activeOption === 'payments'"
+            x-show="activeModule === 'accounts' && activeOption === 'payments' && !viewingMyAttendance"
             x-cloak
             x-transition.opacity.duration.200ms
         >
@@ -267,11 +267,21 @@
         {{-- Accounts → Bank Accounts (Livewire) --}}
         <div
             class="dashboard-view dashboard-view--panel"
-            x-show="activeModule === 'accounts' && activeOption === 'bank-accounts'"
+            x-show="activeModule === 'accounts' && activeOption === 'bank-accounts' && !viewingMyAttendance"
             x-cloak
             x-transition.opacity.duration.200ms
         >
             <livewire:admin.accounts.manage-receiving-accounts />
+        </div>
+
+        {{-- My Daily Attendance (profile menu OR Attendance module) --}}
+        <div
+            class="dashboard-view dashboard-view--panel"
+            x-show="viewingMyAttendance || (activeModule === 'attendance' && activeOption === 'my-daily-attendance')"
+            x-cloak
+            x-transition.opacity.duration.200ms
+        >
+            <livewire:admin.attendance.my-daily-attendance />
         </div>
     </div>
 @endsection

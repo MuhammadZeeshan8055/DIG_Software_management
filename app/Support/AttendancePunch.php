@@ -122,6 +122,8 @@ class AttendancePunch
 
         $record->check_out_at = $checkOut;
         $record->worked_minutes = $minutes;
+        // Green = met required day hours; red = short
+        $record->status_color = self::colorForWorkedMinutes($minutes);
         $record->save();
 
         $hours = intdiv($minutes, 60);
@@ -132,6 +134,19 @@ class AttendancePunch
                 .' · worked '.sprintf('%dh %dm', $hours, $mins).'.',
             $record
         );
+    }
+
+    /**
+     * Compare worked minutes to admin required_hours.
+     * green = enough hours, red = under target.
+     */
+    public static function colorForWorkedMinutes(int $workedMinutes): string
+    {
+        $settings = AttendanceSetting::query()->first();
+        $requiredHours = (int) ($settings?->required_hours ?? 8);
+        $requiredMinutes = $requiredHours * 60;
+
+        return $workedMinutes >= $requiredMinutes ? 'green' : 'red';
     }
 
     /**

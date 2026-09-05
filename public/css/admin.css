@@ -751,9 +751,29 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 }
 
 .admin-header__profile {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+.admin-header__profile-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 4px 6px 4px 4px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-header__profile-btn:hover {
+    background: rgba(0, 145, 212, 0.08);
+    border-color: rgba(0, 145, 212, 0.12);
 }
 
 .admin-header__profile-avatar {
@@ -775,6 +795,123 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     font-size: 0.82rem;
     font-weight: 600;
     color: var(--brand-navy);
+}
+
+.admin-header__profile-caret {
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+.admin-header__profile-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 40;
+    min-width: 200px;
+    padding: 6px;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid #e8edf2;
+    box-shadow: 0 12px 28px rgba(15, 40, 70, 0.14);
+}
+
+.admin-header__profile-item {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    text-align: left;
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--brand-navy);
+    cursor: pointer;
+}
+
+.admin-header__profile-item:hover {
+    background: rgba(0, 145, 212, 0.08);
+}
+
+.admin-header__profile-item--muted {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.my-att-filter {
+    margin-bottom: 16px;
+    padding: 14px 16px;
+}
+
+.my-att-filter__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.my-att-filter__group {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.my-att-filter__label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--brand-navy);
+    letter-spacing: 0.01em;
+}
+
+.my-att-filter__input {
+    min-width: 200px;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #dce5ee;
+    background: #f4f8fb;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--brand-navy);
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.my-att-filter__input:hover {
+    border-color: rgba(0, 145, 212, 0.45);
+    background: #fff;
+}
+
+.my-att-filter__input:focus {
+    outline: none;
+    border-color: var(--brand-blue);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 145, 212, 0.16);
+}
+
+.my-att-row--green td {
+    color: #166534;
+}
+
+.my-att-row--red td {
+    color: #b91c1c;
+}
+
+.my-att-status {
+    display: inline-block;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.my-att-status--green {
+    color: #15803d;
+}
+
+.my-att-status--red {
+    color: #dc2626;
 }
 
 .admin-header__icon-btn {

@@ -466,19 +466,10 @@ return [
         'trend' => null,
         'share' => null,
         'tables' => [
-            'check-in-out' => [
-                'title' => 'Check In / Out',
-                'columns' => ['Status'],
-                'rows' => [
-                    ['Punch screen will be added in a later step.'],
-                ],
-            ],
-            'my-report' => [
-                'title' => 'My Report',
-                'columns' => ['Status'],
-                'rows' => [
-                    ['Monthly attendance report will be added in a later step.'],
-                ],
+            'my-daily-attendance' => [
+                'title' => 'My Daily Attendance',
+                'columns' => [],
+                'rows' => [],
             ],
             'apply-leave' => [
                 'title' => 'Apply Leave',

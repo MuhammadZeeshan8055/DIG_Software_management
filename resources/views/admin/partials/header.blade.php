@@ -10,14 +10,17 @@
 
         <div class="admin-header__titles">
             <p class="admin-header__breadcrumb">
-                <span x-text="activeModule
-                    ? (activeOption ? 'Employee Portal / Module / Option' : 'Employee Portal / Module')
-                    : '{{ implode(' / ', $breadcrumb ?? ['Employee Portal']) }}'"></span>
+                <span x-text="viewingMyAttendance
+                    ? 'Employee Portal / My Attendance'
+                    : (activeModule
+                        ? (activeOption ? 'Employee Portal / Module / Option' : 'Employee Portal / Module')
+                        : '{{ implode(' / ', $breadcrumb ?? ['Employee Portal']) }}')"></span>
             </p>
             <h1 class="admin-header__title">
-                <span x-show="!activeModule">{{ $pageTitle ?? 'Dashboard' }}</span>
+                <span x-show="viewingMyAttendance || (activeModule === 'attendance' && activeOption === 'my-daily-attendance')" x-cloak>My Daily Attendance</span>
+                <span x-show="!activeModule && !viewingMyAttendance">{{ $pageTitle ?? 'Dashboard' }}</span>
                 <span
-                    x-show="activeModule"
+                    x-show="activeModule && !viewingMyAttendance && activeOption !== 'my-daily-attendance'"
                     x-cloak
                     x-text="currentTable()?.title || currentModule()?.title || 'Module'"
                 ></span>
@@ -47,11 +50,43 @@
             <span class="admin-header__badge-text">Staff Access</span>
         </span>
 
-        <div class="admin-header__profile">
-            <span class="admin-header__profile-avatar">
-                {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-            </span>
-            <span class="admin-header__profile-name">{{ auth()->user()->name }}</span>
+        <div
+            class="admin-header__profile"
+            x-data="{ open: false }"
+            @click.outside="open = false"
+            @keydown.escape.window="open = false"
+        >
+            <button
+                type="button"
+                class="admin-header__profile-btn"
+                @click="open = !open"
+                :aria-expanded="open"
+                aria-haspopup="true"
+            >
+                <span class="admin-header__profile-avatar">
+                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                </span>
+                <span class="admin-header__profile-name">{{ auth()->user()->name }}</span>
+                <svg class="admin-header__profile-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </button>
+
+            <div class="admin-header__profile-menu" x-show="open" x-cloak x-transition.opacity.duration.150ms>
+                <button
+                    type="button"
+                    class="admin-header__profile-item"
+                    @click="open = false; $dispatch('open-my-attendance')"
+                >
+                    My Daily Attendance
+                </button>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="admin-header__profile-item admin-header__profile-item--muted">
+                        Sign out
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </header>

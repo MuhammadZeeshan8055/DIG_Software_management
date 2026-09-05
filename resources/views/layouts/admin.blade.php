@@ -24,10 +24,12 @@
 </head>
 <body
     class="admin-body"
+    @open-my-attendance.window="openMyAttendance()"
     x-data="{
         sidebarOpen: false,
         activeModule: null,
         activeOption: null,
+        viewingMyAttendance: false,
         modules: @js($modulesMap),
         workspace: @js($workspace),
         lastPageKey: 'dhothar_last_page',
@@ -39,6 +41,11 @@
 
         // Remember current page in browser (survives refresh)
         saveLastPage() {
+            if (this.viewingMyAttendance) {
+                localStorage.setItem(this.lastPageKey, JSON.stringify({ view: 'my-attendance' }));
+                return;
+            }
+
             if (! this.activeModule) {
                 localStorage.removeItem(this.lastPageKey);
                 return;
@@ -62,6 +69,16 @@
                 page = JSON.parse(saved);
             } catch (e) {
                 localStorage.removeItem(this.lastPageKey);
+                return;
+            }
+
+            if (page.view === 'my-attendance') {
+                this.viewingMyAttendance = true;
+                this.activeModule = null;
+                this.activeOption = null;
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('my-attendance-opened'));
+                });
                 return;
             }
 
@@ -138,6 +155,7 @@
         openModule(key) {
             if (!key || !this.modules[key]) return;
             window.dispatchEvent(new CustomEvent('close-ticket-view'));
+            this.viewingMyAttendance = false;
             this.activeModule = key;
             this.activeOption = null;
             this.saveLastPage();
@@ -145,10 +163,26 @@
                 this.sidebarOpen = true;
             }
         },
+        openMyAttendance() {
+            window.dispatchEvent(new CustomEvent('close-ticket-view'));
+            this.activeModule = null;
+            this.activeOption = null;
+            this.sidebarOpen = false;
+            this.viewingMyAttendance = true;
+            this.saveLastPage();
+            this.$nextTick(() => {
+                window.dispatchEvent(new CustomEvent('my-attendance-opened'));
+            });
+        },
+        closeMyAttendance() {
+            this.viewingMyAttendance = false;
+            this.saveLastPage();
+        },
         closeModule() {
             window.dispatchEvent(new CustomEvent('close-ticket-view'));
             this.activeModule = null;
             this.activeOption = null;
+            this.viewingMyAttendance = false;
             this.sidebarOpen = false;
             this.saveLastPage();
         },
@@ -156,6 +190,7 @@
             if (key !== 'import-ticket-details') {
                 window.dispatchEvent(new CustomEvent('close-ticket-view'));
             }
+            this.viewingMyAttendance = false;
             this.activeOption = key;
             this.saveLastPage();
             if (key === 'import-ticket-details') {
@@ -169,6 +204,9 @@
             }
             if (key === 'users') {
                 window.dispatchEvent(new CustomEvent('users-panel-opened'));
+            }
+            if (key === 'my-daily-attendance') {
+                window.dispatchEvent(new CustomEvent('my-attendance-opened'));
             }
             if (window.matchMedia('(max-width: 1024px)').matches) {
                 this.sidebarOpen = false;
@@ -199,7 +237,7 @@
     --}}
     <div
         class="manage-users-layer"
-        x-show="activeModule === 'settings' && activeOption === 'users'"
+        x-show="activeModule === 'settings' && activeOption === 'users' && !viewingMyAttendance"
         x-cloak
         x-transition.opacity.duration.200ms
     >

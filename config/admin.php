@@ -119,13 +119,12 @@ return [
         [
             'key' => 'attendance',
             'title' => 'Attendance',
-            'description' => 'Check-in, reports, leave, and office hours.',
+            'description' => 'My attendance, leave, office hours, and holidays.',
             'icon' => 'chart',
             'status' => 'active',
             'children' => [
                 // Staff + admin
-                ['key' => 'check-in-out', 'label' => 'Check In / Out', 'route' => null],
-                ['key' => 'my-report', 'label' => 'My Report', 'route' => null],
+                ['key' => 'my-daily-attendance', 'label' => 'My Daily Attendance', 'route' => null],
                 ['key' => 'apply-leave', 'label' => 'Apply Leave', 'route' => null],
                 // Admin / super_admin only (hidden from staff nav + staff permissions)
                 ['key' => 'leave-approvals', 'label' => 'Leave Approvals', 'route' => null, 'admin_only' => true],

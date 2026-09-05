@@ -80,7 +80,18 @@ class DashboardController extends Controller
                 // Staff: skip admin-only children, then keep only features they can view
                 $children = collect($module['children'] ?? [])
                     ->reject(fn (array $child) => ! empty($child['admin_only']))
-                    ->filter(fn (array $child) => $user->canView($moduleKey, $child['key'] ?? ''))
+                    ->filter(function (array $child) use ($user, $moduleKey) {
+                        $feature = $child['key'] ?? '';
+
+                        // Personal attendance list: show if they already have any Attendance access
+                        if ($moduleKey === 'attendance' && $feature === 'my-daily-attendance') {
+                            return $user->permissions()
+                                ->where('module_key', 'attendance')
+                                ->exists();
+                        }
+
+                        return $user->canView($moduleKey, $feature);
+                    })
                     ->values()
                     ->all();
 

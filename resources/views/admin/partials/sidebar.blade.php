@@ -21,7 +21,7 @@
                     <button
                         type="button"
                         class="admin-nav-link"
-                        :class="{ 'admin-nav-link--active': !activeModule }"
+                        :class="{ 'admin-nav-link--active': !activeModule && !viewingMyAttendance }"
                         @click="closeModule()"
                         @mouseenter="$el.classList.add('nav-touched')"
                     >
