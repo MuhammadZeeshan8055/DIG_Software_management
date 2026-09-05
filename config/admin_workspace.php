@@ -456,4 +456,16 @@ return [
         ],
     ],
 
+    'settings' => [
+        'stats' => [
+            // values filled from DB in DashboardController
+            ['label' => 'Total Users', 'value' => '0', 'hint' => 'All accounts', 'tone' => 'blue'],
+            ['label' => 'Staff', 'value' => '0', 'hint' => 'Limited access', 'tone' => 'amber'],
+            ['label' => 'Admins', 'value' => '0', 'hint' => 'Full access', 'tone' => 'navy'],
+        ],
+        'trend' => null,
+        'share' => null,
+        'tables' => [],
+    ],
+
 ];

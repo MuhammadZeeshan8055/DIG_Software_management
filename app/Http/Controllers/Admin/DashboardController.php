@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -12,10 +13,46 @@ class DashboardController extends Controller
         return view('admin.dashboard', [
             'modules' => $this->modulesForUser(),
             'quickActions' => config('admin.quick_actions'),
-            'workspace' => config('admin_workspace'),
+            'workspace' => $this->workspaceForUser(),
             'pageTitle' => 'Operations Overview',
             'breadcrumb' => ['Employee Portal', 'Workspace'],
         ]);
+    }
+
+    /**
+     * Workspace stats — Settings uses real Eloquent counts.
+     */
+    protected function workspaceForUser(): array
+    {
+        $workspace = config('admin_workspace', []);
+
+        // Simple Eloquent counts
+        $totalUsers = User::count();
+        $staffCount = User::where('role', 'staff')->count();
+        $adminCount = User::whereIn('role', ['admin', 'super_admin'])->count();
+
+        $workspace['settings']['stats'] = [
+            [
+                'label' => 'Total Users',
+                'value' => (string) $totalUsers,
+                'hint' => 'All accounts',
+                'tone' => 'blue',
+            ],
+            [
+                'label' => 'Staff',
+                'value' => (string) $staffCount,
+                'hint' => 'Limited access',
+                'tone' => 'amber',
+            ],
+            [
+                'label' => 'Admins',
+                'value' => (string) $adminCount,
+                'hint' => 'Full access',
+                'tone' => 'navy',
+            ],
+        ];
+
+        return $workspace;
     }
 
     /**
