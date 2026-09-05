@@ -24,9 +24,8 @@ return new class extends Migration
             $table->dateTime('check_in_at')->nullable();
             $table->dateTime('check_out_at')->nullable();
 
-            // Calculated after check-out
-            $table->unsignedInteger('worked_seconds')->default(0);
-            $table->unsignedInteger('overtime_seconds')->default(0);
+            // Calculated after check-out (whole minutes; overtime not stored)
+            $table->unsignedInteger('worked_minutes')->default(0);
 
             // red = under hours, green = met/over hours
             $table->string('status_color', 10)->nullable();

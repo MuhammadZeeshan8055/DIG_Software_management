@@ -69,6 +69,11 @@ class User extends Authenticatable
         return $this->role === 'admin' || $this->isSuperAdmin();
     }
 
+    public function isStaff(): bool
+    {
+        return $this->role === 'staff';
+    }
+
     /**
      * Can open / read this feature screen.
      * Admin / super_admin: always yes. Staff: needs a permission row.

@@ -1223,6 +1223,502 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     font-weight: 600;
 }
 
+.att-panel__flash {
+    margin: 0 0 12px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    line-height: 1.35;
+}
+
+.att-panel__flash--ok {
+    background: rgba(46, 204, 113, 0.18);
+    border: 1px solid rgba(46, 204, 113, 0.35);
+    color: #d8ffe8;
+}
+
+.att-panel__flash--err {
+    background: rgba(231, 76, 60, 0.18);
+    border: 1px solid rgba(231, 76, 60, 0.35);
+    color: #ffd6d0;
+}
+
+.att-panel__ip {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+}
+
+.att-panel__actions {
+    margin-top: 14px;
+}
+
+.att-panel__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 8px;
+    padding: 11px 16px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition:
+        transform 0.25s ease,
+        background 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.att-panel__btn:hover {
+    transform: translateY(-1px);
+}
+
+.att-panel__btn:active {
+    transform: translateY(0);
+}
+
+.att-panel__btn:disabled {
+    opacity: 0.7;
+    cursor: wait;
+    transform: none;
+}
+
+/* Start / confirm — brand yellow (same as hero primary) */
+.att-panel__btn--start {
+    background: linear-gradient(180deg, #ffe566 0%, var(--brand-yellow) 100%);
+    color: var(--brand-navy);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow:
+        0 4px 14px rgba(253, 202, 9, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.att-panel__btn--start:hover {
+    box-shadow:
+        0 8px 22px rgba(253, 202, 9, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* End Shift — frosted glass on the panel */
+.att-panel__btn--end {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    box-shadow:
+        0 2px 12px rgba(0, 40, 70, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.att-panel__btn--end:hover {
+    background: rgba(255, 255, 255, 0.24);
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #fff;
+}
+
+/* Cancel on dark confirm card */
+.att-panel__btn--ghost {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.att-panel__btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.att-panel__done {
+    margin: 0;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 900;
+    color: rgb(239 200 24);
+}
+
+/* ===== Attendance check-in gate (brand theme colors) ===== */
+.att-checkin-body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    background: linear-gradient(155deg, #00466b 0%, var(--brand-blue) 55%, #0077b3 100%);
+    color: var(--brand-navy);
+    overflow-x: hidden;
+}
+
+.att-checkin {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    box-sizing: border-box;
+}
+
+.att-checkin__orb {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(50px);
+}
+
+.att-checkin__orb--one {
+    width: 260px;
+    height: 260px;
+    top: 8%;
+    left: 6%;
+    background: rgba(253, 202, 9, 0.28);
+    animation: att-orb-float 9s ease-in-out infinite;
+}
+
+.att-checkin__orb--two {
+    width: 300px;
+    height: 300px;
+    right: 4%;
+    bottom: 10%;
+    background: rgba(255, 255, 255, 0.16);
+    animation: att-orb-float 11s ease-in-out infinite reverse;
+}
+
+@keyframes att-orb-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-18px); }
+}
+
+.att-checkin__card {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 400px);
+    text-align: center;
+    padding: 28px 24px 22px;
+    border-radius: 18px;
+    background: #fff;
+    border-top: 4px solid var(--brand-yellow);
+    overflow: hidden;
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.04),
+        0 12px 32px rgba(0, 50, 80, 0.22),
+        0 24px 60px rgba(0, 0, 0, 0.12);
+    animation: att-card-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.att-checkin__shine {
+    position: absolute;
+    top: 0;
+    left: -30%;
+    width: 45%;
+    height: 100%;
+    background: linear-gradient(
+        100deg,
+        transparent,
+        rgba(255, 255, 255, 0.35),
+        transparent
+    );
+    transform: skewX(-18deg);
+    animation: att-shine 4.5s ease-in-out 1.2s infinite;
+    pointer-events: none;
+}
+
+@keyframes att-card-in {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes att-shine {
+    0%, 70%, 100% { transform: translateX(0) skewX(-18deg); opacity: 0; }
+    15% { opacity: 0.55; }
+    40% { transform: translateX(320%) skewX(-18deg); opacity: 0; }
+}
+
+.att-checkin__reveal {
+    animation: att-reveal 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--d, 0ms);
+}
+
+@keyframes att-reveal {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.att-checkin__brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #eef2f6;
+}
+
+.att-checkin__logo {
+    width: 52px;
+    height: auto;
+    flex-shrink: 0;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 10px rgba(0, 100, 150, 0.18));
+}
+
+.att-checkin__brand-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    line-height: 1.15;
+    text-align: left;
+}
+
+.att-checkin__brand-line {
+    display: block;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.att-checkin__brand-line--name {
+    font-size: 0.72rem;
+    color: var(--brand-blue);
+}
+
+.att-checkin__brand-line--group {
+    font-size: 0.72rem;
+    color: var(--brand-yellow);
+    text-shadow: 0 0 1px rgba(45, 58, 97, 0.15);
+}
+
+.att-checkin__brand-line--tag {
+    font-size: 0.58rem;
+    letter-spacing: 0.06em;
+    color: var(--brand-blue);
+}
+
+.att-checkin__icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    color: var(--brand-blue);
+    background: rgba(0, 145, 212, 0.1);
+    border: 1px solid rgba(0, 145, 212, 0.22);
+    box-shadow: 0 6px 16px rgba(0, 145, 212, 0.12);
+}
+
+.att-checkin__title {
+    margin: 0 0 8px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--brand-navy);
+}
+
+.att-checkin__subtitle {
+    margin: 0 0 18px;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #64748b;
+}
+
+.att-checkin__error {
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.att-checkin__user {
+    margin: 0 0 18px;
+    padding: 16px 16px 14px;
+    border-radius: 14px;
+    text-align: center;
+    background: linear-gradient(145deg, #0091d4 0%, #0077b3 55%, #0a5f8a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow:
+        0 8px 20px rgba(0, 100, 150, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.att-checkin__role {
+    margin: 0 0 6px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brand-yellow);
+}
+
+.att-checkin__name {
+    margin: 0 0 4px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.att-checkin__date {
+    margin: 0;
+    font-size: 0.84rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.att-checkin__clock {
+    margin: 8px 0 0;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    font-size: 0.92rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    color: #fff;
+}
+
+.att-checkin__btn {
+    width: 100%;
+    border: 0;
+    border-radius: 9px;
+    padding: 14px 16px;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--brand-navy);
+    cursor: pointer;
+    background: linear-gradient(180deg, #ffe566 0%, var(--brand-yellow) 100%);
+    box-shadow:
+        0 4px 14px rgba(253, 202, 9, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.att-checkin__btn-inner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.att-checkin__btn:hover {
+    background: linear-gradient(180deg, #ffec8a 0%, #e8b800 100%);
+    box-shadow: 0 8px 22px rgba(253, 202, 9, 0.48);
+    transform: translateY(-1px);
+}
+
+.att-checkin__btn:active {
+    transform: translateY(1px);
+}
+
+.att-checkin__btn:disabled {
+    opacity: 0.75;
+    cursor: wait;
+    transform: none;
+}
+
+.att-checkin__logout {
+    margin: 16px 0 0;
+}
+
+.att-checkin__logout button {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--brand-blue);
+    cursor: pointer;
+}
+
+.att-checkin__logout button:hover {
+    color: #006a9e;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.att-checkin__footer {
+    margin: 14px 0 0;
+    font-size: 0.72rem;
+    line-height: 1.45;
+    color: #64748b;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .att-checkin__orb,
+    .att-checkin__card,
+    .att-checkin__shine,
+    .att-checkin__reveal {
+        animation: none !important;
+    }
+}
+
+.att-end-confirm {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+}
+
+.att-end-confirm__backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    background: rgba(8, 24, 48, 0.55);
+}
+
+.att-end-confirm__card {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 340px);
+    padding: 20px 18px;
+    border-radius: 14px;
+    background: linear-gradient(165deg, #0f3a5c 0%, #0a2740 100%);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 18px 40px rgba(0, 20, 40, 0.45);
+    color: #fff;
+}
+
+.att-end-confirm__title {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.att-end-confirm__text {
+    margin: 0 0 16px;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.att-end-confirm__actions {
+    display: grid;
+    gap: 8px;
+}
+
 /* ===== Module grid â€” 4 columns ===== */
 .module-grid {
     display: grid;

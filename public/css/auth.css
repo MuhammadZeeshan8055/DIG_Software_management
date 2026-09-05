@@ -116,7 +116,7 @@
 }
 
 .brand-line--blue {
-    font-size: 1.15rem;
+    font-size: 0.72rem;
     color: var(--brand-blue);
 }
 
@@ -131,7 +131,6 @@
     font-weight: 700;
     color: var(--brand-blue);
     letter-spacing: 0.08em;
-    margin-top: 2px;
 }
 
 .login-card__heading {
@@ -282,7 +281,7 @@
     }
 
     .brand-line--blue {
-        font-size: 1rem;
+        font-size:  0.65rem;
     }
 
     .brand-line--yellow {
@@ -356,7 +355,7 @@
     }
 
     .brand-line--blue {
-        font-size: 1rem;
+        font-size: 0.62rem;
     }
 
     .brand-line--yellow {

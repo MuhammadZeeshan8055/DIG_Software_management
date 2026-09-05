@@ -55,15 +55,7 @@
                     </div>
                 </div>
 
-                <aside class="dashboard-hero__panel dashboard-reveal" style="--reveal-delay: 120ms">
-                    <p class="dashboard-hero__panel-label">Current Workday</p>
-                    <p class="dashboard-hero__panel-date">{{ format_date(now()) }}</p>
-                    <ul class="dashboard-hero__panel-list">
-                        <li><span>Workspace</span><strong>Employee Portal</strong></li>
-                        <li><span>Data mode</span><strong>Online sync</strong></li>
-                        <li><span>Access</span><strong>Authorized</strong></li>
-                    </ul>
-                </aside>
+                <livewire:admin.attendance.attendance-today-panel />
             </section>
 
             <div class="module-grid">

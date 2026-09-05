@@ -12,8 +12,7 @@ class AttendanceRecord extends Model
         'work_date',
         'check_in_at',
         'check_out_at',
-        'worked_seconds',
-        'overtime_seconds',
+        'worked_minutes',
         'status_color',
     ];
 

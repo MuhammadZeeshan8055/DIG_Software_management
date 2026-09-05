@@ -14,7 +14,7 @@
                             <div class="login-card__brand-text">
                                 <span class="brand-line brand-line--blue">Dhothar</span>
                                 <span class="brand-line brand-line--yellow">International Group</span>
-                                <span class="brand-line brand-line--tagline">travel and tour</span>
+                                <span class="brand-line brand-line--tagline">travel and tour (PVT LTD)</span>
                             </div>
                         </div>
 
@@ -76,7 +76,7 @@
                             <button type="submit" class="btn-login">Login</button>
                         </form>
 
-                        <div class="login-links">
+                        <!-- <div class="login-links">
                             @if (Route::has('password.request'))
                                 <a href="{{ route('password.request') }}">Forgot Password?</a>
                             @endif
@@ -84,7 +84,7 @@
                                 <span class="login-links__dot">·</span>
                                 <a href="{{ route('register') }}">Create Employee Account</a>
                             @endif
-                        </div>
+                        </div> -->
 
                         <p class="login-card__footer">
                             Access managed by company administrator only.
