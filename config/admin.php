@@ -116,6 +116,16 @@ return [
                 ['key' => 'performance', 'label' => 'Performance', 'route' => null],
             ],
         ],
+        [
+            'key' => 'settings',
+            'title' => 'Settings',
+            'description' => 'Users, roles, and access control.',
+            'icon' => 'grid',
+            'status' => 'active',
+            'children' => [
+                ['key' => 'users', 'label' => 'Manage Users', 'route' => null],
+            ],
+        ],
     ],
 
     'quick_actions' => [],

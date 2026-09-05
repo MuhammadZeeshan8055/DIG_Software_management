@@ -104,7 +104,7 @@
         {{-- Module workspace (replaces overview) --}}
         <div
             class="dashboard-view module-workspace"
-            x-show="activeModule && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts'"
+            x-show="activeModule && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'users'"
             x-cloak
             x-transition:enter="dash-enter"
             x-transition:enter-start="dash-enter-start"

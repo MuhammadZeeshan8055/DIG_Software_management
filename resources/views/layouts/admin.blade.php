@@ -33,6 +33,7 @@
         lastPageKey: 'dhothar_last_page',
 
         init() {
+            document.body.classList.remove('mu-modal-open');
             this.openLastPage();
         },
 
@@ -86,6 +87,12 @@
             if (this.activeOption === 'bank-accounts') {
                 this.$nextTick(() => {
                     window.dispatchEvent(new CustomEvent('bank-accounts-panel-opened'));
+                });
+            }
+
+            if (this.activeOption === 'users') {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('users-panel-opened'));
                 });
             }
         },
@@ -160,6 +167,9 @@
             if (key === 'bank-accounts') {
                 window.dispatchEvent(new CustomEvent('bank-accounts-panel-opened'));
             }
+            if (key === 'users') {
+                window.dispatchEvent(new CustomEvent('users-panel-opened'));
+            }
             if (window.matchMedia('(max-width: 1024px)').matches) {
                 this.sidebarOpen = false;
             }
@@ -181,6 +191,19 @@
                 @yield('content')
             </div>
         </div>
+    </div>
+
+    {{--
+      Manage Users lives OUTSIDE admin-shell so the modal can cover header + sidebar.
+      Uses x-show (not x-if) so Livewire stays mounted.
+    --}}
+    <div
+        class="manage-users-layer"
+        x-show="activeModule === 'settings' && activeOption === 'users'"
+        x-cloak
+        x-transition.opacity.duration.200ms
+    >
+        <livewire:admin.settings.manage-users />
     </div>
 
     <div

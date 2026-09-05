@@ -55,6 +55,7 @@ class ImportTicketDetails extends Component
 
     public function mount(): void
     {
+        // No abort here — this component is always on the dashboard HTML.
         $this->payment_status = config('payment_status.default', 'PENDING');
         $this->payment_method = config('payment_accounts.default', 'BANK');
         $this->selectFirstAccount();
@@ -147,6 +148,8 @@ class ImportTicketDetails extends Component
 
     public function confirm(): void
     {
+        abort_unless(auth()->user()->canManage('ticketing', 'import-ticket-details'), 403);
+
         $this->errorMessage = null;
 
         if (! $this->pdfFile) {

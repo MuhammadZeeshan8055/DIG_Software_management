@@ -91,7 +91,7 @@
         </div>
         <div class="admin-sidebar__user-info">
             <strong>{{ auth()->user()->name }}</strong>
-            <span>Staff Member</span>
+            <span>{{ str_replace('_', ' ', auth()->user()->role ?? 'staff') }}</span>
         </div>
         <form method="POST" action="{{ route('logout') }}">
             @csrf

@@ -25,8 +25,15 @@ class PaymentEntries extends Component
 
     public ?int $edit_receiving_account_id = null;
 
+    public function mount(): void
+    {
+        // No abort here — this component is always on the dashboard HTML.
+    }
+
     public function startEdit(int $id): void
     {
+        abort_unless(auth()->user()->canManage('accounts', 'payments'), 403);
+
         $entry = PaymentEntry::with('receivingAccount')->find($id);
 
         if (! $entry) {
@@ -74,6 +81,8 @@ class PaymentEntries extends Component
 
     public function saveEdit(): void
     {
+        abort_unless(auth()->user()->canManage('accounts', 'payments'), 403);
+
         if (! $this->editingId) {
             return;
         }
@@ -109,6 +118,8 @@ class PaymentEntries extends Component
 
     public function deleteEntry(int $id): void
     {
+        abort_unless(auth()->user()->canManage('accounts', 'payments'), 403);
+
         if ($this->editingId === $id) {
             $this->cancelEdit();
         }
@@ -122,6 +133,17 @@ class PaymentEntries extends Component
 
     public function render()
     {
+        if (! auth()->user()->canView('accounts', 'payments')) {
+            return view('livewire.admin.accounts.payment-entries', [
+                'entries' => collect(),
+                'ledgerTotals' => ['agreed' => 0, 'paid' => 0, 'balance' => 0],
+                'paymentStatuses' => [],
+                'paymentMethods' => [],
+                'allReceivingAccounts' => [],
+                'currency' => config('payment_status.currency', 'PKR'),
+            ]);
+        }
+
         return view('livewire.admin.accounts.payment-entries', [
             'entries' => PaymentEntry::query()->with('receivingAccount')->latest()->limit(50)->get(),
             'ledgerTotals' => PaymentEntry::totals(),
