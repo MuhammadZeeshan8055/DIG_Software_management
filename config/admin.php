@@ -117,6 +117,23 @@ return [
             ],
         ],
         [
+            'key' => 'attendance',
+            'title' => 'Attendance',
+            'description' => 'Check-in, reports, leave, and office hours.',
+            'icon' => 'chart',
+            'status' => 'active',
+            'children' => [
+                // Staff + admin
+                ['key' => 'check-in-out', 'label' => 'Check In / Out', 'route' => null],
+                ['key' => 'my-report', 'label' => 'My Report', 'route' => null],
+                ['key' => 'apply-leave', 'label' => 'Apply Leave', 'route' => null],
+                // Admin / super_admin only (hidden from staff nav + staff permissions)
+                ['key' => 'leave-approvals', 'label' => 'Leave Approvals', 'route' => null, 'admin_only' => true],
+                ['key' => 'office-settings', 'label' => 'Office Settings', 'route' => null, 'admin_only' => true],
+                ['key' => 'holidays', 'label' => 'Holidays', 'route' => null, 'admin_only' => true],
+            ],
+        ],
+        [
             'key' => 'settings',
             'title' => 'Settings',
             'description' => 'Users, roles, and access control.',

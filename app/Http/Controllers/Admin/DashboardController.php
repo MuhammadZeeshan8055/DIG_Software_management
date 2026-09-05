@@ -77,8 +77,9 @@ class DashboardController extends Controller
                     return $module;
                 }
 
-                // Staff: keep only features they can view
+                // Staff: skip admin-only children, then keep only features they can view
                 $children = collect($module['children'] ?? [])
+                    ->reject(fn (array $child) => ! empty($child['admin_only']))
                     ->filter(fn (array $child) => $user->canView($moduleKey, $child['key'] ?? ''))
                     ->values()
                     ->all();

@@ -456,6 +456,61 @@ return [
         ],
     ],
 
+    'attendance' => [
+        'stats' => [
+            ['label' => 'Present Today', 'value' => '—', 'hint' => 'Coming soon', 'tone' => 'blue'],
+            ['label' => 'On Leave', 'value' => '—', 'hint' => 'Coming soon', 'tone' => 'amber'],
+            ['label' => 'Pending Leave', 'value' => '—', 'hint' => 'Coming soon', 'tone' => 'navy'],
+            ['label' => 'Holidays', 'value' => '—', 'hint' => 'Coming soon', 'tone' => 'red'],
+        ],
+        'trend' => null,
+        'share' => null,
+        'tables' => [
+            'check-in-out' => [
+                'title' => 'Check In / Out',
+                'columns' => ['Status'],
+                'rows' => [
+                    ['Punch screen will be added in a later step.'],
+                ],
+            ],
+            'my-report' => [
+                'title' => 'My Report',
+                'columns' => ['Status'],
+                'rows' => [
+                    ['Monthly attendance report will be added in a later step.'],
+                ],
+            ],
+            'apply-leave' => [
+                'title' => 'Apply Leave',
+                'columns' => ['Status'],
+                'rows' => [
+                    ['Leave request form will be added in a later step.'],
+                ],
+            ],
+            'leave-approvals' => [
+                'title' => 'Leave Approvals',
+                'columns' => ['Status'],
+                'rows' => [
+                    ['Approve / reject leave will be added in a later step.'],
+                ],
+            ],
+            'office-settings' => [
+                'title' => 'Office Settings',
+                'columns' => ['Status'],
+                'rows' => [
+                    ['Office hours and IP settings will be added in a later step.'],
+                ],
+            ],
+            'holidays' => [
+                'title' => 'Holidays',
+                'columns' => ['Status'],
+                'rows' => [
+                    ['Holiday list will be added in a later step.'],
+                ],
+            ],
+        ],
+    ],
+
     'settings' => [
         'stats' => [
             // values filled from DB in DashboardController

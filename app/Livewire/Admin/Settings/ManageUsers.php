@@ -200,6 +200,11 @@ class ManageUsers extends Component
             }
 
             foreach ($module['children'] ?? [] as $child) {
+                // Never grant admin-only features to staff
+                if (! empty($child['admin_only'])) {
+                    continue;
+                }
+
                 UserPermission::create([
                     'user_id' => $user->id,
                     'module_key' => $moduleKey,
@@ -227,7 +232,9 @@ class ManageUsers extends Component
 
         foreach ($this->assignableModules() as $module) {
             $key = $module['key'];
-            $childCount = count($module['children'] ?? []);
+            $childCount = collect($module['children'] ?? [])
+                ->reject(fn (array $child) => ! empty($child['admin_only']))
+                ->count();
             $savedCount = $user->permissions->where('module_key', $key)->count();
 
             if ($savedCount > 0) {
