@@ -140,12 +140,16 @@
                             <th>Dates</th>
                             <th>Days</th>
                             <th>Status</th>
+                            <th>Decided by</th>
                             <th>Submitted</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($requests as $req)
-                            <tr>
+                            <tr
+                                x-data="{ status: @js($req->status) }"
+                                x-bind:class="{ 'leave-row--rejected': status === 'rejected' }"
+                            >
                                 <td>{{ $req->leave_type === 'half' ? 'Half day' : 'Full day' }}</td>
                                 <td>
                                     @if ($req->leave_type === 'half' || $req->from_date->equalTo($req->to_date))
@@ -164,11 +168,18 @@
                                     @endif
                                 </td>
                                 <td>{{ ucfirst($req->status) }}</td>
+                                <td>
+                                    @if ($req->status === 'pending')
+                                        —
+                                    @else
+                                        {{ $req->approver?->name ?? '—' }}
+                                    @endif
+                                </td>
                                 <td>{{ format_datetime($req->created_at, 'd M Y, h:i A') }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5">No leave requests yet.</td>
+                                <td colspan="6">No leave requests yet.</td>
                             </tr>
                         @endforelse
                     </tbody>

@@ -6151,3 +6151,54 @@ span.flatpickr-weekday {
         max-width: 100%;
     }
 }
+
+/* Leave Approvals action buttons */
+.leave-approvals__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.leave-approvals__btn {
+    border: 0;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    line-height: 1.2;
+}
+
+.leave-approvals__btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.leave-approvals__btn--ok {
+    background: rgba(34, 197, 94, 0.14);
+    color: #166534;
+    border: 1px solid rgba(34, 197, 94, 0.28);
+}
+
+.leave-approvals__btn--ok:hover:not(:disabled) {
+    background: rgba(34, 197, 94, 0.22);
+}
+
+.leave-approvals__btn--no {
+    background: rgba(239, 68, 68, 0.1);
+    color: #991b1b;
+    border: 1px solid rgba(239, 68, 68, 0.22);
+}
+
+.leave-approvals__btn--no:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.18);
+}
+
+/* Rejected leave row highlight */
+tr.leave-row--rejected {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+tr.leave-row--rejected td {
+    background: transparent;
+}

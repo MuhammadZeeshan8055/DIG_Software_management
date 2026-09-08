@@ -62,6 +62,7 @@ class ApplyLeave extends Component
 
         // This user's leave list (newest first)
         $requests = LeaveRequest::query()
+            ->with('approver')
             ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->limit(30)
