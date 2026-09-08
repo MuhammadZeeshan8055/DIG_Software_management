@@ -3283,6 +3283,109 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     color: #991b1b;
 }
 
+/* Top-right toast — bright brand blue (lighter than sidebar) */
+.admin-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    align-items: stretch;
+    min-width: 260px;
+    max-width: min(360px, calc(100vw - 32px));
+    background: var(--ticket-doc-blue-gradient);
+    color: #fff;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    box-shadow:
+        0 14px 32px rgba(1, 120, 171, 0.35),
+        0 2px 10px rgba(1, 145, 212, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    overflow: hidden;
+}
+
+.admin-toast__accent {
+    width: 4px;
+    flex-shrink: 0;
+    background: linear-gradient(180deg, #ffe566 0%, var(--brand-yellow) 100%);
+}
+
+.admin-toast--error .admin-toast__accent {
+    background: linear-gradient(180deg, #fb7185 0%, #e11d48 100%);
+}
+
+.admin-toast--info .admin-toast__accent {
+    background: linear-gradient(180deg, #7dd3fc 0%, var(--brand-blue) 100%);
+}
+
+.admin-toast__body {
+    flex: 1;
+    padding: 12px 8px 12px 14px;
+}
+
+.admin-toast__title {
+    margin: 0 0 2px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.admin-toast__text {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #fff;
+}
+
+.admin-toast__close {
+    align-self: flex-start;
+    margin: 6px 8px 0 0;
+    border: 0;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+}
+
+.admin-toast__close:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.admin-toast-enter {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.admin-toast-enter-start {
+    opacity: 0;
+    transform: translateY(-8px) translateX(8px);
+}
+
+.admin-toast-enter-end {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+}
+
+.admin-toast-leave {
+    transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.admin-toast-leave-start {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+}
+
+.admin-toast-leave-end {
+    opacity: 0;
+    transform: translateY(-6px) translateX(12px);
+}
+
 .validation-errors,
 .import-ticket__validation-errors {
     margin: 14px 0 0;

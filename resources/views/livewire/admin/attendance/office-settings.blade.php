@@ -11,7 +11,9 @@
             </div>
 
             @if ($successMessage)
-                <p style="padding: 12px 16px; color: #166534;">{{ $successMessage }}</p>
+                <x-admin-toast wire-property="successMessage" :seconds="6">
+                    {{ $successMessage }}
+                </x-admin-toast>
             @endif
 
             <form wire:submit="save" class="manage-users-form" style="padding: 16px;">
