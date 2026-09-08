@@ -13,9 +13,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('attendance_records', function (Blueprint $table) {
-            $table->unsignedInteger('worked_minutes')->default(0)->after('check_out_at');
-        });
+        if (! Schema::hasColumn('attendance_records', 'worked_minutes')) {
+            Schema::table('attendance_records', function (Blueprint $table) {
+                $table->unsignedInteger('worked_minutes')->default(0)->after('check_out_at');
+            });
+        }
 
         // Keep any existing test punches (seconds → whole minutes)
         if (Schema::hasColumn('attendance_records', 'worked_seconds')) {
@@ -28,14 +30,16 @@ return new class extends Migration
             });
         }
 
-        Schema::table('attendance_records', function (Blueprint $table) {
-            if (Schema::hasColumn('attendance_records', 'worked_seconds')) {
-                $table->dropColumn('worked_seconds');
-            }
-            if (Schema::hasColumn('attendance_records', 'overtime_seconds')) {
-                $table->dropColumn('overtime_seconds');
-            }
-        });
+        $drop = array_values(array_filter([
+            Schema::hasColumn('attendance_records', 'worked_seconds') ? 'worked_seconds' : null,
+            Schema::hasColumn('attendance_records', 'overtime_seconds') ? 'overtime_seconds' : null,
+        ]));
+
+        if ($drop !== []) {
+            Schema::table('attendance_records', function (Blueprint $table) use ($drop) {
+                $table->dropColumn($drop);
+            });
+        }
     }
 
     public function down(): void
