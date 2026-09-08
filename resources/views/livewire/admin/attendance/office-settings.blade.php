@@ -71,6 +71,27 @@
                     </div>
                 </div>
 
+                {{-- Leave allowance: company rule for all staff each month --}}
+                <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+                    <h4 class="data-panel__title" style="margin: 0 0 8px;">Leave allowance (per month)</h4>
+                    <p style="margin: 0 0 12px; font-size: 13px; color: #6b7280;">
+                        Same for every staff member. Example: 2 full days + 2 half days.
+                    </p>
+                    <div class="manage-users-form__grid">
+                        <div class="mu-field">
+                            <label class="mu-field__label" for="os-leave-full">Full days allowed</label>
+                            <input id="os-leave-full" type="number" min="0" max="31" class="mu-field__input" wire:model="monthly_full_days">
+                            @error('monthly_full_days') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="mu-field">
+                            <label class="mu-field__label" for="os-leave-half">Half days allowed</label>
+                            <input id="os-leave-half" type="number" min="0" max="62" class="mu-field__input" wire:model="monthly_half_days">
+                            @error('monthly_half_days') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                </div>
+
                 <div style="margin-top: 16px;">
                     <button type="submit" class="hero-btn hero-btn--primary" wire:loading.attr="disabled">
                         <span wire:loading.remove wire:target="save">Save settings</span>

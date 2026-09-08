@@ -6,7 +6,7 @@ use App\Models\AttendanceSetting;
 use Livewire\Component;
 
 /**
- * Admin: office hours + up to 3 IPs.
+ * Admin: office hours + up to 3 IPs + monthly leave allowance.
  */
 class OfficeSettings extends Component
 {
@@ -19,6 +19,11 @@ class OfficeSettings extends Component
     public string $office_ip_1 = '';
     public string $office_ip_2 = '';
     public string $office_ip_3 = '';
+
+    // Company leave allowance (same for every staff member each month)
+    public string $monthly_full_days = '0';
+    public string $monthly_half_days = '0';
+
     public ?string $successMessage = null;
 
     public function mount(): void
@@ -39,6 +44,8 @@ class OfficeSettings extends Component
                 'office_ip_1' => null,
                 'office_ip_2' => null,
                 'office_ip_3' => null,
+                'monthly_full_days' => 0,
+                'monthly_half_days' => 0,
             ]);
         }
     
@@ -56,6 +63,8 @@ class OfficeSettings extends Component
         $this->office_ip_1 = (string) ($settings->office_ip_1 ?? '');
         $this->office_ip_2 = (string) ($settings->office_ip_2 ?? '');
         $this->office_ip_3 = (string) ($settings->office_ip_3 ?? '');
+        $this->monthly_full_days = (string) ($settings->monthly_full_days ?? 0);
+        $this->monthly_half_days = (string) ($settings->monthly_half_days ?? 0);
     }
 
     public function render()
@@ -89,6 +98,8 @@ class OfficeSettings extends Component
             'office_ip_1' => ['nullable', 'ip'],
             'office_ip_2' => ['nullable', 'ip'],
             'office_ip_3' => ['nullable', 'ip'],
+            'monthly_full_days' => ['required', 'integer', 'min:0', 'max:31'],
+            'monthly_half_days' => ['required', 'integer', 'min:0', 'max:62'],
         ]);
 
         $settings = AttendanceSetting::query()->first();
@@ -107,6 +118,8 @@ class OfficeSettings extends Component
             'office_ip_1' => $this->office_ip_1 !== '' ? $this->office_ip_1 : null,
             'office_ip_2' => $this->office_ip_2 !== '' ? $this->office_ip_2 : null,
             'office_ip_3' => $this->office_ip_3 !== '' ? $this->office_ip_3 : null,
+            'monthly_full_days' => (int) $this->monthly_full_days,
+            'monthly_half_days' => (int) $this->monthly_half_days,
         ]);
 
         $this->successMessage = 'Office settings saved.';

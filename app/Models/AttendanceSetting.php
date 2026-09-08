@@ -16,5 +16,7 @@ class AttendanceSetting extends Model
         'office_ip_1',
         'office_ip_2',
         'office_ip_3',
+        'monthly_full_days',
+        'monthly_half_days',
     ];
 }
