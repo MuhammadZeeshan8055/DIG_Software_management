@@ -3286,9 +3286,9 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 /* Top-right toast — bright brand blue (lighter than sidebar) */
 .admin-toast {
     position: fixed;
-    top: 20px;
+    top: calc(var(--header-height) + 12px);
     right: 20px;
-    z-index: 9999;
+    z-index: 10000;
     display: flex;
     align-items: stretch;
     min-width: 260px;
@@ -6033,5 +6033,121 @@ body.ticket-view-modal-open {
     .import-ticket__grid,
     .import-ticket__grid--flight {
         grid-template-columns: 1fr;
+    }
+}
+
+/* ===== Leave date calendar (Flatpickr) ===== */
+.leave-calendar__input {
+    cursor: pointer;
+    background: #fff;
+}
+
+.leave-calendar__hint {
+    margin: 8px 0 0;
+    font-size: 0.82rem;
+    color: var(--brand-navy-light);
+}
+
+.leave-calendar__hint strong {
+    color: var(--brand-navy-dark);
+}
+
+.flatpickr-calendar {
+    border: 1px solid rgba(48, 60, 101, 0.12) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 14px 32px rgba(30, 39, 68, 0.18) !important;
+    font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+.flatpickr-months .flatpickr-month {
+    background: var(--ticket-doc-blue-gradient);
+    color: #fff;
+    border-radius: 12px 12px 0 0;
+    height: 44px;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year {
+    color: #fff !important;
+    font-weight: 600;
+}
+
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+    fill: #fff;
+    color: #fff;
+    padding: 12px 10px;
+}
+
+.flatpickr-months .flatpickr-prev-month:hover svg,
+.flatpickr-months .flatpickr-next-month:hover svg {
+    fill: var(--brand-yellow);
+}
+
+.flatpickr-weekdays {
+    background: rgba(1, 145, 212, 0.08);
+}
+
+span.flatpickr-weekday {
+    color: var(--brand-navy);
+    font-weight: 600;
+}
+
+.flatpickr-day {
+    color: var(--brand-navy);
+    border-radius: 8px;
+}
+
+.flatpickr-day:hover {
+    background: rgba(1, 145, 212, 0.12);
+    border-color: transparent;
+}
+
+.flatpickr-day.today {
+    border-color: var(--brand-blue);
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    background: var(--brand-blue) !important;
+    border-color: var(--brand-blue) !important;
+    color: #fff !important;
+    box-shadow: none;
+}
+
+.flatpickr-day.inRange {
+    background: rgba(1, 145, 212, 0.16) !important;
+    border-color: transparent !important;
+    box-shadow: none;
+    color: var(--brand-navy-dark);
+}
+
+.flatpickr-day.selected.startRange,
+.flatpickr-day.startRange {
+    border-radius: 8px 0 0 8px;
+}
+
+.flatpickr-day.selected.endRange,
+.flatpickr-day.endRange {
+    border-radius: 0 8px 8px 0;
+}
+
+.flatpickr-day.selected.startRange.endRange {
+    border-radius: 8px;
+}
+
+/* Apply Leave form — half width (col-6) on desktop */
+.apply-leave-form {
+    max-width: 50%;
+}
+
+.apply-leave-form__grid {
+    grid-template-columns: 1fr;
+}
+
+@media (max-width: 900px) {
+    .apply-leave-form {
+        max-width: 100%;
     }
 }

@@ -20,6 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     @livewireStyles
 </head>
 <body
@@ -252,6 +253,7 @@
         x-cloak
     ></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     @livewireScripts
 </body>
 </html>

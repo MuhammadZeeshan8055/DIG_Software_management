@@ -96,7 +96,7 @@
         {{-- Module workspace (replaces overview) --}}
         <div
             class="dashboard-view module-workspace"
-            x-show="activeModule && !viewingMyAttendance && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'users' && activeOption !== 'my-daily-attendance'"
+            x-show="activeModule && !viewingMyAttendance && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'users' && activeOption !== 'my-daily-attendance' && activeOption !== 'apply-leave'"
             x-cloak
             x-transition:enter="dash-enter"
             x-transition:enter-start="dash-enter-start"
@@ -207,7 +207,7 @@
                     {{-- Other option tables (static demo data) --}}
                     <div
                         class="module-panel"
-                        x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'my-daily-attendance' && activeOption !== 'office-settings'"
+                        x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'my-daily-attendance' && activeOption !== 'office-settings' && activeOption !== 'apply-leave'"
                         x-cloak
                         x-transition.opacity.duration.200ms
                     >
@@ -292,6 +292,16 @@
             x-transition.opacity.duration.200ms
         >
             <livewire:admin.attendance.office-settings />
+        </div>
+
+        {{-- Apply Leave (Attendance → Apply Leave) --}}
+        <div
+            class="dashboard-view dashboard-view--panel"
+            x-show="activeModule === 'attendance' && activeOption === 'apply-leave'"
+            x-cloak
+            x-transition.opacity.duration.200ms
+        >
+            <livewire:admin.attendance.apply-leave />
         </div>
 
     </div>
