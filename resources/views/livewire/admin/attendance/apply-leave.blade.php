@@ -1,83 +1,83 @@
 <div class="apply-leave-page">
     @if ($denied ?? false)
-        <div class="data-panel">
-            <p>You do not have access to apply leave.</p>
-        </div>
+    <div class="data-panel">
+        <p>You do not have access to apply leave.</p>
+    </div>
     @else
 
-        @if ($balance)
-            <div class="leave-summary">
-                <div class="leave-summary__head">
-                    <div>
-                        <p class="leave-summary__eyebrow">Leave balance</p>
-                        <h3 class="leave-summary__title">{{ $balance['month_label'] }}</h3>
-                    </div>
-                    <p class="leave-summary__allowance">
-                        Monthly allowance
-                        <strong>{{ $balance['allowed_label'] }}</strong>
-                    </p>
+    @if ($balance)
+    <div class="leave-summary">
+        <div class="leave-summary__head">
+            <div>
+                <p class="leave-summary__eyebrow">Leave balance</p>
+                <h3 class="leave-summary__title">{{ $balance['month_label'] }}</h3>
+            </div>
+            <p class="leave-summary__allowance">
+                Monthly allowance
+                <strong>{{ $balance['allowed_label'] }}</strong>
+            </p>
+        </div>
+
+        <div class="leave-summary__grid">
+            <article class="leave-summary__card leave-summary__card--used">
+                <p class="leave-summary__card-label">Used</p>
+                <p class="leave-summary__card-value">{{ $balance['used']['label'] }}</p>
+                <p class="leave-summary__card-hint">Approved this month</p>
+            </article>
+
+            <article class="leave-summary__card leave-summary__card--left">
+                <p class="leave-summary__card-label">Left</p>
+                <p class="leave-summary__card-value">{{ $balance['left']['label'] }}</p>
+                <p class="leave-summary__card-hint">Available to use</p>
+            </article>
+
+            <article class="leave-summary__card leave-summary__card--pending">
+                <p class="leave-summary__card-label">Pending</p>
+                <p class="leave-summary__card-value">{{ $balance['pending_count'] }}</p>
+                <p class="leave-summary__card-hint">Waiting for admin</p>
+            </article>
+        </div>
+    </div>
+    @endif
+
+    @if ($successMessage)
+    <x-admin-toast wire-property="successMessage" :seconds="6">
+        {{ $successMessage }}
+    </x-admin-toast>
+    @endif
+
+    @if ($errorMessage)
+    <x-admin-toast type="error" title="Cannot apply" wire-property="errorMessage" :seconds="6">
+        {{ $errorMessage }}
+    </x-admin-toast>
+    @endif
+
+    <div class="data-panel">
+        <div class="data-panel__head">
+            <h3 class="data-panel__title">New request</h3>
+        </div>
+
+        <form wire:submit="submit" class="manage-users-form apply-leave-form" style="padding: 16px;">
+            <div class="manage-users-form__grid apply-leave-form__grid">
+                <div class="mu-field">
+                    <label class="mu-field__label" for="al-type">Leave type</label>
+                    <select id="al-type" class="mu-field__input" wire:model.live="leave_type">
+                        <option value="full">Full day</option>
+                        <option value="half">Half day</option>
+                    </select>
+                    @error('leave_type') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="leave-summary__grid">
-                    <article class="leave-summary__card leave-summary__card--used">
-                        <p class="leave-summary__card-label">Used</p>
-                        <p class="leave-summary__card-value">{{ $balance['used']['label'] }}</p>
-                        <p class="leave-summary__card-hint">Approved this month</p>
-                    </article>
-
-                    <article class="leave-summary__card leave-summary__card--left">
-                        <p class="leave-summary__card-label">Left</p>
-                        <p class="leave-summary__card-value">{{ $balance['left']['label'] }}</p>
-                        <p class="leave-summary__card-hint">Available to use</p>
-                    </article>
-
-                    <article class="leave-summary__card leave-summary__card--pending">
-                        <p class="leave-summary__card-label">Pending</p>
-                        <p class="leave-summary__card-value">{{ $balance['pending_count'] }}</p>
-                        <p class="leave-summary__card-hint">Waiting for admin</p>
-                    </article>
-                </div>
-            </div>
-        @endif
-
-        @if ($successMessage)
-            <x-admin-toast wire-property="successMessage" :seconds="6">
-                {{ $successMessage }}
-            </x-admin-toast>
-        @endif
-
-        @if ($errorMessage)
-            <x-admin-toast type="error" title="Cannot apply" wire-property="errorMessage" :seconds="6">
-                {{ $errorMessage }}
-            </x-admin-toast>
-        @endif
-
-        <div class="data-panel">
-            <div class="data-panel__head">
-                <h3 class="data-panel__title">New request</h3>
-            </div>
-
-            <form wire:submit="submit" class="manage-users-form apply-leave-form" style="padding: 16px;">
-                <div class="manage-users-form__grid apply-leave-form__grid">
-                    <div class="mu-field">
-                        <label class="mu-field__label" for="al-type">Leave type</label>
-                        <select id="al-type" class="mu-field__input" wire:model.live="leave_type">
-                            <option value="full">Full day</option>
-                            <option value="half">Half day</option>
-                        </select>
-                        @error('leave_type') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
-                    </div>
-
-                    {{-- One calendar: single day (half) or date range (full) --}}
-                    <div class="mu-field" wire:key="leave-calendar-{{ $leave_type }}">
-                        <label class="mu-field__label" for="al-calendar">
-                            {{ $leave_type === 'half' ? 'Select date' : 'Select date range' }}
-                        </label>
-                        <div
-                            class="leave-calendar"
-                            wire:ignore
-                            x-data
-                            x-init="
+                {{-- One calendar: single day (half) or date range (full) --}}
+                <div class="mu-field" wire:key="leave-calendar-{{ $leave_type }}">
+                    <label class="mu-field__label" for="al-calendar">
+                        {{ $leave_type === 'half' ? 'Select date' : 'Select date range' }}
+                    </label>
+                    <div
+                        class="leave-calendar"
+                        wire:ignore
+                        x-data
+                        x-init="
                                 const mode = @js($leave_type === 'half' ? 'single' : 'range');
                                 const defaults = @js(
                                     $leave_type === 'half'
@@ -117,106 +117,113 @@
                                         $wire.set('to_date', end);
                                     }
                                 });
-                            "
-                        >
-                            <input
-                                id="al-calendar"
-                                x-ref="calInput"
-                                type="text"
-                                class="mu-field__input leave-calendar__input"
-                                placeholder="{{ $leave_type === 'half' ? 'Pick a date' : 'Pick from – to dates' }}"
-                                readonly
-                            >
-                        </div>
-                        @error('from_date') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
-                        @error('to_date') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
-                        @if ($leave_type === 'full' && $from_date && $to_date)
-                            <p class="leave-calendar__hint">
-                                Selected:
-                                <strong>{{ \Carbon\Carbon::parse($from_date)->format('d M Y') }}</strong>
-                                –
-                                <strong>{{ \Carbon\Carbon::parse($to_date)->format('d M Y') }}</strong>
-                            </p>
-                        @endif
+                            ">
+                        <input
+                            id="al-calendar"
+                            x-ref="calInput"
+                            type="text"
+                            class="mu-field__input leave-calendar__input"
+                            placeholder="{{ $leave_type === 'half' ? 'Pick a date' : 'Pick from – to dates' }}"
+                            readonly>
                     </div>
-
-                    <div class="mu-field">
-                        <label class="mu-field__label" for="al-reason">Reason (optional)</label>
-                        <input id="al-reason" type="text" class="mu-field__input" wire:model="reason" placeholder="e.g. Personal work" maxlength="255">
-                        @error('reason') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
-                    </div>
+                    @error('from_date') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
+                    @error('to_date') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
+                    @if ($leave_type === 'full' && $from_date && $to_date)
+                    <p class="leave-calendar__hint">
+                        Selected:
+                        <strong>{{ \Carbon\Carbon::parse($from_date)->format('d M Y') }}</strong>
+                        –
+                        <strong>{{ \Carbon\Carbon::parse($to_date)->format('d M Y') }}</strong>
+                    </p>
+                    @endif
                 </div>
 
-                <div style="margin-top: 16px;">
-                    <button type="submit" class="hero-btn hero-btn--primary" wire:loading.attr="disabled">
-                        <span wire:loading.remove wire:target="submit">Submit request</span>
-                        <span wire:loading wire:target="submit">Submitting…</span>
-                    </button>
+                <div class="mu-field">
+                    <label class="mu-field__label" for="al-reason">Reason (optional)</label>
+                    <input id="al-reason" type="text" class="mu-field__input" wire:model="reason" placeholder="e.g. Personal work" maxlength="255">
+                    @error('reason') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
                 </div>
-            </form>
-        </div>
+            </div>
 
-        <div class="data-panel" style="margin-top: 16px;">
-            <div class="data-panel__head">
-                <h3 class="data-panel__title">My leave requests</h3>
+            <div style="margin-top: 16px;">
+                <button type="submit" class="hero-btn hero-btn--primary" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="submit">Submit request</span>
+                    <span wire:loading wire:target="submit">Submitting…</span>
+                </button>
             </div>
-            <div class="data-table-wrap">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th>Dates</th>
-                            <th>Days</th>
-                            <th>Status</th>
-                            <th>Decided by</th>
-                            <th>Submitted</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($requests as $req)
-                            <tr
-                                x-data="{ status: @js($req->status) }"
-                                x-bind:class="{ 'leave-row--rejected': status === 'rejected' }"
-                            >
-                                <td>{{ $req->leave_type === 'half' ? 'Half day' : 'Full day' }}</td>
-                                <td>
-                                    @if ($req->leave_type === 'half' || $req->from_date->equalTo($req->to_date))
-                                        {{ format_date($req->from_date, 'd M Y') }}
-                                    @else
-                                        {{ format_date($req->from_date, 'd M Y') }}
-                                        –
-                                        {{ format_date($req->to_date, 'd M Y') }}
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($req->leave_type === 'half')
-                                        {{ $req->half_days }} half
-                                    @else
-                                        {{ $req->full_days }} full
-                                    @endif
-                                </td>
-                                <td>
-                                    <span class="leave-status leave-status--{{ $req->status }}">
-                                        {{ ucfirst($req->status) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    @if ($req->status === 'pending')
-                                        —
-                                    @else
-                                        {{ $req->approver?->name ?? '—' }}
-                                    @endif
-                                </td>
-                                <td>{{ format_datetime($req->created_at, 'd M Y, h:i A') }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6">No leave requests yet.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+        </form>
+    </div>
+
+    <div class="data-panel" style="margin-top: 16px;">
+        <div class="data-panel__head">
+            <h3 class="data-panel__title">My leave requests</h3>
         </div>
+        <div class="data-table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Dates</th>
+                        <th>Days</th>
+                        <th>Reason</th>
+                        <th>Pay</th>
+                        <th>Status</th>
+                        <th>Decided by</th>
+                        <th>Submitted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($requests as $req)
+                    <tr x-bind:class="{ 'leave-row--rejected': @js($req->status === 'rejected' || $req->isLatePenalty()) }">
+                        <td>{{ $req->leave_type === 'half' ? 'Half day' : 'Full day' }}</td>
+                        <td>
+                            @if ($req->leave_type === 'half' || $req->from_date->equalTo($req->to_date))
+                            {{ format_date($req->from_date, 'd M Y') }}
+                            @else
+                            {{ format_date($req->from_date, 'd M Y') }}
+                            –
+                            {{ format_date($req->to_date, 'd M Y') }}
+                            @endif
+                        </td>
+                        <td>
+                            @if ($req->leave_type === 'half')
+                            {{ $req->half_days }} half
+                            @else
+                            {{ $req->full_days }} full
+                            @endif
+                        </td>
+                        <td>{{ ($req->reason) ?: '—' }}</td>
+                        <td>
+                            @if ($req->is_paid)
+                            <span class="leave-pay leave-pay--paid">Paid</span>
+                            @else
+                            <span class="leave-pay leave-pay--unpaid">Unpaid</span>
+                            @endif
+                        </td>
+                        <td>
+                            <span class="leave-status leave-status--{{ $req->status }}">
+                                {{ ucfirst($req->status) }}
+                            </span>
+                        </td>
+                        <td>
+                            @if ($req->status === 'pending')
+                            —
+                            @elseif ($req->isLatePenalty())
+                            System
+                            @else
+                            {{ $req->approver?->name ?? '—' }}
+                            @endif
+                        </td>
+                        <td>{{ format_datetime($req->created_at, 'd M Y, h:i A') }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="8">No leave requests yet.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
     @endif
 </div>

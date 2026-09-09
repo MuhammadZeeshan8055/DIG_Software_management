@@ -6414,6 +6414,25 @@ tr.leave-row--rejected td {
     color: #991b1b;
 }
 
+.leave-pay {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.leave-pay--paid {
+    background: rgba(34, 197, 94, 0.14);
+    color: #166534;
+}
+
+.leave-pay--unpaid {
+    background: rgba(245, 158, 11, 0.18);
+    color: #b45309;
+}
+
 @media (max-width: 800px) {
     .leave-summary__grid {
         grid-template-columns: 1fr;
