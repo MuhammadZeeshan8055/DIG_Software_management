@@ -41,17 +41,17 @@
                 <tbody>
                     @forelse ($rows as $row)
                         <tr @class([
-                            'my-att-row--green' => $row['color'] === 'green',
-                            'my-att-row--red' => $row['color'] === 'red',
+                            'my-att-row--ok' => $row['row'] === 'ok' || $row['row'] === 'leave-ok',
+                            'my-att-row--bad' => $row['row'] === 'incomplete' || $row['row'] === 'leave-pending',
                         ])>
                             <td>{{ $row['date'] }}</td>
                             <td>{{ $row['check_in'] }}</td>
                             <td>{{ $row['check_out'] }}</td>
                             <td>{{ $row['worked'] }}</td>
                             <td>
-                                @if ($row['color'] === 'green')
+                                @if ($row['row'] === 'ok' || $row['row'] === 'leave-ok')
                                     <span class="my-att-status my-att-status--green">{{ $row['status'] }}</span>
-                                @elseif ($row['color'] === 'red')
+                                @elseif ($row['row'] === 'incomplete' || $row['row'] === 'leave-pending')
                                     <span class="my-att-status my-att-status--red">{{ $row['status'] }}</span>
                                 @else
                                     <span class="my-att-status">{{ $row['status'] }}</span>
@@ -60,7 +60,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5">No attendance records for this month.</td>
+                            <td colspan="5">No days to show for this month.</td>
                         </tr>
                     @endforelse
                 </tbody>

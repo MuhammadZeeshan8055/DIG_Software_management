@@ -906,6 +906,16 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     color: #b91c1c;
 }
 
+/* Complete / approved leave */
+.my-att-row--ok {
+    background: rgba(34, 197, 94, 0.1);
+}
+
+/* Incomplete shift / pending leave */
+.my-att-row--bad {
+    background: rgba(239, 68, 68, 0.1);
+}
+
 .my-att-status {
     display: inline-block;
     font-weight: 600;
