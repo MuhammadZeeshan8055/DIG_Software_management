@@ -26,11 +26,13 @@
 <body
     class="admin-body"
     @open-my-attendance.window="openMyAttendance()"
+    @open-my-account.window="openMyAccount()"
     x-data="{
         sidebarOpen: false,
         activeModule: null,
         activeOption: null,
         viewingMyAttendance: false,
+        viewingMyAccount: false,
         modules: @js($modulesMap),
         workspace: @js($workspace),
         lastPageKey: 'dhothar_last_page',
@@ -44,6 +46,11 @@
         saveLastPage() {
             if (this.viewingMyAttendance) {
                 localStorage.setItem(this.lastPageKey, JSON.stringify({ view: 'my-attendance' }));
+                return;
+            }
+
+            if (this.viewingMyAccount) {
+                localStorage.setItem(this.lastPageKey, JSON.stringify({ view: 'my-account' }));
                 return;
             }
 
@@ -75,11 +82,20 @@
 
             if (page.view === 'my-attendance') {
                 this.viewingMyAttendance = true;
+                this.viewingMyAccount = false;
                 this.activeModule = null;
                 this.activeOption = null;
                 this.$nextTick(() => {
                     window.dispatchEvent(new CustomEvent('my-attendance-opened'));
                 });
+                return;
+            }
+
+            if (page.view === 'my-account') {
+                this.viewingMyAccount = true;
+                this.viewingMyAttendance = false;
+                this.activeModule = null;
+                this.activeOption = null;
                 return;
             }
 
@@ -157,6 +173,7 @@
             if (!key || !this.modules[key]) return;
             window.dispatchEvent(new CustomEvent('close-ticket-view'));
             this.viewingMyAttendance = false;
+            this.viewingMyAccount = false;
             this.activeModule = key;
             this.activeOption = null;
             this.saveLastPage();
@@ -169,11 +186,21 @@
             this.activeModule = null;
             this.activeOption = null;
             this.sidebarOpen = false;
+            this.viewingMyAccount = false;
             this.viewingMyAttendance = true;
             this.saveLastPage();
             this.$nextTick(() => {
                 window.dispatchEvent(new CustomEvent('my-attendance-opened'));
             });
+        },
+        openMyAccount() {
+            window.dispatchEvent(new CustomEvent('close-ticket-view'));
+            this.activeModule = null;
+            this.activeOption = null;
+            this.sidebarOpen = false;
+            this.viewingMyAttendance = false;
+            this.viewingMyAccount = true;
+            this.saveLastPage();
         },
         closeMyAttendance() {
             this.viewingMyAttendance = false;
@@ -184,6 +211,7 @@
             this.activeModule = null;
             this.activeOption = null;
             this.viewingMyAttendance = false;
+            this.viewingMyAccount = false;
             this.sidebarOpen = false;
             this.saveLastPage();
         },
@@ -192,6 +220,7 @@
                 window.dispatchEvent(new CustomEvent('close-ticket-view'));
             }
             this.viewingMyAttendance = false;
+            this.viewingMyAccount = false;
             this.activeOption = key;
             this.saveLastPage();
             if (key === 'import-ticket-details') {
@@ -238,7 +267,7 @@
     --}}
     <div
         class="manage-users-layer"
-        x-show="activeModule === 'settings' && activeOption === 'users' && !viewingMyAttendance"
+        x-show="activeModule === 'settings' && activeOption === 'users' && !viewingMyAttendance && !viewingMyAccount"
         x-cloak
         x-transition.opacity.duration.200ms
     >

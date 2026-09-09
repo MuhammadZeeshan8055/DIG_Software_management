@@ -7,7 +7,7 @@
         {{-- Main overview (default) --}}
         <div
             class="dashboard-view"
-            x-show="!activeModule && !viewingMyAttendance"
+            x-show="!activeModule && !viewingMyAttendance && !viewingMyAccount"
             x-transition:enter="dash-enter"
             x-transition:enter-start="dash-enter-start"
             x-transition:enter-end="dash-enter-end"
@@ -96,7 +96,7 @@
         {{-- Module workspace (replaces overview) --}}
         <div
             class="dashboard-view module-workspace"
-            x-show="activeModule && !viewingMyAttendance && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'users' && activeOption !== 'my-daily-attendance' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays'"
+            x-show="activeModule && !viewingMyAttendance && !viewingMyAccount && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'users' && activeOption !== 'my-daily-attendance' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays'"
             x-cloak
             x-transition:enter="dash-enter"
             x-transition:enter-start="dash-enter-start"
@@ -253,7 +253,7 @@
         {{-- Import Ticket Details (Livewire — must be in page HTML on load, not inside Alpine x-if) --}}
         <div
             class="dashboard-view dashboard-view--panel"
-            x-show="activeModule === 'ticketing' && activeOption === 'import-ticket-details' && !viewingMyAttendance"
+            x-show="activeModule === 'ticketing' && activeOption === 'import-ticket-details' && !viewingMyAttendance && !viewingMyAccount"
             x-cloak
             x-transition.opacity.duration.200ms
         >
@@ -263,7 +263,7 @@
         {{-- Accounts → Payments (Livewire) --}}
         <div
             class="dashboard-view dashboard-view--panel"
-            x-show="activeModule === 'accounts' && activeOption === 'payments' && !viewingMyAttendance"
+            x-show="activeModule === 'accounts' && activeOption === 'payments' && !viewingMyAttendance && !viewingMyAccount"
             x-cloak
             x-transition.opacity.duration.200ms
         >
@@ -273,7 +273,7 @@
         {{-- Accounts → Bank Accounts (Livewire) --}}
         <div
             class="dashboard-view dashboard-view--panel"
-            x-show="activeModule === 'accounts' && activeOption === 'bank-accounts' && !viewingMyAttendance"
+            x-show="activeModule === 'accounts' && activeOption === 'bank-accounts' && !viewingMyAttendance && !viewingMyAccount"
             x-cloak
             x-transition.opacity.duration.200ms
         >
@@ -283,7 +283,7 @@
         {{-- My Daily Attendance (profile menu OR Attendance module) --}}
         <div
             class="dashboard-view dashboard-view--panel"
-            x-show="viewingMyAttendance || (activeModule === 'attendance' && activeOption === 'my-daily-attendance')"
+            x-show="(viewingMyAttendance || (activeModule === 'attendance' && activeOption === 'my-daily-attendance')) && !viewingMyAccount"
             x-cloak
             x-transition.opacity.duration.200ms
         >
@@ -323,11 +323,21 @@
         {{-- Holidays (Attendance → Holidays) — admin / super_admin only --}}
         <div
             class="dashboard-view dashboard-view--panel"
-            x-show="activeModule === 'attendance' && activeOption === 'holidays'"
+            x-show="activeModule === 'attendance' && activeOption === 'holidays' && !viewingMyAccount"
             x-cloak
             x-transition.opacity.duration.200ms
         >
             <livewire:admin.attendance.manage-holidays />
+        </div>
+
+        {{-- My Account (profile menu) — email / password --}}
+        <div
+            class="dashboard-view dashboard-view--panel"
+            x-show="viewingMyAccount"
+            x-cloak
+            x-transition.opacity.duration.200ms
+        >
+            <livewire:admin.settings.my-account />
         </div>
 
     </div>

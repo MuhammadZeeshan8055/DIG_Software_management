@@ -10,17 +10,20 @@
 
         <div class="admin-header__titles">
             <p class="admin-header__breadcrumb">
-                <span x-text="viewingMyAttendance
+                <span x-text="viewingMyAccount
+                    ? 'Employee Portal / My Account'
+                    : (viewingMyAttendance
                     ? 'Employee Portal / My Attendance'
                     : (activeModule
                         ? (activeOption ? 'Employee Portal / Module / Option' : 'Employee Portal / Module')
-                        : '{{ implode(' / ', $breadcrumb ?? ['Employee Portal']) }}')"></span>
+                        : '{{ implode(' / ', $breadcrumb ?? ['Employee Portal']) }}'))"></span>
             </p>
             <h1 class="admin-header__title">
+                <span x-show="viewingMyAccount" x-cloak>My Account</span>
                 <span x-show="viewingMyAttendance || (activeModule === 'attendance' && activeOption === 'my-daily-attendance')" x-cloak>My Daily Attendance</span>
-                <span x-show="!activeModule && !viewingMyAttendance">{{ $pageTitle ?? 'Dashboard' }}</span>
+                <span x-show="!activeModule && !viewingMyAttendance && !viewingMyAccount">{{ $pageTitle ?? 'Dashboard' }}</span>
                 <span
-                    x-show="activeModule && !viewingMyAttendance && activeOption !== 'my-daily-attendance'"
+                    x-show="activeModule && !viewingMyAttendance && !viewingMyAccount && activeOption !== 'my-daily-attendance'"
                     x-cloak
                     x-text="currentTable()?.title || currentModule()?.title || 'Module'"
                 ></span>
@@ -73,6 +76,13 @@
             </button>
 
             <div class="admin-header__profile-menu" x-show="open" x-cloak x-transition.opacity.duration.150ms>
+                <button
+                    type="button"
+                    class="admin-header__profile-item"
+                    @click="open = false; $dispatch('open-my-account')"
+                >
+                    My Account
+                </button>
                 <button
                     type="button"
                     class="admin-header__profile-item"
