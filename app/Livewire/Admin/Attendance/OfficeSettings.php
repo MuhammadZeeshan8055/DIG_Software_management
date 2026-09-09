@@ -24,6 +24,9 @@ class OfficeSettings extends Component
     public string $monthly_full_days = '0';
     public string $monthly_half_days = '0';
 
+    // Late after office_start + this many minutes (e.g. 10:00 + 15 = 10:15)
+    public string $grace_minutes = '15';
+
     public ?string $successMessage = null;
 
     public function mount(): void
@@ -46,6 +49,7 @@ class OfficeSettings extends Component
                 'office_ip_3' => null,
                 'monthly_full_days' => 0,
                 'monthly_half_days' => 0,
+                'grace_minutes' => 15,
             ]);
         }
     
@@ -65,6 +69,7 @@ class OfficeSettings extends Component
         $this->office_ip_3 = (string) ($settings->office_ip_3 ?? '');
         $this->monthly_full_days = (string) ($settings->monthly_full_days ?? 0);
         $this->monthly_half_days = (string) ($settings->monthly_half_days ?? 0);
+        $this->grace_minutes = (string) ($settings->grace_minutes ?? 15);
     }
 
     public function render()
@@ -100,6 +105,7 @@ class OfficeSettings extends Component
             'office_ip_3' => ['nullable', 'ip'],
             'monthly_full_days' => ['required', 'integer', 'min:0', 'max:31'],
             'monthly_half_days' => ['required', 'integer', 'min:0', 'max:62'],
+            'grace_minutes' => ['required', 'integer', 'min:0', 'max:60'],
         ]);
 
         $settings = AttendanceSetting::query()->first();
@@ -120,7 +126,9 @@ class OfficeSettings extends Component
             'office_ip_3' => $this->office_ip_3 !== '' ? $this->office_ip_3 : null,
             'monthly_full_days' => (int) $this->monthly_full_days,
             'monthly_half_days' => (int) $this->monthly_half_days,
+            'grace_minutes' => (int) $this->grace_minutes,
         ]);
+        
 
         $this->successMessage = 'Office settings saved.';
     }

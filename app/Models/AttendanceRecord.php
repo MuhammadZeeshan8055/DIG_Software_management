@@ -14,6 +14,8 @@ class AttendanceRecord extends Model
         'check_out_at',
         'worked_minutes',
         'status_color',
+        'is_late',
+        'is_early',
     ];
 
     protected function casts(): array
