@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Attendance;
 
 use App\Models\AttendanceRecord;
+use App\Models\Holiday;
 use App\Models\LeaveRequest;
 use App\Support\AttendancePunch;
 use Carbon\Carbon;
@@ -15,6 +16,8 @@ use Livewire\Component;
  * - current month → day 1 until today
  * - past month    → full month
  * - future month  → empty
+ *
+ * Sundays + saved holidays show as Holiday (off).
  */
 class MyDailyAttendance extends Component
 {
@@ -76,6 +79,14 @@ class MyDailyAttendance extends Component
             ->whereDate('to_date', '>=', $firstDate)
             ->get();
 
+        // Saved public holidays this month (key = date string)
+        $holidays = Holiday::query()
+            ->whereBetween('date', [$firstDate, $lastDateInMonth])
+            ->get()
+            ->keyBy(function ($holiday) {
+                return $holiday->date->toDateString();
+            });
+
         // Build rows: day 1, day 2, ... stopDay
         $rows = [];
 
@@ -84,11 +95,10 @@ class MyDailyAttendance extends Component
 
             $record = $records->get($date);
             $leave = $this->findLeaveOnDate($leaves, $date);
+            $holidayLabel = $this->holidayLabelFor($date, $holidays->get($date));
 
-            $rows[] = $this->makeRow($date, $record, $leave);
+            $rows[] = $this->makeRow($date, $record, $leave, $holidayLabel);
         }
-        
-        $rows = $rows;
 
         $monthLabel = Carbon::parse($firstDate, app_timezone())->format('F Y');
 
@@ -96,6 +106,29 @@ class MyDailyAttendance extends Component
             'rows' => $rows,
             'monthLabel' => $monthLabel,
         ]);
+    }
+
+    /**
+     * Sunday → "Sunday (Off)"
+     * Saved holiday → its title (and Sunday note if both)
+     */
+    protected function holidayLabelFor(string $date, ?Holiday $holiday): ?string
+    {
+        $isSunday = Carbon::parse($date, app_timezone())->isSunday();
+
+        if ($holiday && $isSunday) {
+            return $holiday->title.' · Sunday';
+        }
+
+        if ($holiday) {
+            return $holiday->title;
+        }
+
+        if ($isSunday) {
+            return 'Sunday (Off)';
+        }
+
+        return null;
     }
 
     /**
@@ -135,9 +168,23 @@ class MyDailyAttendance extends Component
     /**
      * One table row for one date.
      */
-    protected function makeRow(string $date, ?AttendanceRecord $record, ?LeaveRequest $leave): array
+    protected function makeRow(string $date, ?AttendanceRecord $record, ?LeaveRequest $leave, ?string $holidayLabel = null): array
     {
         $dateLabel = format_date($date, 'd M Y');
+
+        // --- Holiday / Sunday off ---
+        if ($holidayLabel !== null) {
+            return [
+                'date' => $dateLabel,
+                'check_in' => 'Holiday',
+                'check_out' => '—',
+                'worked' => 'Off',
+                'status' => $holidayLabel,
+                'row' => 'holiday',
+                'is_late' => false,
+                'is_early' => false,
+            ];
+        }
 
         // --- On leave ---
         if ($leave !== null) {

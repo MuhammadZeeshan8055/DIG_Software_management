@@ -916,6 +916,10 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     background: rgba(239, 68, 68, 0.1);
 }
 
+.my-att-row--holiday {
+    background: rgba(100, 116, 139, 0.12);
+}
+
 .my-att-status {
     display: inline-block;
     font-weight: 600;
@@ -928,6 +932,10 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 
 .my-att-status--red {
     color: #dc2626;
+}
+
+.my-att-status--holiday {
+    color: #475569;
 }
 
 .my-att-flag {

@@ -494,10 +494,8 @@ return [
             ],
             'holidays' => [
                 'title' => 'Holidays',
-                'columns' => ['Status'],
-                'rows' => [
-                    ['Holiday list will be added in a later step.'],
-                ],
+                'columns' => [],
+                'rows' => [],
             ],
         ],
     ],
