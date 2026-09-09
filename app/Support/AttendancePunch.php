@@ -88,8 +88,22 @@ class AttendancePunch
             return self::fail('You already started your shift today.');
         }
 
-        // Step 4 — punch in
+        // Step 4 — check if late
         $record->check_in_at = Carbon::now(app_timezone());
+
+        // Step 5 — check if late
+        $settings = AttendanceSetting::query()->first();
+
+        $isLate = false;
+
+        if ($settings && $settings->office_start) {
+            $lateAfter = Carbon::parse(
+                self::todayDate().' '.$settings->office_start,
+                app_timezone()
+            )->addMinutes((int) ($settings->grace_minutes ?? 0));
+            $isLate = $record->check_in_at->gt($lateAfter);
+        }
+        $record->is_late = $isLate;
         $record->save();
 
         return self::ok(
@@ -129,6 +143,22 @@ class AttendancePunch
 
         $record->check_out_at = $checkOut;
         $record->worked_minutes = $minutes;
+
+        // Step 4 — early if checkout is before office_end − grace
+        $settings = AttendanceSetting::query()->first();
+        $isEarly = false;
+
+        if ($settings && $settings->office_end) {
+            $earliestOk = Carbon::parse(
+                self::todayDate().' '.$settings->office_end,
+                app_timezone()
+            )->subMinutes((int) ($settings->grace_minutes ?? 0));
+
+            $isEarly = $record->check_out_at->lt($earliestOk);
+        }
+
+        $record->is_early = $isEarly;
+        
         // Green = met required day hours; red = short
         $record->status_color = self::colorForWorkedMinutes($minutes);
         $record->save();
