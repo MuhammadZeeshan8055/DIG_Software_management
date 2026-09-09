@@ -107,6 +107,11 @@ class MyDailyAttendance extends Component
         $pending = null;
 
         foreach ($leaves as $leave) {
+            // Late penalty is not a day off — keep showing attendance
+            if ($leave->isLatePenalty()) {
+                continue;
+            }
+
             $from = $leave->from_date->toDateString();
             $to = $leave->to_date->toDateString();
 

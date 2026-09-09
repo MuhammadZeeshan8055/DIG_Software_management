@@ -42,10 +42,17 @@ class LeaveRequest extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    /** Auto half-day cut for 4th late — not a real day off. */
+    public function isLatePenalty(): bool
+    {
+        return is_string($this->reason) && str_starts_with($this->reason, 'Late penalty');
+    }
+
     /**
      * Simple check: does this user have APPROVED leave on this day?
      *
      * Example: leave from 9 Sep to 10 Sep, today is 9 Sep → true
+     * Late penalty rows are ignored (they still worked that day).
      */
     public static function isOnApprovedLeave(int $userId, ?string $date = null): bool
     {
@@ -56,11 +63,16 @@ class LeaveRequest extends Model
 
         // Find one approved leave where:
         // from_date <= today  AND  to_date >= today
+        // Skip late-penalty rows — staff can still punch in/out
         $leave = self::query()
             ->where('user_id', $userId)
             ->where('status', 'approved')
             ->whereDate('from_date', '<=', $date)
             ->whereDate('to_date', '>=', $date)
+            ->where(function ($q) {
+                $q->whereNull('reason')
+                    ->orWhere('reason', 'not like', 'Late penalty%');
+            })
             ->first();
 
         // true if we found a row, false if not
@@ -77,6 +89,7 @@ class LeaveRequest extends Model
      *
      * Overlap rule (easy):
      * existing.from <= new.to  AND  existing.to >= new.from
+     * Late penalty does not block applying real leave.
      */
     public static function hasOverlap(int $userId, string $fromDate, string $toDate): bool
     {
@@ -85,6 +98,10 @@ class LeaveRequest extends Model
             ->whereIn('status', ['pending', 'approved'])
             ->whereDate('from_date', '<=', $toDate)
             ->whereDate('to_date', '>=', $fromDate)
+            ->where(function ($q) {
+                $q->whereNull('reason')
+                    ->orWhere('reason', 'not like', 'Late penalty%');
+            })
             ->first();
 
         if ($leave) {
