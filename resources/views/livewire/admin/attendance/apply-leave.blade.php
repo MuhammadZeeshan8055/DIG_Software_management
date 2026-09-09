@@ -1,4 +1,4 @@
-<div class="apply-leave-page">
+<div class="apply-leave-page" wire:poll.10s.visible="poll">
     @if ($denied ?? false)
     <div class="data-panel">
         <p>You do not have access to apply leave.</p>
@@ -194,7 +194,9 @@
                         </td>
                         <td>{{ ($req->reason) ?: '—' }}</td>
                         <td>
-                            @if ($req->is_paid)
+                            @if ($req->status !== 'approved')
+                            —
+                            @elseif ($req->is_paid)
                             <span class="leave-pay leave-pay--paid">Paid</span>
                             @else
                             <span class="leave-pay leave-pay--unpaid">Unpaid</span>

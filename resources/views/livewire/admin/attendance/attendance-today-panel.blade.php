@@ -1,4 +1,4 @@
-<aside class="dashboard-hero__panel dashboard-reveal" style="--reveal-delay: 120ms">
+<aside class="dashboard-hero__panel dashboard-reveal" style="--reveal-delay: 120ms" wire:poll.10s.visible>
     <p class="dashboard-hero__panel-label">Current Workday</p>
     <p class="dashboard-hero__panel-date">{{ $todayLabel }}</p>
 

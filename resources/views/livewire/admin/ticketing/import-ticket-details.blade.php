@@ -1,5 +1,6 @@
 <div
     class="import-ticket"
+    wire:poll.15s.visible
     @import-ticket-panel-opened.window="$wire.$refresh()"
     @close-ticket-view.window="$wire.closeView()"
     x-data

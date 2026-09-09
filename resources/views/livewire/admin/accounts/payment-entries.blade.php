@@ -1,4 +1,4 @@
-<div class="payment-entries-page" @payments-panel-opened.window="$wire.$refresh()">
+<div class="payment-entries-page" wire:poll.15s.visible @payments-panel-opened.window="$wire.$refresh()">
     <section class="module-workspace__hero" style="margin-bottom: 16px;">
         <div class="module-workspace__hero-main">
             <p class="module-workspace__eyebrow">

@@ -1,4 +1,4 @@
-<div class="leave-approvals-page">
+<div class="leave-approvals-page" wire:poll.10s.visible="poll">
     @if ($denied ?? false)
         <div class="data-panel">
             <p>Only admin or super admin can approve leave.</p>

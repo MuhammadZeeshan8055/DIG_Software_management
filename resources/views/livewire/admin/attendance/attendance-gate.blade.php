@@ -1,4 +1,4 @@
-<div class="att-checkin">
+<div class="att-checkin" wire:poll.10s.visible>
     <div class="att-checkin__orb att-checkin__orb--one" aria-hidden="true"></div>
     <div class="att-checkin__orb att-checkin__orb--two" aria-hidden="true"></div>
 
