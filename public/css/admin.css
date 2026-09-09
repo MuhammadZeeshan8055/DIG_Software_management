@@ -6426,3 +6426,24 @@ tr.leave-row--rejected td {
     line-height: 1.4;
     color: rgba(255, 255, 255, 0.78);
 }
+
+/* Office settings: col-8 (main) + col-4 (side) */
+.office-settings-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.office-settings-layout__side {
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(1, 145, 212, 0.04);
+    border: 1px solid rgba(48, 60, 101, 0.1);
+}
+
+@media (max-width: 900px) {
+    .office-settings-layout {
+        grid-template-columns: 1fr;
+    }
+}
