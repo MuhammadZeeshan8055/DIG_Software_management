@@ -45,8 +45,18 @@
                             'my-att-row--bad' => $row['row'] === 'incomplete' || $row['row'] === 'leave-pending',
                         ])>
                             <td>{{ $row['date'] }}</td>
-                            <td>{{ $row['check_in'] }}</td>
-                            <td>{{ $row['check_out'] }}</td>
+                            <td>
+                                {{ $row['check_in'] }}
+                                @if (! empty($row['is_late']))
+                                    <span class="my-att-flag my-att-flag--late">Late</span>
+                                @endif
+                            </td>
+                            <td>
+                                {{ $row['check_out'] }}
+                                @if (! empty($row['is_early']))
+                                    <span class="my-att-flag my-att-flag--early">Early</span>
+                                @endif
+                            </td>
                             <td>{{ $row['worked'] }}</td>
                             <td>
                                 @if ($row['row'] === 'ok' || $row['row'] === 'leave-ok')

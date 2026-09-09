@@ -930,6 +930,27 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     color: #dc2626;
 }
 
+.my-att-flag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    vertical-align: middle;
+}
+
+.my-att-flag--late {
+    color: #b45309;
+    background: rgba(245, 158, 11, 0.18);
+}
+
+.my-att-flag--early {
+    color: #1d4ed8;
+    background: rgba(59, 130, 246, 0.16);
+}
+
 .admin-header__icon-btn {
     position: relative;
     width: 34px;

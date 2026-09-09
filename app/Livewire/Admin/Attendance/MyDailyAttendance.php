@@ -145,6 +145,8 @@ class MyDailyAttendance extends Component
                 'worked' => '—',
                 'status' => $isApproved ? 'On leave' : 'Leave pending',
                 'row' => $isApproved ? 'leave-ok' : 'leave-pending',
+                'is_late' => false,
+                'is_early' => false,
             ];
         }
 
@@ -157,6 +159,8 @@ class MyDailyAttendance extends Component
                 'worked' => '—',
                 'status' => '—',
                 'row' => 'empty',
+                'is_late' => false,
+                'is_early' => false,
             ];
         }
 
@@ -169,6 +173,8 @@ class MyDailyAttendance extends Component
                 'worked' => 'In progress',
                 'status' => 'Running',
                 'row' => 'incomplete',
+                'is_late' => (bool) $record->is_late,
+                'is_early' => false,
             ];
         }
 
@@ -192,6 +198,8 @@ class MyDailyAttendance extends Component
             'worked' => sprintf('%dh %dm', intdiv($minutes, 60), $minutes % 60),
             'status' => $color === 'green' ? 'Met hours' : 'Short hours',
             'row' => $color === 'green' ? 'ok' : 'incomplete',
+            'is_late' => (bool) $record->is_late,
+            'is_early' => (bool) $record->is_early,
         ];
     }
 }

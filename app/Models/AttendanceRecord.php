@@ -24,6 +24,8 @@ class AttendanceRecord extends Model
             'work_date' => 'date',
             'check_in_at' => 'datetime',
             'check_out_at' => 'datetime',
+            'is_late' => 'boolean',
+            'is_early' => 'boolean',
         ];
     }
 
