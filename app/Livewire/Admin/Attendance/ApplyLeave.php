@@ -26,41 +26,12 @@ class ApplyLeave extends Component
 
     public ?string $errorMessage = null;
 
-    /** Fingerprint of my leave rows — poll uses this to detect admin decisions */
-    public ?string $requestsFingerprint = null;
-
     public function mount(): void
     {
         // Default dates = today (app timezone)
         $today = Carbon::now(app_timezone())->toDateString();
         $this->from_date = $today;
         $this->to_date = $today;
-    }
-
-    /**
-     * Quiet refresh while this panel is visible.
-     * If my leave list changed (approve/reject/penalty) → short toast.
-     */
-    public function poll(): void
-    {
-        $user = auth()->user();
-        if (! $user || ! $user->canView('attendance', 'apply-leave')) {
-            return;
-        }
-
-        $fingerprint = LeaveRequest::query()
-            ->where('user_id', $user->id)
-            ->orderByDesc('updated_at')
-            ->limit(30)
-            ->get(['id', 'status', 'updated_at', 'is_paid'])
-            ->map(fn ($row) => $row->id.'|'.$row->status.'|'.$row->updated_at.'|'.(int) $row->is_paid)
-            ->implode(';');
-
-        if ($this->requestsFingerprint !== null && $this->requestsFingerprint !== $fingerprint) {
-            $this->successMessage = 'Your leave list was updated.';
-        }
-
-        $this->requestsFingerprint = $fingerprint;
     }
 
     /**

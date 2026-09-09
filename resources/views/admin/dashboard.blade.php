@@ -130,7 +130,13 @@
                         x-show="!activeOption"
                         x-transition.opacity.duration.200ms
                     >
-                        <div class="stat-grid">
+                        {{-- Attendance cards: Livewire + poll (leave balance stays live) --}}
+                        <div x-show="activeModule === 'attendance'" x-cloak>
+                            <livewire:admin.attendance.attendance-module-stats />
+                        </div>
+
+                        {{-- Other modules: static Alpine stats from first page load --}}
+                        <div class="stat-grid" x-show="activeModule !== 'attendance'" x-cloak>
                             <template x-for="(stat, index) in currentStats()" :key="stat.label + '-' + index">
                                 <article
                                     class="stat-card"
