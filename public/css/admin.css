@@ -6393,3 +6393,26 @@ tr.leave-row--rejected td {
 .leave-balance-card {
     margin-bottom: 16px;
 }
+
+/* On leave — Current Workday panel */
+.att-panel__on-leave {
+    margin-top: 12px;
+    padding: 14px 12px;
+    border-radius: 10px;
+    background: rgba(253, 202, 9, 0.14);
+    border: 1px solid rgba(253, 202, 9, 0.28);
+}
+
+.att-panel__on-leave-title {
+    margin: 0 0 4px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.att-panel__on-leave-text {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.78);
+}

@@ -24,6 +24,8 @@ class ApplyLeave extends Component
 
     public ?string $successMessage = null;
 
+    public ?string $errorMessage = null;
+
     public function mount(): void
     {
         // Default dates = today (app timezone)
@@ -87,6 +89,7 @@ class ApplyLeave extends Component
         }
 
         $this->successMessage = null;
+        $this->errorMessage = null;
 
         $this->validate([
             'leave_type' => ['required', 'in:full,half'],
@@ -106,6 +109,19 @@ class ApplyLeave extends Component
             $to = Carbon::parse($this->to_date, app_timezone())->startOfDay();
             $fullDays = (int) $from->diffInDays($to) + 1;
             $halfDays = 0;
+        }
+
+        // Already has leave on these dates? Stop.
+        $alreadyHasLeave = LeaveRequest::hasOverlap(
+            auth()->id(),
+            $this->from_date,
+            $this->to_date
+        );
+
+        if ($alreadyHasLeave === true) {
+            $this->errorMessage = 'You already have leave (pending or approved) on these date(s).';
+
+            return;
         }
 
         LeaveRequest::create([

@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\AttendanceRecord;
 use App\Models\AttendanceSetting;
+use App\Models\LeaveRequest;
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -56,6 +57,12 @@ class AttendancePunch
      */
     public static function start(User $user, string $clientIp): array
     {
+        // 0) Simple leave check first
+        $onLeave = LeaveRequest::isOnApprovedLeave($user->id);
+        if ($onLeave === true) {
+            return self::fail('You are on leave today, so you cannot start a shift.');
+        }
+
         // Step 1 — office IP
         $ipError = self::officeIpError($clientIp);
         if ($ipError !== null) {

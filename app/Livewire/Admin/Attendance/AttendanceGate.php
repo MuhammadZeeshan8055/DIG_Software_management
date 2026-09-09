@@ -2,14 +2,15 @@
 
 namespace App\Livewire\Admin\Attendance;
 
+use App\Models\LeaveRequest;
 use App\Support\AttendancePunch;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 /**
- * Staff gate after login.
- * Check-in here = AttendancePunch::start() (same as portal Start Shift).
+ * Page after login for staff: Start Shift.
+ * If already started OR on leave → send to dashboard.
  */
 #[Layout('layouts.attendance-gate')]
 class AttendanceGate extends Component
@@ -20,13 +21,24 @@ class AttendanceGate extends Component
     {
         $user = auth()->user();
 
+        // Admin → dashboard
         if ($user->isAdmin()) {
             $this->redirect(route('dashboard'), navigate: false);
 
             return;
         }
 
-        if (AttendancePunch::hasStartedToday($user)) {
+        // On leave → dashboard (no shift today)
+        $onLeave = LeaveRequest::isOnApprovedLeave($user->id);
+        if ($onLeave === true) {
+            $this->redirect(route('dashboard'), navigate: false);
+
+            return;
+        }
+
+        // Already punched in → dashboard
+        $started = AttendancePunch::hasStartedToday($user);
+        if ($started === true) {
             $this->redirect(route('dashboard'), navigate: false);
         }
     }
@@ -37,7 +49,7 @@ class AttendanceGate extends Component
 
         $result = AttendancePunch::start(auth()->user(), (string) request()->ip());
 
-        if (! $result['ok']) {
+        if ($result['ok'] === false) {
             $this->errorMessage = $result['message'];
 
             return;

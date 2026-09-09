@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Attendance;
 
 use App\Models\AttendanceRecord;
+use App\Models\LeaveRequest;
 use App\Support\AttendancePunch;
 use Carbon\Carbon;
 use Livewire\Component;
@@ -118,8 +119,33 @@ class AttendanceTodayPanel extends Component
         $user = auth()->user();
         $record = AttendancePunch::todayRecord($user);
 
+        // Simple leave flag for the Blade
+        $onLeave = LeaveRequest::isOnApprovedLeave($user->id);
+
+        // Can start only if NOT on leave and not already checked in
+        $canStart = false;
+        if ($onLeave === false) {
+            if ($record === null || $record->check_in_at === null) {
+                $canStart = true;
+            }
+        }
+
+        // Can end only if NOT on leave and shift is running
+        $canEnd = false;
+        if ($onLeave === false) {
+            if ($record !== null && $record->check_in_at !== null && $record->check_out_at === null) {
+                $canEnd = true;
+            }
+        }
+
+        $isRunning = false;
+        if ($record !== null && $record->check_in_at !== null && $record->check_out_at === null) {
+            $isRunning = true;
+        }
+
         return view('livewire.admin.attendance.attendance-today-panel', [
             'todayLabel' => format_date(Carbon::now(app_timezone())),
+            'onLeave' => $onLeave,
             'checkInLabel' => $record?->check_in_at
                 ? format_datetime($record->check_in_at, 'h:i A')
                 : '—',
@@ -127,16 +153,12 @@ class AttendanceTodayPanel extends Component
                 ? format_datetime($record->check_out_at, 'h:i A')
                 : '—',
             'workedLabel' => $this->workedLabel($record),
-            'isRunning' => $record !== null
-                && $record->check_in_at !== null
-                && $record->check_out_at === null,
+            'isRunning' => $isRunning,
             'checkInAtMs' => $record?->check_in_at
                 ? ((int) $record->check_in_at->timestamp) * 1000
                 : null,
-            'canStart' => $record === null || $record->check_in_at === null,
-            'canEnd' => $record !== null
-                && $record->check_in_at !== null
-                && $record->check_out_at === null,
+            'canStart' => $canStart,
+            'canEnd' => $canEnd,
             'clientIp' => request()->ip(),
         ]);
     }

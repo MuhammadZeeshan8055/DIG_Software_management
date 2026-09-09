@@ -46,6 +46,12 @@
             </x-admin-toast>
         @endif
 
+        @if ($errorMessage)
+            <x-admin-toast type="error" title="Cannot apply" wire-property="errorMessage" :seconds="6">
+                {{ $errorMessage }}
+            </x-admin-toast>
+        @endif
+
         <div class="data-panel">
             <div class="data-panel__head">
                 <h3 class="data-panel__title">New request</h3>

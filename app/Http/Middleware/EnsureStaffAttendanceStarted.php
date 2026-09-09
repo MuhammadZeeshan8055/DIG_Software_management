@@ -2,14 +2,15 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\LeaveRequest;
 use App\Support\AttendancePunch;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Staff must Start Shift today before opening the portal.
- * Admin / super_admin skip this gate.
+ * Staff must start shift before dashboard.
+ * Exception: admin, or staff who is on leave today.
  */
 class EnsureStaffAttendanceStarted
 {
@@ -17,20 +18,29 @@ class EnsureStaffAttendanceStarted
     {
         $user = $request->user();
 
+        // Not logged in → continue
         if (! $user) {
             return $next($request);
         }
 
-        // Admins manage the system — no attendance gate
+        // Admin → no gate
         if ($user->isAdmin()) {
             return $next($request);
         }
 
-        // Staff already checked in today → allow portal
-        if (AttendancePunch::hasStartedToday($user)) {
+        // On leave today → open dashboard (no punch needed)
+        $onLeave = LeaveRequest::isOnApprovedLeave($user->id);
+        if ($onLeave === true) {
             return $next($request);
         }
 
+        // Already started shift today → open dashboard
+        $started = AttendancePunch::hasStartedToday($user);
+        if ($started === true) {
+            return $next($request);
+        }
+
+        // Otherwise → go to Start Shift page
         return redirect()->route('attendance.gate');
     }
 }
