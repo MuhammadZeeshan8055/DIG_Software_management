@@ -920,6 +920,25 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     background: rgba(100, 116, 139, 0.12);
 }
 
+.my-att-holiday-cell {
+    text-align: center;
+}
+
+.staff-att-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.staff-att-filters__select {
+    min-width: 220px;
+}
+
+.staff-att-empty {
+    padding: 16px;
+    opacity: 0.75;
+}
+
 .my-att-status {
     display: inline-block;
     font-weight: 600;

@@ -471,6 +471,11 @@ return [
                 'columns' => [],
                 'rows' => [],
             ],
+            'staff-daily-attendance' => [
+                'title' => 'Staff Attendance',
+                'columns' => [],
+                'rows' => [],
+            ],
             'apply-leave' => [
                 'title' => 'Apply Leave',
                 'columns' => ['Status'],
