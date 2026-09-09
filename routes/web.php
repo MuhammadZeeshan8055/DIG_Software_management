@@ -7,7 +7,7 @@ use App\Models\TicketImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
+Route::match(['get', 'head', 'post'], '/', function () {
     return redirect()->route('login');
 });
 
