@@ -3,12 +3,13 @@
 namespace App\Livewire\Admin\Attendance;
 
 use App\Models\LeaveRequest;
+use App\Support\LeaveBalance;
 use Carbon\Carbon;
 use Livewire\Component;
 
 /**
- * Step 3: Staff applies for leave (saved as pending).
- * Balance is NOT changed here — only after admin approves (Step 4–5).
+ * Staff applies for leave (status = pending until admin decides).
+ * Shows remaining balance. Balance only drops after approval.
  */
 class ApplyLeave extends Component
 {
@@ -57,6 +58,7 @@ class ApplyLeave extends Component
             return view('livewire.admin.attendance.apply-leave', [
                 'denied' => true,
                 'requests' => collect(),
+                'balance' => null,
             ]);
         }
 
@@ -68,9 +70,13 @@ class ApplyLeave extends Component
             ->limit(30)
             ->get();
 
+        // Remaining leave for this month (shown on the page)
+        $balance = LeaveBalance::summary($user);
+
         return view('livewire.admin.attendance.apply-leave', [
             'denied' => false,
             'requests' => $requests,
+            'balance' => $balance,
         ]);
     }
 

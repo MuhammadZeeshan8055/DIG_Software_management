@@ -3,11 +3,12 @@
 namespace App\Livewire\Admin\Attendance;
 
 use App\Models\LeaveRequest;
+use App\Support\LeaveBalance;
 use Livewire\Component;
 
 /**
- * Step 4: Admin / super_admin approve or reject leave requests.
- * Balance math comes in Step 5 — here we only change status + approved_by.
+ * Admin / super_admin approve or reject leave.
+ * Approve is blocked if remaining balance is not enough.
  */
 class LeaveApprovals extends Component
 {
@@ -59,7 +60,7 @@ class LeaveApprovals extends Component
     }
 
     /**
-     * Shared approve / reject logic (clear and simple).
+     * Shared approve / reject logic.
      */
     protected function decide(int $id, string $status): void
     {
@@ -72,7 +73,7 @@ class LeaveApprovals extends Component
             return;
         }
 
-        $request = LeaveRequest::query()->find($id);
+        $request = LeaveRequest::query()->with('user')->find($id);
 
         if (! $request) {
             $this->errorMessage = 'Leave request not found.';
@@ -86,12 +87,20 @@ class LeaveApprovals extends Component
             return;
         }
 
+        // Not enough leave left → do not approve (paid/unpaid split later)
+        if ($status === 'approved' && ! LeaveBalance::hasEnough($request)) {
+            $this->errorMessage = 'Not enough leave balance for this request ('.LeaveBalance::costLabel($request).'). Reject it, or ask for a shorter leave.';
+
+            return;
+        }
+
         $request->update([
             'status' => $status,
             'approved_by' => auth()->id(),
         ]);
 
-        $label = $status === 'approved' ? 'approved' : 'rejected';
-        $this->successMessage = 'Leave request '.$label.'.';
+        $this->successMessage = $status === 'approved'
+            ? 'Leave request approved.'
+            : 'Leave request rejected.';
     }
 }

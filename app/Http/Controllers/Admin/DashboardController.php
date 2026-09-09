@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AttendanceRecord;
+use App\Models\Holiday;
+use App\Models\LeaveRequest;
 use App\Models\User;
+use App\Support\LeaveBalance;
+use Carbon\Carbon;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -20,13 +25,13 @@ class DashboardController extends Controller
     }
 
     /**
-     * Workspace stats — Settings uses real Eloquent counts.
+     * Workspace stats — Settings + Attendance use real counts.
      */
     protected function workspaceForUser(): array
     {
         $workspace = config('admin_workspace', []);
+        $user = auth()->user();
 
-        // Simple Eloquent counts
         $totalUsers = User::count();
         $staffCount = User::where('role', 'staff')->count();
         $adminCount = User::whereIn('role', ['admin', 'super_admin'])->count();
@@ -52,7 +57,66 @@ class DashboardController extends Controller
             ],
         ];
 
+        $workspace['attendance']['stats'] = $this->attendanceStatsFor($user);
+
         return $workspace;
+    }
+
+    /**
+     * Four cards on Attendance module home.
+     */
+    protected function attendanceStatsFor(User $user): array
+    {
+        $today = Carbon::now(app_timezone())->toDateString();
+        $month = Carbon::now(app_timezone());
+        $summary = LeaveBalance::summary($user, $month);
+
+        $presentToday = AttendanceRecord::query()
+            ->where('user_id', $user->id)
+            ->whereDate('work_date', $today)
+            ->whereNotNull('check_in_at')
+            ->exists();
+
+        $onLeaveToday = LeaveRequest::query()
+            ->where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->whereDate('from_date', '<=', $today)
+            ->whereDate('to_date', '>=', $today)
+            ->exists();
+
+        $holidaysThisMonth = Holiday::query()
+            ->whereBetween('date', [
+                $month->copy()->startOfMonth()->toDateString(),
+                $month->copy()->endOfMonth()->toDateString(),
+            ])
+            ->count();
+
+        return [
+            [
+                'label' => 'Leaves Used',
+                'value' => $summary['used']['label'],
+                'hint' => $summary['month_label'],
+                'tone' => 'amber',
+            ],
+            [
+                'label' => 'Leaves Left',
+                'value' => $summary['left']['label'],
+                'hint' => 'Allowance '.$summary['allowed_label'],
+                'tone' => 'blue',
+            ],
+            [
+                'label' => 'Pending Leave',
+                'value' => (string) $summary['pending_count'],
+                'hint' => 'Awaiting approval',
+                'tone' => 'navy',
+            ],
+            [
+                'label' => 'Today',
+                'value' => $onLeaveToday ? 'On leave' : ($presentToday ? 'Present' : '—'),
+                'hint' => $holidaysThisMonth.' holiday(s) this month',
+                'tone' => $onLeaveToday ? 'amber' : ($presentToday ? 'green' : 'red'),
+            ],
+        ];
     }
 
     /**
@@ -67,23 +131,19 @@ class DashboardController extends Controller
             ->map(function (array $module) use ($user) {
                 $moduleKey = $module['key'] ?? '';
 
-                // Settings → only admins / super_admins
                 if ($moduleKey === 'settings') {
                     return $user->canManageUsers() ? $module : null;
                 }
 
-                // Admin / super_admin see everything
                 if ($user->isAdmin()) {
                     return $module;
                 }
 
-                // Staff: skip admin-only children, then keep only features they can view
                 $children = collect($module['children'] ?? [])
                     ->reject(fn (array $child) => ! empty($child['admin_only']))
                     ->filter(function (array $child) use ($user, $moduleKey) {
                         $feature = $child['key'] ?? '';
 
-                        // Personal attendance list: show if they already have any Attendance access
                         if ($moduleKey === 'attendance' && $feature === 'my-daily-attendance') {
                             return $user->permissions()
                                 ->where('module_key', 'attendance')

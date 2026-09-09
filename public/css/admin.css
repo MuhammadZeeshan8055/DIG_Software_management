@@ -9,6 +9,7 @@
     --header-height: 64px;
     --admin-bg: #f0f4f8;
     --card-radius: 16px;
+    --font-ui: "Manrope", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
     --sidebar-gradient: linear-gradient(
         175deg,
         rgba(26, 39, 68, 0.92) 0%,
@@ -27,12 +28,17 @@
 
 .admin-body {
     margin: 0;
-    font-family: "Inter", "Segoe UI", sans-serif;
+    font-family: var(--font-ui);
+    font-weight: 500;
+    letter-spacing: -0.011em;
     background:
         radial-gradient(ellipse 80% 50% at 100% -10%, rgba(0, 145, 212, 0.08), transparent 50%),
         radial-gradient(ellipse 60% 40% at 0% 100%, rgba(253, 202, 9, 0.06), transparent 45%),
         var(--admin-bg);
     color: var(--brand-navy);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 [x-cloak] { display: none !important; }
@@ -215,7 +221,7 @@
 }
 
 .admin-nav-section__label {
-    font-family: "Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.58rem;
     font-weight: 700;
     letter-spacing: 0.16em;
@@ -239,7 +245,7 @@
     gap: 8px;
     padding: 8px 10px;
     border-radius: 12px;
-    font-family: "Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.74rem;
     font-weight: 500;
     letter-spacing: 0.01em;
@@ -2014,9 +2020,11 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 
 .module-workspace__title {
     margin: 0 0 8px;
-    font-size: 1.45rem;
+    font-family: var(--font-ui);
+    font-size: 1.4rem;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
 }
 
 .module-workspace__desc {
@@ -2110,17 +2118,17 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 
 .stat-card__label {
     margin: 0;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
-    font-size: 0.68rem;
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: rgba(45, 58, 97, 0.52);
+    color: rgba(45, 58, 97, 0.5);
 }
 
 .stat-card__mark {
-    width: 9px;
-    height: 9px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     flex-shrink: 0;
     background: var(--brand-blue);
@@ -2148,22 +2156,23 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 }
 
 .stat-card__value {
-    margin: 0 0 6px;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
-    font-size: 1.65rem;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1;
+    margin: 0 0 8px;
+    font-family: var(--font-ui);
+    font-size: clamp(1.05rem, 1.35vw, 1.28rem);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
     color: var(--brand-navy-dark);
-    font-variant-numeric: tabular-nums;
 }
 
 .stat-card__hint {
     margin: 0;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
-    font-size: 0.72rem;
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
     font-weight: 500;
-    color: rgba(45, 58, 97, 0.5);
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+    color: rgba(45, 58, 97, 0.48);
 }
 
 .chart-grid {
@@ -2204,7 +2213,7 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 
 .chart-card__title {
     margin: 0;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.88rem;
     font-weight: 700;
     letter-spacing: -0.01em;
@@ -2215,7 +2224,7 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     flex-shrink: 0;
     padding: 4px 9px;
     border-radius: 999px;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.62rem;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -2265,7 +2274,7 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 
 .trend-chart__labels span {
     text-align: center;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.62rem;
     font-weight: 600;
     letter-spacing: 0.04em;
@@ -2282,14 +2291,14 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 }
 
 .bar-row__label {
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.76rem;
     font-weight: 600;
     color: var(--brand-navy);
 }
 
 .bar-row__value {
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.72rem;
     font-weight: 700;
     color: rgba(45, 58, 97, 0.55);
@@ -2394,7 +2403,7 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 
 .data-panel__title {
     margin: 0;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
     font-size: 1rem;
     font-weight: 700;
     letter-spacing: -0.01em;
@@ -2409,7 +2418,7 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.8rem;
 }
 
@@ -3475,7 +3484,7 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     align-items: center;
     padding: 5px 11px;
     border-radius: 999px;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.62rem;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -3524,7 +3533,7 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     text-transform: uppercase;
     border: 1px solid transparent;
     cursor: pointer;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
     transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease;
 }
 
@@ -4300,7 +4309,7 @@ body.mu-modal-open .admin-sidebar {
 
 .mu-modal__title {
     margin: 0;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
     font-size: 1.05rem;
     font-weight: 700;
     color: var(--brand-navy);
@@ -4468,7 +4477,7 @@ body.mu-modal-open .admin-sidebar {
     border: 1px solid transparent;
     border-radius: 4px;
     background: transparent;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--brand-navy);
@@ -4884,7 +4893,7 @@ body.ticket-view-modal-open {
     gap: 2px;
     min-width: 0;
     line-height: 1.2;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
 }
 
 .ticket-doc__brand-name {
@@ -4915,7 +4924,7 @@ body.ticket-view-modal-open {
 .ticket-doc__title-block {
     text-align: right;
     min-width: 0;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
 }
 
 .ticket-doc__eyebrow {
@@ -5007,7 +5016,7 @@ body.ticket-view-modal-open {
     font-weight: 700;
     color: var(--brand-navy);
     word-break: break-word;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
 }
 
 .ticket-doc__section {
@@ -5025,7 +5034,7 @@ body.ticket-view-modal-open {
     border-bottom: 1px solid rgba(255, 255, 255, 0.14);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
     color: #fff;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.64rem;
     font-weight: 800;
     letter-spacing: 0.06em;
@@ -5055,7 +5064,7 @@ body.ticket-view-modal-open {
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--brand-blue);
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
 }
 
 .ticket-doc__journey-airline {
@@ -5072,7 +5081,7 @@ body.ticket-view-modal-open {
     line-height: 1;
     color: var(--brand-navy);
     letter-spacing: 0.04em;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
 }
 
 .ticket-doc__journey-times {
@@ -5104,7 +5113,7 @@ body.ticket-view-modal-open {
     font-size: 0.95rem;
     font-weight: 800;
     color: var(--brand-navy);
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
 }
 
 .ticket-doc__journey-times span:last-child {
@@ -5189,7 +5198,7 @@ body.ticket-view-modal-open {
     font-weight: 700;
     color: var(--brand-navy);
     word-break: break-word;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
 }
 
 .ticket-doc__extra-segments {
@@ -5252,14 +5261,14 @@ body.ticket-view-modal-open {
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #d4a200;
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
 }
 
 .ticket-doc__terms-carrier strong {
     font-size: 0.82rem;
     font-weight: 800;
     color: var(--brand-navy);
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
 }
 
 .ticket-doc__terms-note {
@@ -6201,4 +6210,186 @@ tr.leave-row--rejected {
 
 tr.leave-row--rejected td {
     background: transparent;
+}
+
+/* Remaining leave balance card (Apply Leave) */
+.leave-balance-card {
+    margin-bottom: 16px;
+}
+
+.leave-balance-card__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+}
+
+.leave-balance-card__label {
+    margin: 0 0 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--brand-navy-light);
+}
+
+.leave-balance-card__value {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--brand-navy-dark);
+}
+
+.leave-balance-card__value strong {
+    color: var(--brand-blue);
+    font-size: 1.15rem;
+}
+
+.leave-balance-card__sep {
+    margin: 0 6px;
+    color: rgba(48, 60, 101, 0.35);
+}
+
+.leave-balance-card__note {
+    margin: 0;
+    font-size: 0.78rem;
+    color: rgba(48, 60, 101, 0.65);
+}
+
+/* Apply Leave — professional balance summary */
+.leave-summary {
+    margin-bottom: 18px;
+    padding: 18px 18px 16px;
+    border-radius: 14px;
+    background:
+        linear-gradient(135deg, rgba(1, 145, 212, 0.08) 0%, rgba(253, 202, 9, 0.06) 100%),
+        #fff;
+    border: 1px solid rgba(48, 60, 101, 0.1);
+    box-shadow: 0 8px 24px rgba(30, 39, 68, 0.06);
+}
+
+.leave-summary__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px 16px;
+    margin-bottom: 14px;
+}
+
+.leave-summary__eyebrow {
+    margin: 0 0 2px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+}
+
+.leave-summary__title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--brand-navy-dark);
+}
+
+.leave-summary__allowance {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: rgba(48, 60, 101, 0.65);
+}
+
+.leave-summary__allowance strong {
+    color: var(--brand-navy);
+    font-weight: 600;
+}
+
+.leave-summary__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.leave-summary__card {
+    padding: 14px 14px 12px;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid rgba(48, 60, 101, 0.08);
+    box-shadow: 0 2px 10px rgba(30, 39, 68, 0.04);
+}
+
+.leave-summary__card--used {
+    border-top: 3px solid #f59e0b;
+}
+
+.leave-summary__card--left {
+    border-top: 3px solid var(--brand-blue);
+}
+
+.leave-summary__card--pending {
+    border-top: 3px solid var(--brand-navy);
+}
+
+.leave-summary__card-label {
+    margin: 0 0 6px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(48, 60, 101, 0.5);
+}
+
+.leave-summary__card-value {
+    margin: 0 0 4px;
+    font-size: clamp(1rem, 1.2vw, 1.15rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    color: var(--brand-navy-dark);
+}
+
+.leave-summary__card-hint {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(48, 60, 101, 0.5);
+}
+
+.leave-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.leave-status--pending {
+    background: rgba(48, 60, 101, 0.1);
+    color: var(--brand-navy);
+}
+
+.leave-status--approved {
+    background: rgba(34, 197, 94, 0.14);
+    color: #166534;
+}
+
+.leave-status--rejected {
+    background: rgba(239, 68, 68, 0.12);
+    color: #991b1b;
+}
+
+@media (max-width: 800px) {
+    .leave-summary__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Older balance card (unused) kept harmless */
+.leave-balance-card {
+    margin-bottom: 16px;
 }

@@ -5,18 +5,40 @@
         </div>
     @else
 
-        <section class="module-workspace__hero" style="margin-bottom: 16px;">
-            <div class="module-workspace__hero-main">
-                <p class="module-workspace__eyebrow">
-                    <span class="module-workspace__eyebrow-dot"></span>
-                    Leave
-                </p>
-                <h2 class="module-workspace__title">Apply Leave</h2>
-                <p class="module-workspace__desc" style="margin: 8px 0 0; font-size: 0.9rem; opacity: 0.85;">
-                    Submit a request. Balance changes only after admin approval.
-                </p>
+        @if ($balance)
+            <div class="leave-summary">
+                <div class="leave-summary__head">
+                    <div>
+                        <p class="leave-summary__eyebrow">Leave balance</p>
+                        <h3 class="leave-summary__title">{{ $balance['month_label'] }}</h3>
+                    </div>
+                    <p class="leave-summary__allowance">
+                        Monthly allowance
+                        <strong>{{ $balance['allowed_label'] }}</strong>
+                    </p>
+                </div>
+
+                <div class="leave-summary__grid">
+                    <article class="leave-summary__card leave-summary__card--used">
+                        <p class="leave-summary__card-label">Used</p>
+                        <p class="leave-summary__card-value">{{ $balance['used']['label'] }}</p>
+                        <p class="leave-summary__card-hint">Approved this month</p>
+                    </article>
+
+                    <article class="leave-summary__card leave-summary__card--left">
+                        <p class="leave-summary__card-label">Left</p>
+                        <p class="leave-summary__card-value">{{ $balance['left']['label'] }}</p>
+                        <p class="leave-summary__card-hint">Available to use</p>
+                    </article>
+
+                    <article class="leave-summary__card leave-summary__card--pending">
+                        <p class="leave-summary__card-label">Pending</p>
+                        <p class="leave-summary__card-value">{{ $balance['pending_count'] }}</p>
+                        <p class="leave-summary__card-hint">Waiting for admin</p>
+                    </article>
+                </div>
             </div>
-        </section>
+        @endif
 
         @if ($successMessage)
             <x-admin-toast wire-property="successMessage" :seconds="6">
@@ -167,7 +189,11 @@
                                         {{ $req->full_days }} full
                                     @endif
                                 </td>
-                                <td>{{ ucfirst($req->status) }}</td>
+                                <td>
+                                    <span class="leave-status leave-status--{{ $req->status }}">
+                                        {{ ucfirst($req->status) }}
+                                    </span>
+                                </td>
                                 <td>
                                     @if ($req->status === 'pending')
                                         —
