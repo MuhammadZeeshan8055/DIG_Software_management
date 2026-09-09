@@ -106,6 +106,11 @@ class AttendancePunch
         $record->is_late = $isLate;
         $record->save();
 
+        // Step 6 — 4th / 8th / … late → auto half-day leave (paid if balance left)
+        if ($isLate) {
+            LatePenalty::applyIfNeeded($user, self::todayDate());
+        }
+
         return self::ok(
             'Shift started at '.format_datetime($record->check_in_at, 'h:i A').'.',
             $record
