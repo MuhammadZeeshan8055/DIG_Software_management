@@ -1,10 +1,11 @@
 @php
-    $modulesList = $modules ?? config('admin.modules', []);
-    $modulesMap = collect($modulesList)->keyBy('key')->all();
-    $workspace = $workspace ?? config('admin_workspace', []);
+$modulesList = $modules ?? config('admin.modules', []);
+$modulesMap = collect($modulesList)->keyBy('key')->all();
+$workspace = $workspace ?? config('admin_workspace', []);
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -23,6 +24,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     @livewireStyles
 </head>
+
 <body
     class="admin-body"
     @open-my-attendance.window="openMyAttendance()"
@@ -121,6 +123,12 @@
             if (this.activeOption === 'bank-accounts') {
                 this.$nextTick(() => {
                     window.dispatchEvent(new CustomEvent('bank-accounts-panel-opened'));
+                });
+            }
+
+            if (this.activeOption === 'create-invoice') {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('create-invoice-panel-opened'));
                 });
             }
 
@@ -232,6 +240,9 @@
             if (key === 'bank-accounts') {
                 window.dispatchEvent(new CustomEvent('bank-accounts-panel-opened'));
             }
+            if (key === 'create-invoice') {
+                window.dispatchEvent(new CustomEvent('create-invoice-panel-opened'));
+            }
             if (key === 'users') {
                 window.dispatchEvent(new CustomEvent('users-panel-opened'));
             }
@@ -246,8 +257,7 @@
             this.activeOption = null;
             this.saveLastPage();
         }
-    }"
->
+    }">
 
     <div class="admin-shell">
         @include('admin.partials.sidebar')
@@ -269,8 +279,7 @@
         class="manage-users-layer"
         x-show="activeModule === 'settings' && activeOption === 'users' && !viewingMyAttendance && !viewingMyAccount"
         x-cloak
-        x-transition.opacity.duration.200ms
-    >
+        x-transition.opacity.duration.200ms>
         <livewire:admin.settings.manage-users />
     </div>
 
@@ -279,10 +288,10 @@
         x-show="sidebarOpen"
         x-transition.opacity
         @click="sidebarOpen = false"
-        x-cloak
-    ></div>
+        x-cloak></div>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     @livewireScripts
 </body>
+
 </html>

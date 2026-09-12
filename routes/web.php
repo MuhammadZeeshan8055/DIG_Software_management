@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Livewire\Admin\Attendance\AttendanceGate;
+use App\Models\Invoice;
 use App\Models\TicketImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +33,17 @@ Route::middleware('auth')->group(function () {
             'autoPrint' => $request->boolean('print'),
         ]);
     })->name('ticket-imports.document');
+
+    Route::get('/invoices/{invoice}/document', function (Request $request, Invoice $invoice) {
+        abort_unless($request->user()->canView('accounts', 'create-invoice'), 403);
+
+        $invoice->load(['items', 'payments', 'user']);
+
+        return view('invoices.document', [
+            'invoice' => $invoice,
+            'autoPrint' => $request->boolean('print'),
+        ]);
+    })->name('invoices.document');
 });
 
 require __DIR__.'/auth.php';

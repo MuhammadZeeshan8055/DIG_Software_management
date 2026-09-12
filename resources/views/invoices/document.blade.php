@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ $invoice->invoice_number }} — Invoice</title>
+
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}?v=3">
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+</head>
+<body class="ticket-doc-print-page">
+    <div class="ticket-doc-page__toolbar">
+        <p>{{ $invoice->customer_name }} · {{ $invoice->invoice_number }}</p>
+        <button type="button" class="hero-btn hero-btn--primary" onclick="window.print()">Save as PDF</button>
+    </div>
+
+    <div class="ticket-doc-page ticket-doc-page--a4">
+        <x-invoice-document :invoice="$invoice" />
+    </div>
+
+    @if ($autoPrint)
+        <script>window.addEventListener('load', () => setTimeout(() => window.print(), 300));</script>
+    @endif
+</body>
+</html>
