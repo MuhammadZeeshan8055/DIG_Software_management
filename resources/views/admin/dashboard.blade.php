@@ -95,7 +95,7 @@
     {{-- Module workspace (replaces overview) --}}
     <div
         class="dashboard-view module-workspace"
-        x-show="activeModule && !viewingMyAttendance && !viewingMyAccount && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'create-invoice' && activeOption !== 'users' && activeOption !== 'my-daily-attendance' && activeOption !== 'staff-daily-attendance' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays'"
+        x-show="activeModule && !viewingMyAttendance && !viewingMyAccount && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'invoices' && activeOption !== 'users' && activeOption !== 'my-daily-attendance' && activeOption !== 'staff-daily-attendance' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays'"
         x-cloak
         x-transition:enter="dash-enter"
         x-transition:enter-start="dash-enter-start"
@@ -208,7 +208,7 @@
                 {{-- Other option tables (static demo data) --}}
                 <div
                     class="module-panel"
-                    x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'my-daily-attendance' && activeOption !== 'create-invoice' && activeOption !== 'staff-daily-attendance' && activeOption !== 'office-settings' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays'"
+                    x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'my-daily-attendance' && activeOption !== 'invoices' && activeOption !== 'staff-daily-attendance' && activeOption !== 'office-settings' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays'"
                     x-cloak
                     x-transition.opacity.duration.200ms>
                     <template x-if="currentTable()">
@@ -271,10 +271,10 @@
         <livewire:admin.accounts.manage-receiving-accounts />
     </div>
 
-    {{-- Accounts → Create Invoice (Livewire) --}}
+    {{-- Accounts → Invoices (Livewire) --}}
     <div
         class="dashboard-view dashboard-view--panel"
-        x-show="activeModule === 'accounts' && activeOption === 'create-invoice' && !viewingMyAttendance && !viewingMyAccount"
+        x-show="activeModule === 'accounts' && activeOption === 'invoices' && !viewingMyAttendance && !viewingMyAccount"
         x-cloak
         x-transition.opacity.duration.200ms>
         <livewire:admin.accounts.create-invoice />

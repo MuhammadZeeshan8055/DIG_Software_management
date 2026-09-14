@@ -6,8 +6,8 @@ return [
 
     'statuses' => [
         'draft' => 'Draft',
-        'pending' => 'UNPAID',
-        'paid' => 'PAID',
+        'pending' => 'Pending',
+        'paid' => 'Paid',
     ],
 
     'categories' => [

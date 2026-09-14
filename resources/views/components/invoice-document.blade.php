@@ -6,11 +6,12 @@
 
 <div {{ $attributes->merge(['class' => 'invoice-doc']) }}>
     <header class="invoice-doc__header">
-        <div class="invoice-doc__brand">
-            <img src="{{ asset('images/logo-icon.png') }}" alt="DHOTHAR" class="invoice-doc__logo">
-            <div>
-                <div class="invoice-doc__brand-name">Dhothar International Group</div>
-                <div class="invoice-doc__brand-tag">TRAVEL &amp; TOURS (Pvt. Ltd.)</div>
+        <div class="ticket-doc__brand-card">
+            <img src="{{ asset('images/logo-icon.png') }}" alt="DHOTHAR" class="ticket-doc__logo">
+            <div class="ticket-doc__brand-text">
+                <strong class="ticket-doc__brand-name">DHOTHAR</strong>
+                <span class="ticket-doc__brand-group">International Group</span>
+                <small class="ticket-doc__brand-tagline">Travel &amp; Tours (Pvt Ltd)</small>
             </div>
         </div>
 
@@ -19,7 +20,9 @@
             <div class="invoice-doc__dates">
                 {{ optional($invoice->invoice_date)->format('Y-m-d') }}
                 · Due {{ optional($invoice->due_date)->format('Y-m-d') ?: '—' }}
-                · {{ $invoice->statusLabel() }}
+            </div>
+            <div class="invoice-doc__status">
+                <span class="{{ $invoice->paymentBadgeClass() }}">{{ $invoice->paymentStatusLabel() }}</span>
             </div>
             <div class="invoice-doc__printed">Printed: {{ format_datetime(now(), 'M j, Y, g:i A') }}</div>
         </div>

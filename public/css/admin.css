@@ -1414,6 +1414,10 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     margin: 18px 0;
 }
 
+.invoice-doc__table thead{
+    background: var(--ticket-doc-blue-gradient);
+}
+
 .invoice-doc__table th,
 .invoice-doc__table td {
     padding: 10px 12px;
@@ -1422,9 +1426,12 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 }
 
 .invoice-doc__table th {
-    background: #f3e6d4;
     font-weight: 600;
-    color: #444;
+    color: #fff;
+}
+
+.invoice-doc__status {
+    margin-top: 8px;
 }
 
 .invoice-doc__table th:nth-child(2),
@@ -3746,6 +3753,13 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     box-shadow: 0 1px 4px rgba(251, 191, 36, 0.35);
 }
 
+.payment-badge--draft {
+    color: #475569;
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    border-color: #94a3b8;
+    box-shadow: 0 1px 4px rgba(148, 163, 184, 0.35);
+}
+
 .payment-actions {
     display: flex;
     gap: 8px;
@@ -4483,7 +4497,21 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     background: var(--admin-bg);
 }
 
-/* When modal is open: raise layer above header/sidebar */
+/* When invoice form/preview modal is open: cover sidebar + header */
+body.invoice-modal-open {
+    overflow: hidden;
+}
+
+body.invoice-modal-open .admin-header,
+body.invoice-modal-open .admin-sidebar {
+    z-index: 1 !important;
+}
+
+body.invoice-modal-open .mu-modal,
+body.invoice-modal-open .ticket-view-modal {
+    z-index: 10001;
+}
+
 body.mu-modal-open {
     overflow: hidden;
 }

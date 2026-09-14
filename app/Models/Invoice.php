@@ -103,7 +103,49 @@ class Invoice extends Model
 
     public function statusLabel(): string
     {
-        return config('invoice.statuses.'.$this->status, strtoupper($this->status));
+        return $this->paymentStatusLabel();
+    }
+
+    /** Effective payment status for badges: paid | half | pending | draft */
+    public function paymentStatusKey(): string
+    {
+        $paid = (float) $this->paid_amount;
+        $total = (float) $this->total_amount;
+        $balance = (float) $this->balance;
+
+        if ($total > 0 && $balance <= 0) {
+            return 'paid';
+        }
+
+        if ($paid > 0 && $balance > 0) {
+            return 'half';
+        }
+
+        if ($this->status === 'draft') {
+            return 'draft';
+        }
+
+        return 'pending';
+    }
+
+    public function paymentStatusLabel(): string
+    {
+        return match ($this->paymentStatusKey()) {
+            'paid' => 'PAID',
+            'half' => 'HALF RECEIVE',
+            'draft' => 'DRAFT',
+            default => 'PENDING',
+        };
+    }
+
+    public function paymentBadgeClass(): string
+    {
+        return match ($this->paymentStatusKey()) {
+            'paid' => 'payment-badge payment-badge--paid',
+            'half' => 'payment-badge payment-badge--half',
+            'draft' => 'payment-badge payment-badge--draft',
+            default => 'payment-badge payment-badge--pending',
+        };
     }
 
     public function categoryLabel(): string

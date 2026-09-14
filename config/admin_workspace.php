@@ -374,8 +374,8 @@ return [
             ],
         ],
         'tables' => [
-            'create-invoice' => [
-                'title' => 'Create Invoice',
+            'invoices' => [
+                'title' => 'Invoices',
                 'columns' => ['Invoice No', 'Client', 'Amount', 'Date', 'Status'],
                 'rows' => [
                     ['INV-9001', 'Travel Co', '85,000', '27 Aug 2026', 'Draft'],

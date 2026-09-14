@@ -35,7 +35,7 @@ Route::middleware('auth')->group(function () {
     })->name('ticket-imports.document');
 
     Route::get('/invoices/{invoice}/document', function (Request $request, Invoice $invoice) {
-        abort_unless($request->user()->canView('accounts', 'create-invoice'), 403);
+        abort_unless($request->user()->canView('accounts', 'invoices'), 403);
 
         $invoice->load(['items', 'payments', 'user']);
 

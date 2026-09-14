@@ -126,9 +126,9 @@ $workspace = $workspace ?? config('admin_workspace', []);
                 });
             }
 
-            if (this.activeOption === 'create-invoice') {
+            if (this.activeOption === 'invoices') {
                 this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('create-invoice-panel-opened'));
+                    window.dispatchEvent(new CustomEvent('invoices-panel-opened'));
                 });
             }
 
@@ -240,8 +240,8 @@ $workspace = $workspace ?? config('admin_workspace', []);
             if (key === 'bank-accounts') {
                 window.dispatchEvent(new CustomEvent('bank-accounts-panel-opened'));
             }
-            if (key === 'create-invoice') {
-                window.dispatchEvent(new CustomEvent('create-invoice-panel-opened'));
+            if (key === 'invoices') {
+                window.dispatchEvent(new CustomEvent('invoices-panel-opened'));
             }
             if (key === 'users') {
                 window.dispatchEvent(new CustomEvent('users-panel-opened'));

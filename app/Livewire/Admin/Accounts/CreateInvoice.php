@@ -31,6 +31,7 @@ class CreateInvoice extends Component
     public array $items = [];
 
     public ?int $previewInvoiceId = null;
+    public bool $showFormModal = false;
     public bool $showPreview = false;
     public bool $showPaymentForm = false;
 
@@ -62,11 +63,14 @@ class CreateInvoice extends Component
 
     public function addItem(): void
     {
-        $this->items[] = [
-            'description' => '',
-            'qty' => 1,
-            'unit_price' => '',
-        ];
+        $this->items = array_values([
+            ...$this->items,
+            [
+                'description' => '',
+                'qty' => 1,
+                'unit_price' => '',
+            ],
+        ]);
     }
 
     public function removeItem(int $index): void
@@ -75,8 +79,9 @@ class CreateInvoice extends Component
             return;
         }
 
-        unset($this->items[$index]);
-        $this->items = array_values($this->items);
+        $items = $this->items;
+        unset($items[$index]);
+        $this->items = array_values($items);
     }
 
     public function getSubtotalProperty(): float
@@ -101,9 +106,29 @@ class CreateInvoice extends Component
         return round($this->subtotal + $this->taxAmount, 2);
     }
 
+    public function openFormModal(): void
+    {
+        abort_unless(auth()->user()->canManage('accounts', 'invoices'), 403);
+
+        $this->resetForm();
+        $this->items = [
+            ['description' => '', 'qty' => 1, 'unit_price' => ''],
+        ];
+        $this->showFormModal = true;
+        $this->showPreview = false;
+        $this->showPaymentForm = false;
+        $this->resetValidation();
+    }
+
+    public function closeFormModal(): void
+    {
+        $this->showFormModal = false;
+        $this->resetValidation();
+    }
+
     public function save(): void
     {
-        abort_unless(auth()->user()->canManage('accounts', 'create-invoice'), 403);
+        abort_unless(auth()->user()->canManage('accounts', 'invoices'), 403);
 
         $this->validate($this->rules());
 
@@ -144,6 +169,7 @@ class CreateInvoice extends Component
         });
 
         $this->previewInvoiceId = $invoice->id;
+        $this->showFormModal = false;
         $this->showPreview = true;
         $this->successMessage = 'Invoice '.$invoice->invoice_number.' created.';
         $this->resetForm(keepPreview: true);
@@ -151,7 +177,7 @@ class CreateInvoice extends Component
 
     public function openPreview(int $id): void
     {
-        abort_unless(auth()->user()->canView('accounts', 'create-invoice'), 403);
+        abort_unless(auth()->user()->canView('accounts', 'invoices'), 403);
 
         $this->previewInvoiceId = $id;
         $this->showPreview = true;
@@ -175,7 +201,7 @@ class CreateInvoice extends Component
 
     public function recordPayment(): void
     {
-        abort_unless(auth()->user()->canManage('accounts', 'create-invoice'), 403);
+        abort_unless(auth()->user()->canManage('accounts', 'invoices'), 403);
 
         $this->validate([
             'payment_amount' => ['required', 'numeric', 'min:0.01'],
@@ -200,7 +226,7 @@ class CreateInvoice extends Component
 
     public function render()
     {
-        if (! auth()->user()->canView('accounts', 'create-invoice')) {
+        if (! auth()->user()->canView('accounts', 'invoices')) {
             return view('livewire.admin.accounts.create-invoice', [
                 'categories' => [],
                 'statuses' => [],
@@ -289,6 +315,7 @@ class CreateInvoice extends Component
         if (! $keepPreview) {
             $this->previewInvoiceId = null;
             $this->showPreview = false;
+            $this->showFormModal = false;
         }
     }
 }
