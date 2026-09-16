@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Invoice extends Model
 {
     protected $fillable = [
         'invoice_number',
+        'verification_token',
         'invoice_date',
         'due_date',
         'status',
@@ -29,6 +31,15 @@ class Invoice extends Model
         'balance',
         'user_id',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Invoice $invoice): void {
+            if (empty($invoice->verification_token)) {
+                $invoice->verification_token = (string) Str::uuid();
+            }
+        });
+    }
 
     protected function casts(): array
     {
@@ -151,5 +162,10 @@ class Invoice extends Model
     public function categoryLabel(): string
     {
         return config('invoice.categories.'.$this->service_category, $this->service_category);
+    }
+
+    public function verificationUrl(): string
+    {
+        return route('invoices.verify', $this->verification_token, absolute: true);
     }
 }

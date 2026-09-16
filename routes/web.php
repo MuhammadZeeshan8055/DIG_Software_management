@@ -12,6 +12,17 @@ Route::match(['get', 'head', 'post'], '/', function () {
     return redirect()->route('login');
 });
 
+Route::get('/verify/invoice/{token}', function (string $token) {
+    $invoice = Invoice::query()
+        ->where('verification_token', $token)
+        ->with(['items', 'payments'])
+        ->firstOrFail();
+
+    return view('invoices.verify', [
+        'invoice' => $invoice,
+    ]);
+})->middleware('throttle:60,1')->name('invoices.verify');
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'attendance.started'])
     ->name('dashboard');

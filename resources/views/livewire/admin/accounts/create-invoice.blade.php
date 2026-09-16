@@ -77,14 +77,14 @@
         <div class="mu-modal" wire:keydown.escape.window="closeFormModal">
             <button type="button" class="mu-modal__backdrop" wire:click="closeFormModal" aria-label="Close"></button>
 
-            <div class="mu-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="invoice-form-title" style="max-width: 920px; width: min(920px, 96vw);">
+            <div class="mu-modal__dialog create-invoice-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="invoice-form-title">
                 <div class="mu-modal__head">
                     <h3 id="invoice-form-title" class="mu-modal__title">Add Invoice</h3>
                     <button type="button" class="mu-modal__close" wire:click="closeFormModal" aria-label="Close">&times;</button>
                 </div>
 
-                <form wire:submit.prevent="save" class="manage-users-form mu-modal__form" style="padding: 16px; max-height: 70vh; overflow-y: auto;">
-                    <div class="manage-users-form__grid">
+                <form wire:submit.prevent="save" class="manage-users-form mu-modal__form create-invoice-form">
+                    <div class="manage-users-form__grid create-invoice-form__grid">
                         <div class="mu-field">
                             <label class="mu-field__label">Invoice date</label>
                             <input type="date" class="mu-field__input" wire:model="invoice_date">
@@ -129,8 +129,8 @@
                         </div>
                     </div>
 
-                    <h4 class="data-panel__title" style="margin: 20px 0 12px;">Customer</h4>
-                    <div class="manage-users-form__grid">
+                    <h4 class="create-invoice-form__section">Customer</h4>
+                    <div class="manage-users-form__grid create-invoice-form__grid">
                         <div class="mu-field">
                             <label class="mu-field__label">Customer name</label>
                             <input type="text" class="mu-field__input" wire:model="customer_name">
@@ -159,7 +159,7 @@
                             <input type="text" class="mu-field__input" wire:model="reference_number">
                         </div>
 
-                        <div class="mu-field" style="grid-column: 1 / -1;">
+                        <div class="mu-field create-invoice-form__span-2">
                             <label class="mu-field__label">Address (optional)</label>
                             <input type="text" class="mu-field__input" wire:model="customer_address">
                         </div>
@@ -208,7 +208,7 @@
                             }
                         }"
                     >
-                        <h4 class="data-panel__title" style="margin: 20px 0 12px;">Line items</h4>
+                        <h4 class="create-invoice-form__section">Line items</h4>
                         <div class="data-table-wrap" style="margin-bottom: 12px;">
                             <table class="data-table">
                                 <thead>
@@ -277,7 +277,7 @@
                             + Add item
                         </button>
 
-                        <div class="manage-users-form__grid" style="max-width: 420px; margin-left: auto;">
+                        <div class="manage-users-form__grid create-invoice-form__totals">
                             <div class="mu-field">
                                 <label class="mu-field__label">Tax %</label>
                                 <input

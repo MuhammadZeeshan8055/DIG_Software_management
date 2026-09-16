@@ -16,6 +16,12 @@
             </div>
         </div>
 
+        @if ($invoice->verification_token)
+            <div class="invoice-doc__verify-qr" title="Scan for live invoice status">
+                {!! QrCode::size(72)->margin(0)->generate($invoice->verificationUrl()) !!}
+            </div>
+        @endif
+
         <div class="ticket-doc__title-block invoice-doc__title-block">
             <p class="ticket-doc__eyebrow">Official Accounts Document</p>
             <h1 class="ticket-doc__title">Invoice</h1>
