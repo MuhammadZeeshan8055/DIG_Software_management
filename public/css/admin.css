@@ -1534,7 +1534,7 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     justify-content: space-between;
     gap: 16px;
     font-size: 0.82rem;
-    padding: 6px 0;
+    padding: 9px 12px;
     border-bottom: 1px dashed rgba(148, 163, 184, 0.3);
 }
 
