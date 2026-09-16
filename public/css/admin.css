@@ -1684,34 +1684,194 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     font-weight: 600;
 }
 
-@media (max-width: 720px) {
+@media screen and (max-width: 720px) {
+    .invoice-verify-page {
+        padding-bottom: 24px;
+        background: #e8edf3;
+    }
+
+    .invoice-verify-bar {
+        position: sticky;
+        top: 0;
+    }
+
     .invoice-verify-bar__inner {
         flex-wrap: wrap;
         width: calc(100% - 24px);
-        gap: 12px;
+        gap: 10px;
+        padding: 10px 0;
     }
 
     .invoice-verify-bar__brand {
         order: 1;
         flex: 1;
+        min-width: 0;
     }
 
     .invoice-verify-bar__meta {
         order: 2;
+        flex-shrink: 0;
     }
 
     .invoice-verify-bar__status {
         order: 3;
         width: 100%;
-        padding-top: 10px;
+        padding-top: 8px;
         border-top: 1px solid #e2e8f0;
+    }
+
+    .invoice-verify-bar__brand strong,
+    .invoice-verify-bar__status strong {
+        font-size: 0.84rem;
+    }
+
+    .invoice-verify-bar__number {
+        display: none;
+    }
+
+    .invoice-verify-main {
+        padding: 12px 10px 0;
     }
 
     .invoice-verify-page .ticket-doc-page--a4 {
         width: 100%;
-        min-height: auto;
-        padding: 16px;
+        min-height: 0;
+        padding: 14px 12px;
+        border-radius: 12px;
         box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .invoice-verify-footnote {
+        padding: 0 8px;
+        font-size: 0.72rem;
+    }
+
+    /* Invoice document — phone layout */
+    .invoice-doc .ticket-doc__header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .invoice-doc .ticket-doc__brand-card {
+        width: 100%;
+    }
+
+    .invoice-doc__verify-qr {
+        align-self: flex-start;
+        order: 3;
+    }
+
+    .invoice-doc__verify-qr svg {
+        width: 64px;
+        height: 64px;
+    }
+
+    .invoice-doc .ticket-doc__title-block.invoice-doc__title-block {
+        width: 100%;
+        text-align: left;
+        order: 2;
+    }
+
+    .invoice-doc__header-meta {
+        align-items: stretch;
+        margin: 8px 0;
+        gap: 6px;
+    }
+
+    .invoice-doc__header-meta-row {
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+        font-size: 0.8rem;
+    }
+
+    .invoice-doc__header-meta-row:last-child {
+        border-bottom: none;
+    }
+
+    .invoice-doc__header-meta-row strong {
+        min-width: 0;
+        text-align: right;
+    }
+
+    .invoice-doc__title-block .ticket-doc__badges {
+        justify-content: flex-start;
+        margin-top: 4px;
+    }
+
+    .invoice-doc .ticket-doc__title {
+        font-size: 1.55rem;
+    }
+
+    .invoice-doc__billed {
+        margin: 12px 0 14px;
+    }
+
+    .invoice-doc__billed-list {
+        max-width: none;
+    }
+
+    .invoice-doc__billed-line--primary:first-child {
+        font-size: 1rem;
+    }
+
+    .invoice-doc__table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+    }
+
+    .invoice-doc__table {
+        min-width: 420px;
+    }
+
+    .invoice-doc__table th,
+    .invoice-doc__table td {
+        padding: 8px 10px;
+        font-size: 0.74rem;
+    }
+
+    .invoice-doc__col-price,
+    .invoice-doc__col-amount {
+        width: auto;
+    }
+
+    .invoice-doc__totals {
+        max-width: none;
+        width: 100%;
+        margin-left: 0;
+        box-sizing: border-box;
+    }
+
+    .invoice-doc__payment-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        padding: 8px 0;
+    }
+
+    .invoice-doc__payment-summary {
+        max-width: none;
+        width: 100%;
+        margin: 10px 0 0;
+    }
+}
+
+@media screen and (max-width: 420px) {
+    .invoice-doc__table {
+        min-width: 360px;
+    }
+
+    .invoice-doc__table th,
+    .invoice-doc__table td {
+        padding: 7px 8px;
+        font-size: 0.7rem;
+    }
+
+    .invoice-verify-bar__logo {
+        width: 30px;
+        height: 30px;
     }
 }
 
@@ -1736,6 +1896,11 @@ button.admin-nav-link:not(.admin-nav-link--active) {
 
     .invoice-doc__table-wrap {
         box-shadow: none;
+        overflow: visible;
+    }
+
+    .invoice-doc__table {
+        min-width: 0;
     }
 
     /* Hide ticket footer chrome if any leftover wrapper styles apply */
