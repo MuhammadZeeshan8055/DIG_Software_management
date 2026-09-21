@@ -131,7 +131,13 @@
         <div class="ticket-doc__section-head">Payments Received</div>
         @forelse ($invoice->payments as $payment)
             <div class="invoice-doc__payment-row">
-                <span>{{ format_datetime($payment->paid_at, 'd M Y') }}{{ $payment->note ? ' · '.$payment->note : '' }}</span>
+                <span>
+                    {{ format_datetime($payment->paid_at, 'd M Y') }}
+                    @if ($payment->receivedAccountLabel() !== '—')
+                        · {{ $payment->receivedInLabel() }} · {{ $payment->receivedAccountLabel() }}
+                    @endif
+                    {{ $payment->note ? ' · '.$payment->note : '' }}
+                </span>
                 <span>Rs {{ number_format((float) $payment->amount, 0) }}</span>
             </div>
         @empty

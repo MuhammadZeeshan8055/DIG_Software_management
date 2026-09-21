@@ -5,7 +5,9 @@ namespace App\Livewire\Admin\Accounts;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\InvoicePayment;
+use App\Models\ReceivingAccount;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class CreateInvoice extends Component
@@ -38,6 +40,8 @@ class CreateInvoice extends Component
     public string $payment_amount = '';
     public string $payment_note = '';
     public string $payment_date = '';
+    public string $payment_method = 'BANK';
+    public ?int $receiving_account_id = null;
 
     public ?string $successMessage = null;
 
@@ -47,8 +51,10 @@ class CreateInvoice extends Component
         $this->due_date = now()->toDateString();
         $this->tax_percent = (float) config('invoice.default_tax_percent', 5);
         $this->payment_date = now()->toDateString();
+        $this->payment_method = config('payment_accounts.default', 'BANK');
         $this->resetItems();
         $this->syncPackageLabel();
+        $this->selectFirstAccount();
     }
 
     public function updatedServiceCategory(): void
@@ -197,6 +203,9 @@ class CreateInvoice extends Component
         $this->payment_amount = '';
         $this->payment_note = '';
         $this->payment_date = now()->toDateString();
+        $this->payment_method = config('payment_accounts.default', 'BANK');
+        $this->selectFirstAccount();
+        $this->resetValidation();
     }
 
     public function recordPayment(): void
@@ -207,6 +216,13 @@ class CreateInvoice extends Component
             'payment_amount' => ['required', 'numeric', 'min:0.01'],
             'payment_date' => ['required', 'date'],
             'payment_note' => ['nullable', 'string', 'max:255'],
+            'receiving_account_id' => [
+                'required',
+                Rule::exists('receiving_accounts', 'id')->where(fn ($query) => $query->where('is_active', true)),
+            ],
+        ], [
+            'receiving_account_id.required' => 'Please select a payment account.',
+            'receiving_account_id.exists' => 'The selected payment account is not valid.',
         ]);
 
         $invoice = Invoice::findOrFail($this->previewInvoiceId);
@@ -217,6 +233,7 @@ class CreateInvoice extends Component
             'paid_at' => $this->payment_date.' '.now()->format('H:i:s'),
             'note' => $this->payment_note ?: null,
             'user_id' => auth()->id(),
+            'receiving_account_id' => $this->receiving_account_id,
         ]);
 
         $invoice->recalculateTotals();
@@ -232,12 +249,14 @@ class CreateInvoice extends Component
                 'statuses' => [],
                 'invoices' => collect(),
                 'previewInvoice' => null,
+                'paymentMethods' => [],
+                'allReceivingAccounts' => [],
             ]);
         }
 
         $previewInvoice = null;
         if ($this->previewInvoiceId) {
-            $previewInvoice = Invoice::with(['items', 'payments', 'user'])
+            $previewInvoice = Invoice::with(['items', 'payments.receivingAccount', 'user'])
                 ->find($this->previewInvoiceId);
         }
 
@@ -246,6 +265,8 @@ class CreateInvoice extends Component
             'statuses' => config('invoice.statuses', []),
             'invoices' => Invoice::query()->latest()->limit(20)->get(),
             'previewInvoice' => $previewInvoice,
+            'paymentMethods' => config('payment_accounts.options', []),
+            'allReceivingAccounts' => ReceivingAccount::pickerOptions(),
         ]);
     }
 
@@ -317,5 +338,14 @@ class CreateInvoice extends Component
             $this->showPreview = false;
             $this->showFormModal = false;
         }
+    }
+
+    private function selectFirstAccount(): void
+    {
+        $this->receiving_account_id = ReceivingAccount::query()
+            ->active()
+            ->where('method', $this->payment_method)
+            ->orderBy('name')
+            ->value('id');
     }
 }

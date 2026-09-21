@@ -70,6 +70,7 @@
                     <tr>
                         <th>Type</th>
                         <th>Account Name</th>
+                        <th>Total received</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -82,6 +83,7 @@
                                 </span>
                             </td>
                             <td class="receiving-accounts-table__name">{{ $account->name }}</td>
+                            <td>Rs {{ number_format($account->totalReceived(), 0) }}</td>
                             <td>
                                 <button
                                     type="button"
@@ -93,7 +95,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="receiving-accounts-table__empty">No accounts yet. Add one above.</td>
+                            <td colspan="4" class="receiving-accounts-table__empty">No accounts yet. Add one above.</td>
                         </tr>
                     @endforelse
                 </tbody>

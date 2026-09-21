@@ -15,7 +15,7 @@ Route::match(['get', 'head', 'post'], '/', function () {
 Route::get('/verify/invoice/{token}', function (string $token) {
     $invoice = Invoice::query()
         ->where('verification_token', $token)
-        ->with(['items', 'payments'])
+        ->with(['items', 'payments.receivingAccount'])
         ->firstOrFail();
 
     return view('invoices.verify', [
@@ -48,7 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/invoices/{invoice}/document', function (Request $request, Invoice $invoice) {
         abort_unless($request->user()->canView('accounts', 'invoices'), 403);
 
-        $invoice->load(['items', 'payments', 'user']);
+        $invoice->load(['items', 'payments.receivingAccount', 'user']);
 
         return view('invoices.document', [
             'invoice' => $invoice,

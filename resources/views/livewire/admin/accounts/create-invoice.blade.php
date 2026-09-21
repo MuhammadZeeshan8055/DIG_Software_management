@@ -356,7 +356,7 @@
                     @if ($showPaymentForm)
                         <div class="data-panel" style="margin-top:20px; padding:12px;">
                             <h4 class="data-panel__title" style="margin-bottom:12px;">Record payment</h4>
-                            <div class="manage-users-form__grid">
+                            <div class="manage-users-form__grid" style="margin-bottom: 12px;">
                                 <div class="mu-field">
                                     <label class="mu-field__label">Amount</label>
                                     <input type="number" min="0.01" step="0.01" class="mu-field__input" wire:model="payment_amount">
@@ -365,12 +365,23 @@
                                 <div class="mu-field">
                                     <label class="mu-field__label">Date</label>
                                     <input type="date" class="mu-field__input" wire:model="payment_date">
+                                    @error('payment_date') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
                                 </div>
                                 <div class="mu-field" style="grid-column: 1 / -1;">
                                     <label class="mu-field__label">Note (optional)</label>
                                     <input type="text" class="mu-field__input" wire:model="payment_note">
                                 </div>
                             </div>
+
+                            <x-receiving-account-picker
+                                :methods="$paymentMethods"
+                                :all-accounts="$allReceivingAccounts"
+                                :selected-method="$payment_method"
+                                :selected-account-id="$receiving_account_id"
+                                method-wire="payment_method"
+                                account-wire="receiving_account_id"
+                            />
+
                             <div style="display:flex; gap:8px; margin-top:12px;">
                                 <button type="button" class="hero-btn" wire:click="$set('showPaymentForm', false)">Cancel</button>
                                 <button type="button" class="hero-btn hero-btn--primary" wire:click="recordPayment">Save payment</button>

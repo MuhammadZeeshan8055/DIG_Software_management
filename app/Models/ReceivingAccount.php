@@ -26,6 +26,20 @@ class ReceivingAccount extends Model
         return $this->hasMany(PaymentEntry::class);
     }
 
+    public function invoicePayments(): HasMany
+    {
+        return $this->hasMany(InvoicePayment::class);
+    }
+
+    /** Ticket payments + invoice payments linked to this account. */
+    public function totalReceived(): float
+    {
+        $fromTickets = (float) $this->paymentEntries()->sum('amount_paid');
+        $fromInvoices = (float) $this->invoicePayments()->sum('amount');
+
+        return round($fromTickets + $fromInvoices, 2);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
