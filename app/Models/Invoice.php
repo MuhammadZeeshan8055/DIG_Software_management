@@ -30,6 +30,8 @@ class Invoice extends Model
         'paid_amount',
         'balance',
         'user_id',
+        'approved_at',
+        'approved_by',
     ];
 
     protected static function booted(): void
@@ -46,6 +48,7 @@ class Invoice extends Model
         return [
             'invoice_date' => 'date',
             'due_date' => 'date',
+            'approved_at' => 'datetime',
             'subtotal' => 'decimal:2',
             'tax_percent' => 'decimal:2',
             'tax_amount' => 'decimal:2',
@@ -68,6 +71,29 @@ class Invoice extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->approved_at !== null;
+    }
+
+    public function approve(User $user): void
+    {
+        $this->update([
+            'approved_at' => now(),
+            'approved_by' => $user->id,
+        ]);
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->whereNotNull('approved_at');
     }
 
     public static function nextNumber(): string

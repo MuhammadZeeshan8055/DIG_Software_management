@@ -114,7 +114,7 @@ class CreateInvoice extends Component
 
     public function openFormModal(): void
     {
-        abort_unless(auth()->user()->canManage('accounts', 'invoices'), 403);
+        abort_unless(auth()->user()->canView('accounts', 'invoices'), 403);
 
         $this->resetForm();
         $this->items = [
@@ -134,7 +134,7 @@ class CreateInvoice extends Component
 
     public function save(): void
     {
-        abort_unless(auth()->user()->canManage('accounts', 'invoices'), 403);
+        abort_unless(auth()->user()->canView('accounts', 'invoices'), 403);
 
         $this->validate($this->rules());
 
@@ -174,20 +174,39 @@ class CreateInvoice extends Component
             return $invoice->fresh(['items', 'payments', 'user']);
         });
 
-        $this->previewInvoiceId = $invoice->id;
         $this->showFormModal = false;
-        $this->showPreview = true;
-        $this->successMessage = 'Invoice '.$invoice->invoice_number.' created.';
-        $this->resetForm(keepPreview: true);
+        $this->showPreview = false;
+        $this->previewInvoiceId = null;
+        $this->successMessage = 'Invoice '.$invoice->invoice_number.' created. Waiting for admin approval.';
+        $this->resetForm();
     }
 
     public function openPreview(int $id): void
     {
         abort_unless(auth()->user()->canView('accounts', 'invoices'), 403);
 
+        $invoice = Invoice::findOrFail($id);
+        abort_unless($invoice->isApproved() || auth()->user()->isAdmin(), 403);
+
         $this->previewInvoiceId = $id;
         $this->showPreview = true;
         $this->showPaymentForm = false;
+    }
+
+    public function approveInvoice(int $id): void
+    {
+        abort_unless(auth()->user()->isAdmin(), 403);
+
+        $invoice = Invoice::findOrFail($id);
+
+        if ($invoice->isApproved()) {
+            $this->successMessage = 'Invoice '.$invoice->invoice_number.' is already approved.';
+
+            return;
+        }
+
+        $invoice->approve(auth()->user());
+        $this->successMessage = 'Invoice '.$invoice->invoice_number.' approved.';
     }
 
     public function closePreview(): void
@@ -199,6 +218,9 @@ class CreateInvoice extends Component
 
     public function openPaymentForm(): void
     {
+        $invoice = Invoice::findOrFail($this->previewInvoiceId);
+        abort_unless($invoice->isApproved(), 403);
+
         $this->showPaymentForm = true;
         $this->payment_amount = '';
         $this->payment_note = '';
@@ -210,7 +232,10 @@ class CreateInvoice extends Component
 
     public function recordPayment(): void
     {
-        abort_unless(auth()->user()->canManage('accounts', 'invoices'), 403);
+        abort_unless(auth()->user()->canView('accounts', 'invoices'), 403);
+
+        $invoice = Invoice::findOrFail($this->previewInvoiceId);
+        abort_unless($invoice->isApproved(), 403);
 
         $this->validate([
             'payment_amount' => ['required', 'numeric', 'min:0.01'],
@@ -224,8 +249,6 @@ class CreateInvoice extends Component
             'receiving_account_id.required' => 'Please select a payment account.',
             'receiving_account_id.exists' => 'The selected payment account is not valid.',
         ]);
-
-        $invoice = Invoice::findOrFail($this->previewInvoiceId);
 
         InvoicePayment::create([
             'invoice_id' => $invoice->id,

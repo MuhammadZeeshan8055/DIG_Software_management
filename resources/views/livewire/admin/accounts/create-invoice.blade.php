@@ -16,9 +16,11 @@
             <h2 class="module-workspace__title">Invoices</h2>
         </div>
         <div>
-            <button type="button" class="hero-btn hero-btn--primary" wire:click="openFormModal">
-                + Add Invoice
-            </button>
+            @if (auth()->user()->canView('accounts', 'invoices'))
+                <button type="button" class="hero-btn hero-btn--primary" wire:click="openFormModal">
+                    + Add Invoice
+                </button>
+            @endif
         </div>
     </section>
 
@@ -42,15 +44,22 @@
                         <th>Total</th>
                         <th>Balance</th>
                         <th>Status</th>
+                        <th>Approval</th>
                         <th>Date</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($invoices as $invoice)
+                        @php
+                            $canOpen = $invoice->isApproved() || auth()->user()->isAdmin();
+                        @endphp
                         <tr
                             wire:key="inv-{{ $invoice->id }}"
-                            style="cursor: pointer;"
-                            wire:click="openPreview({{ $invoice->id }})"
+                            @if ($canOpen)
+                                style="cursor: pointer;"
+                                wire:click="openPreview({{ $invoice->id }})"
+                            @endif
                         >
                             <td>{{ $invoice->invoice_number }}</td>
                             <td>{{ $invoice->customer_name }}</td>
@@ -61,11 +70,30 @@
                                     {{ $invoice->paymentStatusLabel() }}
                                 </span>
                             </td>
+                            <td>
+                                @if ($invoice->isApproved())
+                                    <span class="payment-badge payment-badge--paid">Approved</span>
+                                @else
+                                    <span class="payment-badge payment-badge--draft">Awaiting approval</span>
+                                @endif
+                            </td>
                             <td>{{ optional($invoice->invoice_date)->format('Y-m-d') }}</td>
+                            <td>
+                                @if (! $invoice->isApproved() && auth()->user()->isAdmin())
+                                    <button
+                                        type="button"
+                                        class="hero-btn hero-btn--primary"
+                                        style="padding: 6px 10px; font-size: 0.75rem;"
+                                        wire:click.stop="approveInvoice({{ $invoice->id }})"
+                                    >
+                                        Approve
+                                    </button>
+                                @endif
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6">No invoices yet. Click “+ Add Invoice” to create one.</td>
+                            <td colspan="8">No invoices yet. Click “+ Add Invoice” to create one.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -392,15 +420,25 @@
 
                 <div style="display:flex; justify-content:flex-end; gap:8px; padding:12px 16px; border-top:1px solid #e5e5e5; background:#fafafa;">
                     <button type="button" class="hero-btn" wire:click="closePreview">Close</button>
-                    <button type="button" class="hero-btn" wire:click="openPaymentForm">+ Record payment</button>
-                    <a
-                        class="hero-btn hero-btn--primary"
-                        href="{{ url('/invoices/'.$previewInvoice->id.'/document?print=1') }}"
-                        target="_blank"
-                        rel="noopener"
-                    >
-                        Print
-                    </a>
+                    @if ($previewInvoice->isApproved())
+                        <button type="button" class="hero-btn" wire:click="openPaymentForm">+ Record payment</button>
+                        <a
+                            class="hero-btn hero-btn--primary"
+                            href="{{ url('/invoices/'.$previewInvoice->id.'/document?print=1') }}"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            Print
+                        </a>
+                    @elseif (auth()->user()->isAdmin())
+                        <button
+                            type="button"
+                            class="hero-btn hero-btn--primary"
+                            wire:click="approveInvoice({{ $previewInvoice->id }})"
+                        >
+                            Approve invoice
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>

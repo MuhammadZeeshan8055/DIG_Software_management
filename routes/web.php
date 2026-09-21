@@ -18,6 +18,8 @@ Route::get('/verify/invoice/{token}', function (string $token) {
         ->with(['items', 'payments.receivingAccount'])
         ->firstOrFail();
 
+    abort_unless($invoice->isApproved(), 404);
+
     return view('invoices.verify', [
         'invoice' => $invoice,
     ]);
@@ -54,7 +56,7 @@ Route::middleware('auth')->group(function () {
             'invoice' => $invoice,
             'autoPrint' => $request->boolean('print'),
         ]);
-    })->name('invoices.document');
+    })->middleware('invoice.approved')->name('invoices.document');
 });
 
 require __DIR__.'/auth.php';

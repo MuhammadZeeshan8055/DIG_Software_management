@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'attendance.started' => \App\Http\Middleware\EnsureStaffAttendanceStarted::class,
+            'invoice.approved' => \App\Http\Middleware\EnsureInvoiceApproved::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
