@@ -29,6 +29,14 @@ $workspace = $workspace ?? config('admin_workspace', []);
     class="admin-body"
     @open-my-attendance.window="openMyAttendance()"
     @open-my-account.window="openMyAccount()"
+    @open-notification-nav.window="
+        if ($event.detail?.module && modules[$event.detail.module]) {
+            openModule($event.detail.module);
+            if ($event.detail.option) {
+                selectOption($event.detail.option);
+            }
+        }
+    "
     x-data="{
         sidebarOpen: false,
         activeModule: null,

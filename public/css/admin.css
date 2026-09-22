@@ -1022,6 +1022,106 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     line-height: 1;
 }
 
+.notification-bell {
+    position: relative;
+}
+
+.notification-bell__panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 10002;
+    width: min(360px, calc(100vw - 24px));
+    max-height: 420px;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
+    overflow: hidden;
+}
+
+.notification-bell__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    background: #f8fafc;
+}
+
+.notification-bell__head strong {
+    font-size: 0.88rem;
+    color: var(--brand-navy);
+}
+
+.notification-bell__mark-all {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--brand-blue);
+    cursor: pointer;
+}
+
+.notification-bell__list {
+    overflow-y: auto;
+    max-height: 340px;
+}
+
+.notification-bell__item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    width: 100%;
+    padding: 12px 14px;
+    border: none;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.notification-bell__item:hover {
+    background: #f8fafc;
+}
+
+.notification-bell__item--unread {
+    background: rgba(0, 145, 212, 0.05);
+}
+
+.notification-bell__item-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--brand-navy);
+    line-height: 1.35;
+}
+
+.notification-bell__item-body {
+    font-size: 0.75rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.notification-bell__item-time {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+.notification-bell__empty {
+    margin: 0;
+    padding: 24px 14px;
+    text-align: center;
+    font-size: 0.82rem;
+    color: #64748b;
+}
+
 /* ===== Dashboard page atmosphere ===== */
 .dashboard-page {
     position: relative;
