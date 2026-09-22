@@ -1,5 +1,6 @@
 <div
     class="notification-bell"
+    wire:poll.5s
     x-data
     @click.outside="$wire.close()"
     @keydown.escape.window="$wire.close()"

@@ -84,18 +84,15 @@ class LeaveRequest extends Model
     }
 
     /**
-     * Simple check: does this user already have leave on these dates?
-     * (pending OR approved — so they cannot apply again)
-     *
-     * Overlap rule (easy):
-     * existing.from <= new.to  AND  existing.to >= new.from
+     * Does this user already have leave on these dates?
+     * Blocks pending, approved, and rejected — same date cannot be applied again.
      * Late penalty does not block applying real leave.
      */
     public static function hasOverlap(int $userId, string $fromDate, string $toDate): bool
     {
         $leave = self::query()
             ->where('user_id', $userId)
-            ->whereIn('status', ['pending', 'approved'])
+            ->whereIn('status', ['pending', 'approved', 'rejected'])
             ->whereDate('from_date', '<=', $toDate)
             ->whereDate('to_date', '>=', $fromDate)
             ->where(function ($q) {
@@ -104,10 +101,6 @@ class LeaveRequest extends Model
             })
             ->first();
 
-        if ($leave) {
-            return true;
-        }
-
-        return false;
+        return $leave !== null;
     }
 }

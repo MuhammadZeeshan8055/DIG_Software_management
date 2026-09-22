@@ -4,11 +4,12 @@ namespace App\Livewire\Admin\Attendance;
 
 use App\Models\LeaveRequest;
 use App\Support\LeaveBalance;
+use App\Support\UserNotifier;
 use Livewire\Component;
 
 /**
  * Admin / super_admin approve or reject leave.
- * Approve is blocked if remaining balance is not enough.
+ * Over-balance leave can still be approved as paid (emergency).
  */
 class LeaveApprovals extends Component
 {
@@ -87,20 +88,37 @@ class LeaveApprovals extends Component
             return;
         }
 
-        // Not enough leave left → do not approve (paid/unpaid split later)
-        if ($status === 'approved' && ! LeaveBalance::hasEnough($request)) {
-            $this->errorMessage = 'Not enough leave balance for this request ('.LeaveBalance::costLabel($request).'). Reject it, or ask for a shorter leave.';
+        $overBalance = $status === 'approved' && ! LeaveBalance::hasEnough($request);
 
-            return;
-        }
-
+        // Always keep as paid — admin/super admin may approve emergency leave over balance
         $request->update([
             'status' => $status,
             'approved_by' => auth()->id(),
+            'is_paid' => true,
         ]);
 
-        $this->successMessage = $status === 'approved'
-            ? 'Leave request approved.'
-            : 'Leave request rejected.';
+        if ($request->user) {
+            $from = optional($request->from_date)->format('Y-m-d');
+            $to = optional($request->to_date)->format('Y-m-d');
+            $dateLabel = $from === $to ? $from : $from.' → '.$to;
+            $outcome = $status === 'approved' ? 'approved' : 'rejected';
+
+            UserNotifier::send(
+                $request->user,
+                'leave_decision',
+                'Leave request '.$outcome,
+                'Your leave for '.$dateLabel.' was '.$outcome.'.',
+                'attendance',
+                'apply-leave'
+            );
+        }
+
+        if ($status === 'approved') {
+            $this->successMessage = $overBalance
+                ? 'Leave approved as paid (emergency — over monthly balance).'
+                : 'Leave request approved.';
+        } else {
+            $this->successMessage = 'Leave request rejected.';
+        }
     }
 }

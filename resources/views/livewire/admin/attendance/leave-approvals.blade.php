@@ -1,4 +1,8 @@
-<div class="leave-approvals-page" wire:poll.10s.visible>
+<div
+    class="leave-approvals-page"
+    wire:poll.5s.visible
+    @leave-approvals-panel-opened.window="$wire.$refresh()"
+>
     @if ($denied ?? false)
         <div class="data-panel">
             <p>Only admin or super admin can approve leave.</p>
@@ -13,7 +17,7 @@
                 </p>
                 <h2 class="module-workspace__title">Leave Approvals</h2>
                 <p class="module-workspace__desc" style="margin: 8px 0 0; font-size: 0.9rem; opacity: 0.85;">
-                    Approve or reject staff leave. Your name is stored as the approver.
+                    Approve or reject staff leave. Over-balance leave can be approved as paid for emergencies.
                 </p>
             </div>
         </section>

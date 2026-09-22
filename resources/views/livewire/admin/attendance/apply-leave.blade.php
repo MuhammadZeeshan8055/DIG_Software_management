@@ -1,4 +1,8 @@
-<div class="apply-leave-page" wire:poll.10s.visible>
+<div
+    class="apply-leave-page"
+    wire:poll.5s.visible
+    @apply-leave-panel-opened.window="$wire.$refresh()"
+>
     @if ($denied ?? false)
     <div class="data-panel">
         <p>You do not have access to apply leave.</p>

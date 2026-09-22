@@ -34,6 +34,17 @@ $workspace = $workspace ?? config('admin_workspace', []);
             openModule($event.detail.module);
             if ($event.detail.option) {
                 selectOption($event.detail.option);
+                $nextTick(() => {
+                    if ($event.detail.option === 'leave-approvals') {
+                        window.dispatchEvent(new CustomEvent('leave-approvals-panel-opened'));
+                    }
+                    if ($event.detail.option === 'apply-leave') {
+                        window.dispatchEvent(new CustomEvent('apply-leave-panel-opened'));
+                    }
+                    if ($event.detail.option === 'invoices') {
+                        window.dispatchEvent(new CustomEvent('invoices-panel-opened'));
+                    }
+                });
             }
         }
     "
@@ -143,6 +154,18 @@ $workspace = $workspace ?? config('admin_workspace', []);
             if (this.activeOption === 'users') {
                 this.$nextTick(() => {
                     window.dispatchEvent(new CustomEvent('users-panel-opened'));
+                });
+            }
+
+            if (this.activeOption === 'leave-approvals') {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('leave-approvals-panel-opened'));
+                });
+            }
+
+            if (this.activeOption === 'apply-leave') {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('apply-leave-panel-opened'));
                 });
             }
         },
@@ -256,6 +279,12 @@ $workspace = $workspace ?? config('admin_workspace', []);
             }
             if (key === 'my-daily-attendance') {
                 window.dispatchEvent(new CustomEvent('my-attendance-opened'));
+            }
+            if (key === 'leave-approvals') {
+                window.dispatchEvent(new CustomEvent('leave-approvals-panel-opened'));
+            }
+            if (key === 'apply-leave') {
+                window.dispatchEvent(new CustomEvent('apply-leave-panel-opened'));
             }
             if (window.matchMedia('(max-width: 1024px)').matches) {
                 this.sidebarOpen = false;

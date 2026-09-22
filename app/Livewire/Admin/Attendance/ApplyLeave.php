@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Attendance;
 
 use App\Models\LeaveRequest;
 use App\Support\LeaveBalance;
+use App\Support\UserNotifier;
 use Carbon\Carbon;
 use Livewire\Component;
 
@@ -119,7 +120,7 @@ class ApplyLeave extends Component
         );
 
         if ($alreadyHasLeave === true) {
-            $this->errorMessage = 'You already have leave (pending or approved) on these date(s).';
+            $this->errorMessage = 'Leave already exists for these date(s). You cannot apply again on the same date.';
 
             return;
         }
@@ -136,6 +137,24 @@ class ApplyLeave extends Component
             'status' => 'pending',
             'approved_by' => null,
         ]);
+
+        $staffName = auth()->user()->name;
+        $typeLabel = $this->leave_type === 'half' ? 'Half day' : 'Full day';
+        $dateLabel = $this->from_date === $this->to_date
+            ? $this->from_date
+            : $this->from_date.' → '.$this->to_date;
+
+        $admins = UserNotifier::admins()
+            ->reject(fn ($admin) => (int) $admin->id === (int) auth()->id());
+
+        UserNotifier::send(
+            $admins,
+            'leave_request',
+            'Leave approval needed',
+            $staffName.' requested '.$typeLabel.' leave ('.$dateLabel.').',
+            'attendance',
+            'leave-approvals'
+        );
 
         $this->reason = '';
         $this->successMessage = 'Leave request submitted. Waiting for admin approval.';
