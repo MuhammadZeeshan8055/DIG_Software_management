@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\InvoicePayment;
 use App\Models\ReceivingAccount;
+use App\Support\UserNotifier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -179,6 +180,19 @@ class CreateInvoice extends Component
         $this->previewInvoiceId = null;
         $this->successMessage = 'Invoice '.$invoice->invoice_number.' created. Waiting for admin approval.';
         $this->resetForm();
+
+        $creatorName = auth()->user()->name;
+        $admins = UserNotifier::admins()
+            ->reject(fn ($admin) => (int) $admin->id === (int) auth()->id());
+
+        UserNotifier::send(
+            $admins,
+            'invoice_approval',
+            'Invoice approval needed',
+            $creatorName.' created '.$invoice->invoice_number.' for '.$invoice->customer_name.'.',
+            'accounts',
+            'invoices'
+        );
     }
 
     public function openPreview(int $id): void
@@ -197,7 +211,7 @@ class CreateInvoice extends Component
     {
         abort_unless(auth()->user()->isAdmin(), 403);
 
-        $invoice = Invoice::findOrFail($id);
+        $invoice = Invoice::with('user')->findOrFail($id);
 
         if ($invoice->isApproved()) {
             $this->successMessage = 'Invoice '.$invoice->invoice_number.' is already approved.';
@@ -206,6 +220,18 @@ class CreateInvoice extends Component
         }
 
         $invoice->approve(auth()->user());
+
+        if ($invoice->user && (int) $invoice->user->id !== (int) auth()->id()) {
+            UserNotifier::send(
+                $invoice->user,
+                'invoice_decision',
+                'Invoice approved',
+                $invoice->invoice_number.' for '.$invoice->customer_name.' was approved.',
+                'accounts',
+                'invoices'
+            );
+        }
+
         $this->successMessage = 'Invoice '.$invoice->invoice_number.' approved.';
     }
 
