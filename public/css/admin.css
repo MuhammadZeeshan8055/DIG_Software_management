@@ -4106,6 +4106,32 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     background: rgba(255, 255, 255, 0.12);
 }
 
+.admin-toast__progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.9);
+    transform-origin: left center;
+    animation-name: admin-toast-progress;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+.admin-toast--error .admin-toast__progress {
+    background: #e7ecff;
+}
+
+@keyframes admin-toast-progress {
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
+}
+
 .admin-toast-enter {
     transition: opacity 0.25s ease, transform 0.25s ease;
 }

@@ -54,5 +54,10 @@
             aria-label="Dismiss"
             @click="show = false; {{ $clearWire }}"
         >&times;</button>
+        <span
+            class="admin-toast__progress"
+            style="animation-duration: {{ (int) $seconds }}s;"
+            aria-hidden="true"
+        ></span>
     </div>
 </template>
