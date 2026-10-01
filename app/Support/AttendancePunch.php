@@ -168,6 +168,11 @@ class AttendancePunch
         $record->status_color = self::colorForWorkedMinutes($minutes);
         $record->save();
 
+        // 4th / 8th / … early → auto half-day leave (paid if balance left)
+        if ($isEarly) {
+            EarlyPenalty::applyIfNeeded($user, self::todayDate());
+        }
+
         $hours = intdiv($minutes, 60);
         $mins = $minutes % 60;
 

@@ -48,11 +48,23 @@ class LeaveRequest extends Model
         return is_string($this->reason) && str_starts_with($this->reason, 'Late penalty');
     }
 
+    /** Auto half-day cut for 4th early checkout — not a real day off. */
+    public function isEarlyPenalty(): bool
+    {
+        return is_string($this->reason) && str_starts_with($this->reason, 'Early penalty');
+    }
+
+    /** Late or early auto penalty leave. */
+    public function isAutoPenalty(): bool
+    {
+        return $this->isLatePenalty() || $this->isEarlyPenalty();
+    }
+
     /**
      * Simple check: does this user have APPROVED leave on this day?
      *
      * Example: leave from 9 Sep to 10 Sep, today is 9 Sep → true
-     * Late penalty rows are ignored (they still worked that day).
+     * Late/early penalty rows are ignored (they still worked that day).
      */
     public static function isOnApprovedLeave(int $userId, ?string $date = null): bool
     {
@@ -63,7 +75,7 @@ class LeaveRequest extends Model
 
         // Find one approved leave where:
         // from_date <= today  AND  to_date >= today
-        // Skip late-penalty rows — staff can still punch in/out
+        // Skip auto-penalty rows — staff can still punch in/out
         $leave = self::query()
             ->where('user_id', $userId)
             ->where('status', 'approved')
@@ -71,7 +83,10 @@ class LeaveRequest extends Model
             ->whereDate('to_date', '>=', $date)
             ->where(function ($q) {
                 $q->whereNull('reason')
-                    ->orWhere('reason', 'not like', 'Late penalty%');
+                    ->orWhere(function ($inner) {
+                        $inner->where('reason', 'not like', 'Late penalty%')
+                            ->where('reason', 'not like', 'Early penalty%');
+                    });
             })
             ->first();
 
@@ -86,7 +101,7 @@ class LeaveRequest extends Model
     /**
      * Does this user already have leave on these dates?
      * Blocks pending, approved, and rejected — same date cannot be applied again.
-     * Late penalty does not block applying real leave.
+     * Late/early penalty does not block applying real leave.
      */
     public static function hasOverlap(int $userId, string $fromDate, string $toDate): bool
     {
@@ -97,7 +112,10 @@ class LeaveRequest extends Model
             ->whereDate('to_date', '>=', $fromDate)
             ->where(function ($q) {
                 $q->whereNull('reason')
-                    ->orWhere('reason', 'not like', 'Late penalty%');
+                    ->orWhere(function ($inner) {
+                        $inner->where('reason', 'not like', 'Late penalty%')
+                            ->where('reason', 'not like', 'Early penalty%');
+                    });
             })
             ->first();
 

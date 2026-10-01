@@ -156,7 +156,7 @@ class DailyAttendanceRows
         $pending = null;
 
         foreach ($leaves as $leave) {
-            if ($leave->isLatePenalty()) {
+            if ($leave->isAutoPenalty()) {
                 continue;
             }
 

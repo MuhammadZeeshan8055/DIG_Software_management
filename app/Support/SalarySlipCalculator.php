@@ -86,7 +86,7 @@ class SalarySlipCalculator
                 continue;
             }
 
-            if ($leave !== null && $leave->is_paid && ! $leave->isLatePenalty()) {
+            if ($leave !== null && $leave->is_paid && ! $leave->isAutoPenalty()) {
                 continue;
             }
 

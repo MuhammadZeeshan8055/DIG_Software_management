@@ -178,7 +178,7 @@
                 </thead>
                 <tbody>
                     @forelse ($requests as $req)
-                    <tr x-bind:class="{ 'leave-row--rejected': @js($req->status === 'rejected' || $req->isLatePenalty()) }">
+                    <tr x-bind:class="{ 'leave-row--rejected': @js($req->status === 'rejected' || $req->isAutoPenalty()) }">
                         <td>{{ $req->leave_type === 'half' ? 'Half day' : 'Full day' }}</td>
                         <td>
                             @if ($req->leave_type === 'half' || $req->from_date->equalTo($req->to_date))
@@ -214,7 +214,7 @@
                         <td>
                             @if ($req->status === 'pending')
                             —
-                            @elseif ($req->isLatePenalty())
+                            @elseif ($req->isAutoPenalty())
                             System
                             @else
                             {{ $req->approver?->name ?? '—' }}
