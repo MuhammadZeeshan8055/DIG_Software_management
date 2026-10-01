@@ -97,6 +97,19 @@
                             </td>
                         </tr>
                     @endif
+                    @if ((float) ($slip->bonus ?? 0) > 0)
+                        <tr>
+                            <td class="invoice-doc__col-desc">
+                                <span class="invoice-doc__item-name">Bonus</span>
+                            </td>
+                            <td class="invoice-doc__col-qty">
+                                <span class="invoice-doc__qty">—</span>
+                            </td>
+                            <td class="invoice-doc__col-amount">
+                                + Rs {{ number_format((float) $slip->bonus, 0) }}
+                            </td>
+                        </tr>
+                    @endif
                 </tbody>
             </table>
         </div>
@@ -110,6 +123,12 @@
                 <span>Total deduction ({{ $slip->deduct_days }} day{{ (float) $slip->deduct_days == 1 ? '' : 's' }})</span>
                 <strong>Rs {{ number_format((float) $slip->deduction, 0) }}</strong>
             </div>
+            @if ((float) ($slip->bonus ?? 0) > 0)
+                <div class="invoice-doc__total-row">
+                    <span>Bonus</span>
+                    <strong>Rs {{ number_format((float) $slip->bonus, 0) }}</strong>
+                </div>
+            @endif
             <div class="invoice-doc__total-row invoice-doc__total-row--grand">
                 <span>Net pay ({{ $currency }})</span>
                 <strong>Rs {{ number_format((float) $slip->net_pay, 0) }}</strong>

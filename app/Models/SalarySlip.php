@@ -17,6 +17,7 @@ class SalarySlip extends Model
         'deduct_days',
         'daily_rate',
         'deduction',
+        'bonus',
         'net_pay',
         'generated_by',
     ];
@@ -31,6 +32,7 @@ class SalarySlip extends Model
             'deduct_days' => 'decimal:2',
             'daily_rate' => 'decimal:2',
             'deduction' => 'decimal:2',
+            'bonus' => 'decimal:2',
             'net_pay' => 'decimal:2',
         ];
     }

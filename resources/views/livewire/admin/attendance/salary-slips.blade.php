@@ -30,15 +30,15 @@
     </section>
 
     @if ($successMessage)
-        <x-admin-alert type="success" wire-property="successMessage">
+        <x-admin-toast wire-property="successMessage" :seconds="6">
             {{ $successMessage }}
-        </x-admin-alert>
+        </x-admin-toast>
     @endif
 
     @if ($errorMessage)
-        <x-admin-alert type="error" wire-property="errorMessage">
+        <x-admin-toast type="error" title="Cannot generate" wire-property="errorMessage" :seconds="6">
             {{ $errorMessage }}
-        </x-admin-alert>
+        </x-admin-toast>
     @endif
 
     <div class="data-panel">
@@ -121,6 +121,20 @@
                                 <label class="mu-field__label" for="salary-month">Month</label>
                                 <input id="salary-month" type="month" class="mu-field__input" wire:model="month">
                                 @error('month') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div class="mu-field">
+                                <label class="mu-field__label" for="salary-bonus">Bonus (optional)</label>
+                                <input
+                                    id="salary-bonus"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    class="mu-field__input"
+                                    wire:model="bonus"
+                                    placeholder="e.g. 2000"
+                                >
+                                @error('bonus') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
                             </div>
                         </div>
 

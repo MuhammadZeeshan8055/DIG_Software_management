@@ -18,6 +18,9 @@ class SalarySlips extends Component
 
     public string $month = '';
 
+    /** Optional bonus amount (Rs). */
+    public string $bonus = '';
+
     public bool $showFormModal = false;
 
     public ?int $previewId = null;
@@ -42,6 +45,7 @@ class SalarySlips extends Component
 
         $this->month = SalarySlipCalculator::normalizeMonth(null);
         $this->userId = $this->firstStaffId();
+        $this->bonus = '';
         $this->showFormModal = true;
         $this->showPreview = false;
         $this->errorMessage = null;
@@ -73,6 +77,7 @@ class SalarySlips extends Component
                 Rule::exists('users', 'id')->where(fn ($q) => $q->where('role', 'staff')),
             ],
             'month' => ['required', 'regex:/^\d{4}-\d{2}$/'],
+            'bonus' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $user = User::findOrFail($this->userId);
@@ -93,6 +98,12 @@ class SalarySlips extends Component
         }
 
         $calc = SalarySlipCalculator::forUser($user, $month);
+        $bonus = $this->bonus === '' || $this->bonus === null
+            ? 0.0
+            : round((float) $this->bonus, 2);
+
+        $calc['bonus'] = $bonus;
+        $calc['net_pay'] = round(max(0, (float) $calc['monthly_salary'] - (float) $calc['deduction'] + $bonus), 2);
 
         $slip = SalarySlip::updateOrCreate(
             [
