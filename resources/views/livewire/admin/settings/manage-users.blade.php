@@ -27,6 +27,7 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Role</th>
+                        <th>Monthly salary</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -39,6 +40,13 @@
                                 <span class="method-badge method-badge--{{ $user->role }}">
                                     {{ str_replace('_', ' ', $user->role) }}
                                 </span>
+                            </td>
+                            <td>
+                                @if ($user->monthly_salary !== null)
+                                    Rs {{ number_format((float) $user->monthly_salary, 0) }}
+                                @else
+                                    —
+                                @endif
                             </td>
                             <td class="manage-users-actions">
                                 <button
@@ -58,7 +66,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="receiving-accounts-table__empty">
+                            <td colspan="5" class="receiving-accounts-table__empty">
                                 No users yet. Click Add User to create one.
                             </td>
                         </tr>
@@ -118,6 +126,19 @@
                                         <option value="{{ $value }}">{{ $label }}</option>
                                     @endforeach
                                 </select>
+                            </div>
+
+                            <div class="mu-field">
+                                <label class="mu-field__label" for="mu-monthly-salary">Monthly salary</label>
+                                <input
+                                    id="mu-monthly-salary"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    wire:model="monthly_salary"
+                                    class="mu-field__input"
+                                    placeholder="e.g. 30000"
+                                >
                             </div>
                         </div>
 

@@ -168,6 +168,12 @@ $workspace = $workspace ?? config('admin_workspace', []);
                     window.dispatchEvent(new CustomEvent('apply-leave-panel-opened'));
                 });
             }
+
+            if (this.activeOption === 'salary-slips') {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('salary-slips-panel-opened'));
+                });
+            }
         },
 
         currentModule() {
@@ -285,6 +291,9 @@ $workspace = $workspace ?? config('admin_workspace', []);
             }
             if (key === 'apply-leave') {
                 window.dispatchEvent(new CustomEvent('apply-leave-panel-opened'));
+            }
+            if (key === 'salary-slips') {
+                window.dispatchEvent(new CustomEvent('salary-slips-panel-opened'));
             }
             if (window.matchMedia('(max-width: 1024px)').matches) {
                 this.sidebarOpen = false;

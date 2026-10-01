@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Livewire\Admin\Attendance\AttendanceGate;
 use App\Models\Invoice;
+use App\Models\SalarySlip;
 use App\Models\TicketImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -57,6 +58,17 @@ Route::middleware('auth')->group(function () {
             'autoPrint' => $request->boolean('print'),
         ]);
     })->middleware('invoice.approved')->name('invoices.document');
+
+    Route::get('/salary-slips/{salarySlip}/document', function (Request $request, SalarySlip $salarySlip) {
+        abort_unless($request->user()->isAdmin(), 403);
+
+        $salarySlip->load('user');
+
+        return view('salary-slips.document', [
+            'slip' => $salarySlip,
+            'autoPrint' => $request->boolean('print'),
+        ]);
+    })->name('salary-slips.document');
 });
 
 require __DIR__.'/auth.php';

@@ -129,6 +129,7 @@ return [
                 // Admin / super_admin only (hidden from staff nav + staff permissions)
                 ['key' => 'staff-daily-attendance', 'label' => 'Staff Attendance', 'route' => null, 'admin_only' => true],
                 ['key' => 'leave-approvals', 'label' => 'Leave Approvals', 'route' => null, 'admin_only' => true],
+                ['key' => 'salary-slips', 'label' => 'Salary Slips', 'route' => null, 'admin_only' => true],
                 ['key' => 'office-settings', 'label' => 'Office Settings', 'route' => null, 'admin_only' => true],
                 ['key' => 'holidays', 'label' => 'Holidays', 'route' => null, 'admin_only' => true],
             ],

@@ -19,6 +19,9 @@ class ManageUsers extends Component
 
     public string $role = 'staff';
 
+    /** Monthly gross salary (nullable until set). */
+    public string $monthly_salary = '';
+
     /** When true, staff gets manage on every module feature. */
     public bool $allowAllAccess = false;
 
@@ -70,6 +73,9 @@ class ManageUsers extends Component
         $this->email = $user->email;
         $this->password = '';
         $this->role = $user->role;
+        $this->monthly_salary = $user->monthly_salary !== null
+            ? (string) $user->monthly_salary
+            : '';
         $this->allowAllAccess = false;
         $this->resetModuleAccess();
 
@@ -109,6 +115,7 @@ class ManageUsers extends Component
                 Rule::unique('users', 'email')->ignore($this->editingId),
             ],
             'role' => ['required', Rule::in($allowedRoles)],
+            'monthly_salary' => ['nullable', 'numeric', 'min:0'],
             'allowAllAccess' => ['boolean'],
             'moduleEnabled' => ['array'],
             'moduleLevel' => ['array'],
@@ -125,6 +132,10 @@ class ManageUsers extends Component
 
         $wasEditing = (bool) $this->editingId;
 
+        $salary = $this->monthly_salary === '' || $this->monthly_salary === null
+            ? null
+            : round((float) $this->monthly_salary, 2);
+
         if ($this->editingId) {
             $user = User::findOrFail($this->editingId);
 
@@ -135,6 +146,7 @@ class ManageUsers extends Component
             $user->name = trim($this->name);
             $user->email = trim($this->email);
             $user->role = $this->role;
+            $user->monthly_salary = $salary;
 
             if ($this->password !== '') {
                 $user->password = $this->password;
@@ -147,6 +159,7 @@ class ManageUsers extends Component
                 'email' => trim($this->email),
                 'password' => $this->password,
                 'role' => $this->role,
+                'monthly_salary' => $salary,
                 'email_verified_at' => now(),
             ]);
         }
@@ -261,6 +274,7 @@ class ManageUsers extends Component
         $this->email = '';
         $this->password = '';
         $this->role = 'staff';
+        $this->monthly_salary = '';
         $this->allowAllAccess = false;
         $this->resetModuleAccess();
         $this->resetValidation();

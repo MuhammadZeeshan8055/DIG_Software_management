@@ -95,7 +95,7 @@
     {{-- Module workspace (replaces overview) --}}
     <div
         class="dashboard-view module-workspace"
-        x-show="activeModule && !viewingMyAttendance && !viewingMyAccount && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'invoices' && activeOption !== 'users' && activeOption !== 'my-daily-attendance' && activeOption !== 'staff-daily-attendance' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays'"
+        x-show="activeModule && !viewingMyAttendance && !viewingMyAccount && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'invoices' && activeOption !== 'users' && activeOption !== 'my-daily-attendance' && activeOption !== 'staff-daily-attendance' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips'"
         x-cloak
         x-transition:enter="dash-enter"
         x-transition:enter-start="dash-enter-start"
@@ -208,7 +208,7 @@
                 {{-- Other option tables (static demo data) --}}
                 <div
                     class="module-panel"
-                    x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'my-daily-attendance' && activeOption !== 'invoices' && activeOption !== 'staff-daily-attendance' && activeOption !== 'office-settings' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays'"
+                    x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'my-daily-attendance' && activeOption !== 'invoices' && activeOption !== 'staff-daily-attendance' && activeOption !== 'office-settings' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips'"
                     x-cloak
                     x-transition.opacity.duration.200ms>
                     <template x-if="currentTable()">
@@ -332,6 +332,15 @@
         x-cloak
         x-transition.opacity.duration.200ms>
         <livewire:admin.attendance.manage-holidays />
+    </div>
+
+    {{-- Salary Slips (Attendance → Salary Slips) — admin / super_admin only --}}
+    <div
+        class="dashboard-view dashboard-view--panel"
+        x-show="activeModule === 'attendance' && activeOption === 'salary-slips' && !viewingMyAccount"
+        x-cloak
+        x-transition.opacity.duration.200ms>
+        <livewire:admin.attendance.salary-slips />
     </div>
 
     {{-- My Account (profile menu) — email / password --}}
