@@ -3,15 +3,23 @@
 namespace App\Livewire\Admin\DailyVisitors;
 
 use App\Models\DailyVisitor;
+use App\Models\VisitorReminder;
 use App\Support\UserNotifier;
 use Livewire\Component;
 
-/** Desk staff: see my visitors — wait / send now / complete. */
+/** Desk staff: see my visitors — wait / send now / complete / remind. */
 class MyQueue extends Component
 {
     public string $remarks = '';
 
     public ?int $completingId = null;
+
+    /** Which visitor we are setting a reminder for. */
+    public ?int $remindingId = null;
+
+    public string $remind_on = '';
+
+    public string $remind_note = '';
 
     public string $filter_date = '';
 
@@ -129,6 +137,133 @@ class MyQueue extends Component
         $this->successMessage = 'Visitor marked as completed.';
     }
 
+    /** Open the reminder form only when staff chooses to set one (optional). */
+    public function startReminder(int $id): void
+    {
+        $this->errorMessage = null;
+        $this->completingId = null;
+        $this->remindingId = $id;
+        $this->remind_on = '';
+        $this->remind_note = '';
+
+        $existing = VisitorReminder::query()
+            ->where('daily_visitor_id', $id)
+            ->where('user_id', auth()->id())
+            ->where('is_done', false)
+            ->orderByDesc('id')
+            ->first();
+
+        // Only fill if they already saved one — no automatic date
+        if ($existing) {
+            $this->remind_on = $existing->remind_on->toDateString();
+            $this->remind_note = (string) ($existing->note ?? '');
+        }
+    }
+
+    public function cancelReminder(): void
+    {
+        $this->remindingId = null;
+        $this->remind_on = '';
+        $this->remind_note = '';
+    }
+
+    public function saveReminder(): void
+    {
+        $this->successMessage = null;
+        $this->errorMessage = null;
+
+        if (! $this->canUse()) {
+            $this->errorMessage = 'You do not have access to My Visitors.';
+
+            return;
+        }
+
+        if (! $this->remindingId) {
+            $this->errorMessage = 'No visitor selected.';
+
+            return;
+        }
+
+        $this->validate([
+            'remind_on' => ['required', 'date', 'after_or_equal:today'],
+            'remind_note' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $visitor = $this->findMine($this->remindingId);
+
+        if (! $visitor) {
+            $this->errorMessage = 'Visitor not found or not assigned to you.';
+
+            return;
+        }
+
+        if ($visitor->status !== 'completed') {
+            $this->errorMessage = 'Complete the visit before setting a reminder.';
+
+            return;
+        }
+
+        $userId = (int) auth()->id();
+
+        // One open reminder per visitor for this user — update or create
+        $reminder = VisitorReminder::query()
+            ->where('daily_visitor_id', $visitor->id)
+            ->where('user_id', $userId)
+            ->where('is_done', false)
+            ->orderByDesc('id')
+            ->first();
+
+        if (! $reminder) {
+            $reminder = new VisitorReminder;
+            $reminder->daily_visitor_id = $visitor->id;
+            $reminder->user_id = $userId;
+        }
+
+        $reminder->remind_on = $this->remind_on;
+        $reminder->note = trim($this->remind_note) !== '' ? trim($this->remind_note) : null;
+        $reminder->notified_at = null;
+        $reminder->is_done = false;
+        $reminder->save();
+
+        $this->remindingId = null;
+        $this->remind_on = '';
+        $this->remind_note = '';
+        $this->successMessage = 'Reminder saved for '.$visitor->name.'.';
+    }
+
+    /** Remove open reminder if not needed. */
+    public function removeReminder(int $id): void
+    {
+        $this->successMessage = null;
+        $this->errorMessage = null;
+
+        if (! $this->canUse()) {
+            $this->errorMessage = 'You do not have access to My Visitors.';
+
+            return;
+        }
+
+        $visitor = $this->findMine($id);
+
+        if (! $visitor) {
+            $this->errorMessage = 'Visitor not found or not assigned to you.';
+
+            return;
+        }
+
+        VisitorReminder::query()
+            ->where('daily_visitor_id', $visitor->id)
+            ->where('user_id', auth()->id())
+            ->where('is_done', false)
+            ->delete();
+
+        if ($this->remindingId === $id) {
+            $this->cancelReminder();
+        }
+
+        $this->successMessage = 'Reminder removed for '.$visitor->name.'.';
+    }
+
     protected function setStatus(int $id, string $status, string $okMessage): void
     {
         $this->successMessage = null;
@@ -199,7 +334,13 @@ class MyQueue extends Component
 
         $dayRows = $countQuery->get(['status']);
 
-        $listQuery = DailyVisitor::with(['desk', 'creator'])
+        $listQuery = DailyVisitor::with([
+            'desk',
+            'creator',
+            'reminders' => function ($q) use ($user) {
+                $q->where('user_id', $user->id)->where('is_done', false)->orderByDesc('id');
+            },
+        ])
             ->whereDate('created_at', $this->filter_date)
             ->where('assigned_to', $user->id)
             ->orderByDesc('id');

@@ -100,7 +100,14 @@
                                 <td>{{ optional($visitor->created_at)->timezone(app_timezone())->format('h:i A') }}</td>
                                 <td class="manage-users-actions">
                                     @if ($visitor->status === 'completed')
-                                        —
+                                        @php $openReminder = $visitor->reminders->first(); @endphp
+                                        <button type="button" class="payment-actions__btn" wire:click="startReminder({{ $visitor->id }})">
+                                            @if ($openReminder)
+                                                Reminder {{ $openReminder->remind_on->format('d M') }}
+                                            @else
+                                                Set reminder
+                                            @endif
+                                        </button>
                                     @else
                                         <button type="button" class="payment-actions__btn" wire:click="pleaseWait({{ $visitor->id }})">
                                             Please wait @if ($visitor->status === 'please_wait') ✓ @endif
@@ -130,6 +137,45 @@
                                         <div style="display:flex; gap:8px;">
                                             <button type="button" class="payment-actions__btn" wire:click="cancelComplete">Cancel</button>
                                             <button type="button" class="hero-btn hero-btn--primary" wire:click="complete">Save &amp; complete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endif
+
+                            @if ($remindingId === $visitor->id && $visitor->status === 'completed')
+                                <tr wire:key="my-vis-remind-{{ $visitor->id }}">
+                                    <td colspan="8" style="background: #f8fafc; padding: 12px 16px;">
+                                        <p style="margin: 0 0 10px; font-size: 0.85rem; color: #64748b;">Optional — only save if you need a follow-up.</p>
+                                        <div class="manage-users-form__grid" style="margin-bottom: 10px;">
+                                            <div class="mu-field">
+                                                <label class="mu-field__label" for="remind-on-{{ $visitor->id }}">Remind on</label>
+                                                <input
+                                                    id="remind-on-{{ $visitor->id }}"
+                                                    type="date"
+                                                    class="mu-field__input"
+                                                    wire:model="remind_on"
+                                                >
+                                                @error('remind_on') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
+                                            </div>
+                                            <div class="mu-field" style="grid-column: 1 / -1;">
+                                                <label class="mu-field__label" for="remind-note-{{ $visitor->id }}">Note (optional)</label>
+                                                <input
+                                                    id="remind-note-{{ $visitor->id }}"
+                                                    type="text"
+                                                    class="mu-field__input"
+                                                    wire:model="remind_note"
+                                                    placeholder="e.g. Call back about package"
+                                                    maxlength="255"
+                                                >
+                                                @error('remind_note') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
+                                            </div>
+                                        </div>
+                                        <div style="display:flex; gap:8px; flex-wrap: wrap;">
+                                            <button type="button" class="payment-actions__btn" wire:click="cancelReminder">Cancel</button>
+                                            @if ($visitor->reminders->isNotEmpty())
+                                                <button type="button" class="payment-actions__btn" wire:click="removeReminder({{ $visitor->id }})" wire:confirm="Remove this reminder?">Remove reminder</button>
+                                            @endif
+                                            <button type="button" class="hero-btn hero-btn--primary" wire:click="saveReminder">Save reminder</button>
                                         </div>
                                     </td>
                                 </tr>
