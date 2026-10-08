@@ -124,6 +124,7 @@ return [
             'status' => 'active',
             'children' => [
                 ['key' => 'register', 'label' => 'Register Visitor', 'route' => null],
+                ['key' => 'my-queue', 'label' => 'My Visitors', 'route' => null],
             ],
         ],
         [

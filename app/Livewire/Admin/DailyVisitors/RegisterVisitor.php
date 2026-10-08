@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\DailyVisitors;
 use App\Models\DailyVisitor;
 use App\Models\Desk;
 use App\Models\User;
+use App\Support\UserNotifier;
 use Livewire\Component;
 
 /**
@@ -54,7 +55,7 @@ class RegisterVisitor extends Component
             'assigned_to' => ['required', 'integer', 'exists:users,id'],
         ]);
 
-        DailyVisitor::create([
+        $visitor = DailyVisitor::create([
             'name' => trim($this->name),
             'contact_no' => trim($this->contact_no),
             'purpose' => trim($this->purpose),
@@ -65,6 +66,20 @@ class RegisterVisitor extends Component
             'remarks' => null,
         ]);
 
+        // Notify the person they should meet
+        $meetPerson = User::query()->find((int) $this->assigned_to);
+
+        if ($meetPerson) {
+            UserNotifier::send(
+                $meetPerson,
+                'visitor_waiting',
+                'Visitor waiting for you',
+                $visitor->name.' ('.$visitor->contact_no.') — '.$visitor->purpose.'. Please reply: Send now or Please wait.',
+                'daily-visitors',
+                'my-queue'
+            );
+        }
+
         // Clear form for next visitor
         $this->name = '';
         $this->contact_no = '';
@@ -72,7 +87,7 @@ class RegisterVisitor extends Component
         $this->desk_id = '';
         $this->assigned_to = '';
 
-        $this->successMessage = 'Visitor registered. They are waiting for the assigned person.';
+        $this->successMessage = 'Visitor registered. The assigned person was notified.';
     }
 
     public function render()

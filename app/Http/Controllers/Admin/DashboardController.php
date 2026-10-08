@@ -86,11 +86,17 @@ class DashboardController extends Controller
                                 ->exists();
                         }
 
+                        // Desk staff always see "My Visitors" so they can answer notifications
+                        if ($moduleKey === 'daily-visitors' && $feature === 'my-queue') {
+                            return true;
+                        }
+
                         return $user->canView($moduleKey, $feature);
                     })
                     ->values()
                     ->all();
 
+                // If staff only got my-queue, still show the Daily Visitors module
                 if ($children === []) {
                     return null;
                 }

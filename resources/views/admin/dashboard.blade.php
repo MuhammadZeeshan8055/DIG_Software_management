@@ -95,7 +95,7 @@
     {{-- Module workspace (replaces overview) --}}
     <div
         class="dashboard-view module-workspace"
-        x-show="activeModule && !viewingMyAttendance && !viewingMyAccount && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'invoices' && activeOption !== 'users' && activeOption !== 'desks' && activeOption !== 'my-daily-attendance' && activeOption !== 'staff-daily-attendance' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips' && activeOption !== 'register'"
+        x-show="activeModule && !viewingMyAttendance && !viewingMyAccount && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'invoices' && activeOption !== 'users' && activeOption !== 'desks' && activeOption !== 'my-daily-attendance' && activeOption !== 'staff-daily-attendance' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips' && activeOption !== 'register' && activeOption !== 'my-queue'"
         x-cloak
         x-transition:enter="dash-enter"
         x-transition:enter-start="dash-enter-start"
@@ -208,7 +208,7 @@
                 {{-- Other option tables (static demo data) --}}
                 <div
                     class="module-panel"
-                    x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'my-daily-attendance' && activeOption !== 'invoices' && activeOption !== 'staff-daily-attendance' && activeOption !== 'office-settings' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips' && activeOption !== 'users' && activeOption !== 'desks' && activeOption !== 'register'"
+                    x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'my-daily-attendance' && activeOption !== 'invoices' && activeOption !== 'staff-daily-attendance' && activeOption !== 'office-settings' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips' && activeOption !== 'users' && activeOption !== 'desks' && activeOption !== 'register' && activeOption !== 'my-queue'"
                     x-cloak
                     x-transition.opacity.duration.200ms>
                     <template x-if="currentTable()">
@@ -350,6 +350,15 @@
         x-cloak
         x-transition.opacity.duration.200ms>
         <livewire:admin.daily-visitors.register-visitor />
+    </div>
+
+    {{-- Daily Visitors (my queue for desk staff) --}}
+    <div
+        class="dashboard-view dashboard-view--panel"
+        x-show="activeModule === 'daily-visitors' && activeOption === 'my-queue' && !viewingMyAttendance && !viewingMyAccount"
+        x-cloak
+        x-transition.opacity.duration.200ms>
+        <livewire:admin.daily-visitors.my-queue />
     </div>
 
     {{-- Manage Desks (Settings → Manage Desks) --}}

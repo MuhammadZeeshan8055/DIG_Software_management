@@ -44,6 +44,12 @@ $workspace = $workspace ?? config('admin_workspace', []);
                     if ($event.detail.option === 'invoices') {
                         window.dispatchEvent(new CustomEvent('invoices-panel-opened'));
                     }
+                    if ($event.detail.option === 'my-queue') {
+                        window.dispatchEvent(new CustomEvent('my-queue-panel-opened'));
+                    }
+                    if ($event.detail.option === 'register') {
+                        window.dispatchEvent(new CustomEvent('daily-visitors-panel-opened'));
+                    }
                 });
             }
         }
@@ -186,6 +192,12 @@ $workspace = $workspace ?? config('admin_workspace', []);
                     window.dispatchEvent(new CustomEvent('daily-visitors-panel-opened'));
                 });
             }
+
+            if (this.activeOption === 'my-queue') {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('my-queue-panel-opened'));
+                });
+            }
         },
 
         currentModule() {
@@ -234,12 +246,21 @@ $workspace = $workspace ?? config('admin_workspace', []);
             this.activeModule = key;
             this.activeOption = null;
 
-            // Daily Visitors has one main screen — open it right away
+            // Daily Visitors — open the first option this user can see
             if (key === 'daily-visitors') {
-                this.activeOption = 'register';
-                this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('daily-visitors-panel-opened'));
-                });
+                const mod = this.modules[key];
+                const kids = (mod && mod.children) ? mod.children : [];
+                if (kids.length > 0) {
+                    this.activeOption = kids[0].key;
+                    this.$nextTick(() => {
+                        if (this.activeOption === 'register') {
+                            window.dispatchEvent(new CustomEvent('daily-visitors-panel-opened'));
+                        }
+                        if (this.activeOption === 'my-queue') {
+                            window.dispatchEvent(new CustomEvent('my-queue-panel-opened'));
+                        }
+                    });
+                }
             }
 
             this.saveLastPage();
@@ -321,6 +342,9 @@ $workspace = $workspace ?? config('admin_workspace', []);
             }
             if (key === 'register') {
                 window.dispatchEvent(new CustomEvent('daily-visitors-panel-opened'));
+            }
+            if (key === 'my-queue') {
+                window.dispatchEvent(new CustomEvent('my-queue-panel-opened'));
             }
             if (window.matchMedia('(max-width: 1024px)').matches) {
                 this.sidebarOpen = false;

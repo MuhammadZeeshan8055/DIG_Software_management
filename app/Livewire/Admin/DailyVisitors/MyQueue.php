@@ -1,0 +1,219 @@
+<?php
+
+namespace App\Livewire\Admin\DailyVisitors;
+
+use App\Models\DailyVisitor;
+use App\Support\UserNotifier;
+use Livewire\Component;
+
+/**
+ * Desk person: see visitors sent to me.
+ * Actions: Please wait / Send now / Complete with remarks.
+ */
+class MyQueue extends Component
+{
+    /** Remarks typed before completing a visitor. */
+    public string $remarks = '';
+
+    /** Which visitor we are completing (id). */
+    public ?int $completingId = null;
+
+    public ?string $successMessage = null;
+
+    public ?string $errorMessage = null;
+
+    /**
+     * Can this user open My Visitors?
+     * Admins / permission OR any logged-in staff (they only see their own queue).
+     */
+    protected function canUseMyQueue(): bool
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        if ($user->canView('daily-visitors', 'my-queue')) {
+            return true;
+        }
+
+        // Staff can always open their own assigned visitors
+        return $user->isStaff();
+    }
+
+    public function pleaseWait(int $id): void
+    {
+        $this->setStatus($id, 'please_wait', 'Marked as Please wait. Reception was notified.');
+    }
+
+    public function sendNow(int $id): void
+    {
+        $this->setStatus($id, 'send_now', 'Marked as Send now. Reception was notified.');
+    }
+
+    /** Open the complete box for one visitor. */
+    public function startComplete(int $id): void
+    {
+        $this->completingId = $id;
+        $this->remarks = '';
+        $this->errorMessage = null;
+    }
+
+    public function cancelComplete(): void
+    {
+        $this->completingId = null;
+        $this->remarks = '';
+    }
+
+    public function complete(): void
+    {
+        $this->successMessage = null;
+        $this->errorMessage = null;
+
+        $user = auth()->user();
+
+        if (! $this->canUseMyQueue()) {
+            $this->errorMessage = 'You do not have access to My Visitors.';
+
+            return;
+        }
+
+        if (! $this->completingId) {
+            $this->errorMessage = 'No visitor selected.';
+
+            return;
+        }
+
+        $this->validate([
+            'remarks' => ['required', 'string', 'max:500'],
+        ]);
+
+        $visitor = DailyVisitor::query()->with('creator')->find($this->completingId);
+
+        if (! $visitor) {
+            $this->errorMessage = 'Visitor not found.';
+
+            return;
+        }
+
+        // Only the assigned person (or admin) can complete
+        if ((int) $visitor->assigned_to !== (int) $user->id && ! $user->isAdmin()) {
+            $this->errorMessage = 'This visitor is not assigned to you.';
+
+            return;
+        }
+
+        $visitor->status = 'completed';
+        $visitor->remarks = trim($this->remarks);
+        $visitor->save();
+
+        // Tell reception the meeting is done
+        if ($visitor->creator && (int) $visitor->creator->id !== (int) $user->id) {
+            UserNotifier::send(
+                $visitor->creator,
+                'visitor_completed',
+                'Visitor meeting completed',
+                $visitor->name.' meeting is done. Remarks: '.$visitor->remarks,
+                'daily-visitors',
+                'register'
+            );
+        }
+
+        $this->completingId = null;
+        $this->remarks = '';
+        $this->successMessage = 'Visitor marked as completed.';
+    }
+
+    /**
+     * Shared helper for Please wait / Send now.
+     */
+    protected function setStatus(int $id, string $status, string $okMessage): void
+    {
+        $this->successMessage = null;
+        $this->errorMessage = null;
+
+        $user = auth()->user();
+
+        if (! $this->canUseMyQueue()) {
+            $this->errorMessage = 'You do not have access to My Visitors.';
+
+            return;
+        }
+
+        $visitor = DailyVisitor::query()->with('creator')->find($id);
+
+        if (! $visitor) {
+            $this->errorMessage = 'Visitor not found.';
+
+            return;
+        }
+
+        if ((int) $visitor->assigned_to !== (int) $user->id && ! $user->isAdmin()) {
+            $this->errorMessage = 'This visitor is not assigned to you.';
+
+            return;
+        }
+
+        if ($visitor->status === 'completed') {
+            $this->errorMessage = 'This visitor is already completed.';
+
+            return;
+        }
+
+        $visitor->status = $status;
+        $visitor->save();
+
+        // Tell reception what to do with the waiting visitor
+        if ($visitor->creator && (int) $visitor->creator->id !== (int) $user->id) {
+            $actionText = $status === 'send_now'
+                ? 'Please SEND the visitor in now.'
+                : 'Please ask the visitor to WAIT.';
+
+            UserNotifier::send(
+                $visitor->creator,
+                'visitor_response',
+                'Update for visitor '.$visitor->name,
+                $user->name.': '.$actionText,
+                'daily-visitors',
+                'register'
+            );
+        }
+
+        $this->successMessage = $okMessage;
+    }
+
+    public function render()
+    {
+        $user = auth()->user();
+
+        if (! $this->canUseMyQueue()) {
+            return view('livewire.admin.daily-visitors.my-queue', [
+                'denied' => true,
+                'myVisitors' => collect(),
+            ]);
+        }
+
+        $today = now(app_timezone())->toDateString();
+
+        // Admins see all active today; staff only their own
+        $query = DailyVisitor::query()
+            ->with(['desk', 'creator'])
+            ->whereDate('created_at', $today)
+            ->where('status', '!=', 'completed')
+            ->orderByDesc('id');
+
+        if (! $user->isAdmin()) {
+            $query->where('assigned_to', $user->id);
+        }
+
+        return view('livewire.admin.daily-visitors.my-queue', [
+            'denied' => false,
+            'myVisitors' => $query->limit(50)->get(),
+        ]);
+    }
+}
