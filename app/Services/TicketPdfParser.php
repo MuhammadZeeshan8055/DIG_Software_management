@@ -64,8 +64,8 @@ class TicketPdfParser
             .'(?<departure_time>\d{2}:\d{2})\s*\(\s*(?<departure_date>[^)]+?)\s*\)\s+'
             .'(?<departure_location>[^(]+?\([A-Z]{3}\))\s*Terminal[^0-9]*'
             .'(?<arrival_time>\d{2}:\d{2})\s*\(\s*(?<arrival_date>[^)]+?)\s*\)\s+'
-            .'(?<arrival_location>[^(]+?\([A-Z]{3}\))\s*Terminal[^S]*'
-            .'Status\s*:\s*(?<status>\w+)\s*Class\s*:\s*(?<class>[^B]+?)\s*'
+            .'(?<arrival_location>[^(]+?\([A-Z]{3}\))\s*Terminal[^SC]*'
+            .'(?:Status\s*:\s*(?<status>\w+)\s*)?Class\s*:\s*(?<class>[^B]+?)\s*'
             .'Baggage\s*:\s*(?<baggage>[^P]+?)\s*PNR\s*:\s*(?<pnr>[A-Z0-9]+)/i';
 
         if (! preg_match_all($pattern, $text, $matches, PREG_SET_ORDER)) {
