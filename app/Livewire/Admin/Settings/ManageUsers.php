@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Settings;
 
+use App\Models\Desk;
 use App\Models\User;
 use App\Models\UserPermission;
 use Illuminate\Validation\Rule;
@@ -21,6 +22,9 @@ class ManageUsers extends Component
 
     /** Monthly gross salary (nullable until set). */
     public string $monthly_salary = '';
+
+    /** Desk id as string for the select ("" = none). */
+    public string $desk_id = '';
 
     /** When true, staff gets manage on every module feature. */
     public bool $allowAllAccess = false;
@@ -76,6 +80,7 @@ class ManageUsers extends Component
         $this->monthly_salary = $user->monthly_salary !== null
             ? (string) $user->monthly_salary
             : '';
+        $this->desk_id = $user->desk_id ? (string) $user->desk_id : '';
         $this->allowAllAccess = false;
         $this->resetModuleAccess();
 
@@ -116,6 +121,7 @@ class ManageUsers extends Component
             ],
             'role' => ['required', Rule::in($allowedRoles)],
             'monthly_salary' => ['nullable', 'numeric', 'min:0'],
+            'desk_id' => ['nullable', 'integer', Rule::exists('desks', 'id')],
             'allowAllAccess' => ['boolean'],
             'moduleEnabled' => ['array'],
             'moduleLevel' => ['array'],
@@ -136,6 +142,14 @@ class ManageUsers extends Component
             ? null
             : round((float) $this->monthly_salary, 2);
 
+        // Empty select means no desk
+        $deskId = $this->desk_id === '' ? null : (int) $this->desk_id;
+
+        // Staff can have a desk; admin / super_admin usually do not need one
+        if ($this->role !== 'staff') {
+            $deskId = null;
+        }
+
         if ($this->editingId) {
             $user = User::findOrFail($this->editingId);
 
@@ -147,6 +161,7 @@ class ManageUsers extends Component
             $user->email = trim($this->email);
             $user->role = $this->role;
             $user->monthly_salary = $salary;
+            $user->desk_id = $deskId;
 
             if ($this->password !== '') {
                 $user->password = $this->password;
@@ -160,6 +175,7 @@ class ManageUsers extends Component
                 'password' => $this->password,
                 'role' => $this->role,
                 'monthly_salary' => $salary,
+                'desk_id' => $deskId,
                 'email_verified_at' => now(),
             ]);
         }
@@ -275,6 +291,7 @@ class ManageUsers extends Component
         $this->password = '';
         $this->role = 'staff';
         $this->monthly_salary = '';
+        $this->desk_id = '';
         $this->allowAllAccess = false;
         $this->resetModuleAccess();
         $this->resetValidation();
@@ -304,6 +321,7 @@ class ManageUsers extends Component
         if (! auth()->user()->canManageUsers()) {
             return view('livewire.admin.settings.manage-users', [
                 'users' => collect(),
+                'desks' => collect(),
                 'assignableModules' => [],
                 'roleOptions' => [],
                 'denied' => true,
@@ -311,7 +329,8 @@ class ManageUsers extends Component
         }
 
         return view('livewire.admin.settings.manage-users', [
-            'users' => User::query()->orderBy('name')->get(),
+            'users' => User::query()->with('desk')->orderBy('name')->get(),
+            'desks' => Desk::query()->where('is_active', true)->orderBy('name')->get(),
             'assignableModules' => $this->assignableModules(),
             'roleOptions' => auth()->user()->isSuperAdmin()
                 ? [

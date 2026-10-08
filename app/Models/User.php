@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -24,6 +25,7 @@ class User extends Authenticatable
         'password',
         'role',
         'monthly_salary',
+        'desk_id',
         'email_verified_at',
     ];
 
@@ -54,6 +56,11 @@ class User extends Authenticatable
     public function ticketImports(): HasMany
     {
         return $this->hasMany(TicketImport::class);
+    }
+
+    public function desk(): BelongsTo
+    {
+        return $this->belongsTo(Desk::class);
     }
 
     public function permissions(): HasMany

@@ -27,6 +27,7 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Role</th>
+                        <th>Desk</th>
                         <th>Monthly salary</th>
                         <th>Actions</th>
                     </tr>
@@ -41,6 +42,7 @@
                                     {{ str_replace('_', ' ', $user->role) }}
                                 </span>
                             </td>
+                            <td>{{ $user->desk?->name ?? '—' }}</td>
                             <td>
                                 @if ($user->monthly_salary !== null)
                                     Rs {{ number_format((float) $user->monthly_salary, 0) }}
@@ -66,7 +68,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="receiving-accounts-table__empty">
+                            <td colspan="6" class="receiving-accounts-table__empty">
                                 No users yet. Click Add User to create one.
                             </td>
                         </tr>
@@ -140,6 +142,18 @@
                                     placeholder="e.g. 30000"
                                 >
                             </div>
+
+                            @if ($role === 'staff')
+                                <div class="mu-field">
+                                    <label class="mu-field__label" for="mu-desk">Desk</label>
+                                    <select id="mu-desk" wire:model="desk_id" class="mu-field__input mu-field__input--select">
+                                        <option value="">No desk</option>
+                                        @foreach ($desks as $desk)
+                                            <option value="{{ $desk->id }}">{{ $desk->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
                         </div>
 
                         @if ($role === 'staff')
