@@ -33,29 +33,16 @@ class DailyVisitor extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    /** Simple label for the status column. */
     public function statusLabel(): string
     {
-        if ($this->status === 'waiting') {
-            return 'Waiting';
-        }
+        $labels = [
+            'waiting' => 'Waiting',
+            'please_wait' => 'Please wait',
+            'send_now' => 'Send now',
+            'in_meeting' => 'In meeting',
+            'completed' => 'Completed',
+        ];
 
-        if ($this->status === 'please_wait') {
-            return 'Please wait';
-        }
-
-        if ($this->status === 'send_now') {
-            return 'Send now';
-        }
-
-        if ($this->status === 'in_meeting') {
-            return 'In meeting';
-        }
-
-        if ($this->status === 'completed') {
-            return 'Completed';
-        }
-
-        return $this->status;
+        return $labels[$this->status] ?? $this->status;
     }
 }

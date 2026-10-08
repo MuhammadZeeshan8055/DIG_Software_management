@@ -8,10 +8,7 @@ use App\Models\User;
 use App\Support\UserNotifier;
 use Livewire\Component;
 
-/**
- * Reception: register a walk-in visitor and pick who they should meet.
- * Keep code plain and easy to read.
- */
+/** Reception: register visitor and mark sent. */
 class RegisterVisitor extends Component
 {
     public string $name = '';
@@ -24,7 +21,6 @@ class RegisterVisitor extends Component
 
     public string $assigned_to = '';
 
-    /** Filters for the visitors list (past days too). */
     public string $filter_date = '';
 
     public string $filter_status = '';
@@ -40,13 +36,11 @@ class RegisterVisitor extends Component
         $this->filter_date = now(app_timezone())->toDateString();
     }
 
-    /** When desk changes, clear the selected person. */
     public function updatedDeskId(): void
     {
         $this->assigned_to = '';
     }
 
-    /** Reset list filters to today / all. */
     public function resetFilters(): void
     {
         $this->filter_date = now(app_timezone())->toDateString();
@@ -54,14 +48,19 @@ class RegisterVisitor extends Component
         $this->filter_desk = '';
     }
 
+    protected function canRegister(): bool
+    {
+        $user = auth()->user();
+
+        return $user && $user->canView('daily-visitors', 'register');
+    }
+
     public function save(): void
     {
         $this->successMessage = null;
         $this->errorMessage = null;
 
-        $user = auth()->user();
-
-        if (! $user || ! $user->canView('daily-visitors', 'register')) {
+        if (! $this->canRegister()) {
             $this->errorMessage = 'You do not have access to register visitors.';
 
             return;
@@ -75,6 +74,8 @@ class RegisterVisitor extends Component
             'assigned_to' => ['required', 'integer', 'exists:users,id'],
         ]);
 
+        $user = auth()->user();
+
         $visitor = DailyVisitor::create([
             'name' => trim($this->name),
             'contact_no' => trim($this->contact_no),
@@ -86,8 +87,7 @@ class RegisterVisitor extends Component
             'remarks' => null,
         ]);
 
-        // Notify the person they should meet
-        $meetPerson = User::query()->find((int) $this->assigned_to);
+        $meetPerson = User::find((int) $this->assigned_to);
 
         if ($meetPerson) {
             UserNotifier::send(
@@ -100,33 +100,26 @@ class RegisterVisitor extends Component
             );
         }
 
-        // Clear form for next visitor
         $this->name = '';
         $this->contact_no = '';
         $this->purpose = '';
         $this->desk_id = '';
         $this->assigned_to = '';
-
         $this->successMessage = 'Visitor registered. The assigned person was notified.';
     }
 
-    /**
-     * Reception: visitor has been sent to the desk / is in the meeting.
-     */
     public function markSent(int $id): void
     {
         $this->successMessage = null;
         $this->errorMessage = null;
 
-        $user = auth()->user();
-
-        if (! $user || ! $user->canView('daily-visitors', 'register')) {
+        if (! $this->canRegister()) {
             $this->errorMessage = 'You do not have access to register visitors.';
 
             return;
         }
 
-        $visitor = DailyVisitor::query()->with('assignedUser')->find($id);
+        $visitor = DailyVisitor::with('assignedUser')->find($id);
 
         if (! $visitor) {
             $this->errorMessage = 'Visitor not found.';
@@ -143,8 +136,7 @@ class RegisterVisitor extends Component
         $visitor->status = 'in_meeting';
         $visitor->save();
 
-        // Tell the desk person the visitor is on the way / in meeting
-        if ($visitor->assignedUser && (int) $visitor->assignedUser->id !== (int) $user->id) {
+        if ($visitor->assignedUser && (int) $visitor->assignedUser->id !== (int) auth()->id()) {
             UserNotifier::send(
                 $visitor->assignedUser,
                 'visitor_sent',
@@ -160,9 +152,7 @@ class RegisterVisitor extends Component
 
     public function render()
     {
-        $user = auth()->user();
-
-        if (! $user || ! $user->canView('daily-visitors', 'register')) {
+        if (! $this->canRegister()) {
             return view('livewire.admin.daily-visitors.register-visitor', [
                 'denied' => true,
                 'desks' => collect(),
@@ -178,39 +168,22 @@ class RegisterVisitor extends Component
             $this->filter_date = now(app_timezone())->toDateString();
         }
 
-        // Active desks for the dropdown
-        $desks = Desk::query()
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
+        $desks = Desk::where('is_active', true)->orderBy('name')->get();
 
-        // People to meet — staff on the selected desk (or empty until desk picked)
         $staffList = collect();
 
         if ($this->desk_id !== '') {
-            $staffList = User::query()
-                ->where('role', 'staff')
+            $staffList = User::where('role', 'staff')
                 ->where('desk_id', (int) $this->desk_id)
                 ->orderBy('name')
                 ->get(['id', 'name']);
 
-            // If selected person is no longer on this desk, clear the choice
-            $stillThere = false;
-            foreach ($staffList as $staff) {
-                if ((int) $staff->id === (int) $this->assigned_to) {
-                    $stillThere = true;
-                    break;
-                }
-            }
-
-            if ($this->assigned_to !== '' && ! $stillThere) {
+            if ($this->assigned_to !== '' && ! $staffList->contains('id', (int) $this->assigned_to)) {
                 $this->assigned_to = '';
             }
         }
 
-        // Visitors for selected date (+ optional status / desk)
-        $query = DailyVisitor::query()
-            ->with(['desk', 'assignedUser'])
+        $query = DailyVisitor::with(['desk', 'assignedUser'])
             ->whereDate('created_at', $this->filter_date)
             ->orderByDesc('id');
 
@@ -222,35 +195,16 @@ class RegisterVisitor extends Component
             $query->where('desk_id', (int) $this->filter_desk);
         }
 
-        $visitors = $query->limit(100)->get();
-
-        // Counts for the selected date (ignore status/desk filters so cards stay clear)
-        $dayRows = DailyVisitor::query()
-            ->whereDate('created_at', $this->filter_date)
-            ->get(['id', 'status']);
-
-        $countInQueue = 0;
-        $countMeeting = 0;
-        $countDone = 0;
-
-        foreach ($dayRows as $visitor) {
-            if ($visitor->status === 'completed') {
-                $countDone++;
-            } elseif ($visitor->status === 'in_meeting') {
-                $countMeeting++;
-            } else {
-                $countInQueue++;
-            }
-        }
+        $dayRows = DailyVisitor::whereDate('created_at', $this->filter_date)->get(['status']);
 
         return view('livewire.admin.daily-visitors.register-visitor', [
             'denied' => false,
             'desks' => $desks,
             'staffList' => $staffList,
-            'visitors' => $visitors,
-            'countInQueue' => $countInQueue,
-            'countMeeting' => $countMeeting,
-            'countDone' => $countDone,
+            'visitors' => $query->limit(100)->get(),
+            'countInQueue' => $dayRows->whereNotIn('status', ['in_meeting', 'completed'])->count(),
+            'countMeeting' => $dayRows->where('status', 'in_meeting')->count(),
+            'countDone' => $dayRows->where('status', 'completed')->count(),
         ]);
     }
 }

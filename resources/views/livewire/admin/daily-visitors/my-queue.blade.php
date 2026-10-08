@@ -6,7 +6,7 @@
 >
     @if ($denied ?? false)
         <div class="data-panel">
-            <p>You do not have access to My Visitors. Ask an admin to enable Daily Visitors → My Visitors in Manage Users.</p>
+            <p>You do not have access to My Visitors.</p>
         </div>
     @else
 
@@ -24,23 +24,17 @@
 
         <div class="stat-grid" style="margin-bottom: 16px;">
             <article class="stat-card stat-card--amber">
-                <div class="stat-card__top">
-                    <p class="stat-card__label">In queue</p>
-                </div>
+                <div class="stat-card__top"><p class="stat-card__label">In queue</p></div>
                 <p class="stat-card__value">{{ $countInQueue }}</p>
                 <p class="stat-card__hint">For selected date</p>
             </article>
             <article class="stat-card stat-card--blue">
-                <div class="stat-card__top">
-                    <p class="stat-card__label">In meeting</p>
-                </div>
+                <div class="stat-card__top"><p class="stat-card__label">In meeting</p></div>
                 <p class="stat-card__value">{{ $countMeeting }}</p>
                 <p class="stat-card__hint">For selected date</p>
             </article>
             <article class="stat-card stat-card--navy">
-                <div class="stat-card__top">
-                    <p class="stat-card__label">Done</p>
-                </div>
+                <div class="stat-card__top"><p class="stat-card__label">Done</p></div>
                 <p class="stat-card__value">{{ $countDone }}</p>
                 <p class="stat-card__hint">For selected date</p>
             </article>
@@ -91,67 +85,30 @@
                             <tr wire:key="my-vis-{{ $visitor->id }}-{{ $visitor->status }}">
                                 <td>{{ $visitor->name }}</td>
                                 <td>{{ $visitor->contact_no }}</td>
-                                <td>
-                                    <span style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; word-break: break-word; max-width: 220px; line-height: 1.35;">
-                                        {{ $visitor->purpose }}
-                                    </span>
-                                </td>
+                                <td style="max-width: 220px; white-space: normal; word-break: break-word;">{{ $visitor->purpose }}</td>
                                 <td>{{ $visitor->desk?->name ?? '—' }}</td>
                                 <td>
-                                    @if ($visitor->status === 'send_now')
-                                        <span class="payment-badge payment-badge--paid">{{ $visitor->statusLabel() }}</span>
-                                    @elseif ($visitor->status === 'please_wait')
+                                    @if ($visitor->status === 'please_wait')
                                         <span class="payment-badge payment-badge--draft">{{ $visitor->statusLabel() }}</span>
-                                    @elseif ($visitor->status === 'in_meeting')
-                                        <span class="payment-badge payment-badge--paid">{{ $visitor->statusLabel() }}</span>
-                                    @elseif ($visitor->status === 'completed')
+                                    @elseif (in_array($visitor->status, ['send_now', 'in_meeting', 'completed'], true))
                                         <span class="payment-badge payment-badge--paid">{{ $visitor->statusLabel() }}</span>
                                     @else
                                         <span class="payment-badge">{{ $visitor->statusLabel() }}</span>
                                     @endif
                                 </td>
-                                <td>
-                                    <span style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; word-break: break-word; max-width: 180px; line-height: 1.35;">
-                                        {{ $visitor->remarks ?: '—' }}
-                                    </span>
-                                </td>
+                                <td style="max-width: 180px; white-space: normal; word-break: break-word;">{{ $visitor->remarks ?: '—' }}</td>
                                 <td>{{ optional($visitor->created_at)->timezone(app_timezone())->format('h:i A') }}</td>
                                 <td class="manage-users-actions">
                                     @if ($visitor->status === 'completed')
                                         —
                                     @else
-                                    <button
-                                        type="button"
-                                        class="payment-actions__btn"
-                                        @if ($visitor->status === 'please_wait')
-                                            style="border: 2px solid #0f766e; background: #ccfbf1; color: #0f766e; font-weight: 700;"
-                                        @endif
-                                        wire:click="pleaseWait({{ $visitor->id }})"
-                                    >
-                                        Please wait
-                                        @if ($visitor->status === 'please_wait')
-                                            ✓
-                                        @endif
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="payment-actions__btn"
-                                        @if ($visitor->status === 'send_now')
-                                            style="border: 2px solid #166534; background: #dcfce7; color: #166534; font-weight: 700;"
-                                        @endif
-                                        wire:click="sendNow({{ $visitor->id }})"
-                                    >
-                                        Send now
-                                        @if ($visitor->status === 'send_now')
-                                            ✓
-                                        @endif
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="hero-btn hero-btn--primary"
-                                        style="padding: 6px 10px; font-size: 0.75rem;"
-                                        wire:click="startComplete({{ $visitor->id }})"
-                                    >Complete</button>
+                                        <button type="button" class="payment-actions__btn" wire:click="pleaseWait({{ $visitor->id }})">
+                                            Please wait @if ($visitor->status === 'please_wait') ✓ @endif
+                                        </button>
+                                        <button type="button" class="payment-actions__btn" wire:click="sendNow({{ $visitor->id }})">
+                                            Send now @if ($visitor->status === 'send_now') ✓ @endif
+                                        </button>
+                                        <button type="button" class="hero-btn hero-btn--primary" style="padding: 6px 10px; font-size: 0.75rem;" wire:click="startComplete({{ $visitor->id }})">Complete</button>
                                     @endif
                                 </td>
                             </tr>
@@ -165,7 +122,7 @@
                                             type="text"
                                             class="mu-field__input"
                                             wire:model="remarks"
-                                            placeholder="Short note: info given, next step, etc."
+                                            placeholder="Short note…"
                                             maxlength="500"
                                             style="margin-top: 6px; margin-bottom: 10px;"
                                         >

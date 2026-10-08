@@ -5,17 +5,6 @@
         </div>
     @else
 
-        <section class="module-workspace__hero" style="margin-bottom: 16px;">
-            <div class="module-workspace__hero-main">
-                <p class="module-workspace__eyebrow">
-                    <span class="module-workspace__eyebrow-dot"></span>
-                    Settings
-                </p>
-                <h2 class="module-workspace__title">Manage Desks</h2>
-                
-            </div>
-        </section>
-
         @if ($successMessage)
             <x-admin-toast wire-property="successMessage" :seconds="6">
                 {{ $successMessage }}
@@ -36,14 +25,7 @@
                 <div class="manage-users-form__grid">
                     <div class="mu-field">
                         <label class="mu-field__label" for="desk-name">Desk name</label>
-                        <input
-                            id="desk-name"
-                            type="text"
-                            class="mu-field__input"
-                            wire:model="name"
-                            placeholder="e.g. Insurance Desk"
-                            maxlength="80"
-                        >
+                        <input id="desk-name" type="text" class="mu-field__input" wire:model="name" placeholder="e.g. Insurance Desk" maxlength="80">
                         @error('name') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
                     </div>
                 </div>
@@ -83,18 +65,9 @@
                                 </td>
                                 <td>
                                     @if ($desk->is_active)
-                                        <button
-                                            type="button"
-                                            class="payment-actions__btn"
-                                            wire:click="turnOff({{ $desk->id }})"
-                                            wire:confirm="Turn off this desk?"
-                                        >Turn off</button>
+                                        <button type="button" class="payment-actions__btn" wire:click="turnOff({{ $desk->id }})" wire:confirm="Turn off this desk?">Turn off</button>
                                     @else
-                                        <button
-                                            type="button"
-                                            class="payment-actions__btn"
-                                            wire:click="turnOn({{ $desk->id }})"
-                                        >Turn on</button>
+                                        <button type="button" class="payment-actions__btn" wire:click="turnOn({{ $desk->id }})">Turn on</button>
                                     @endif
                                 </td>
                             </tr>

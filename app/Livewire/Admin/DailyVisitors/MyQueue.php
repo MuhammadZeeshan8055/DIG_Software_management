@@ -6,19 +6,13 @@ use App\Models\DailyVisitor;
 use App\Support\UserNotifier;
 use Livewire\Component;
 
-/**
- * Desk person: see visitors sent to me.
- * Actions: Please wait / Send now / Complete with remarks.
- */
+/** Desk staff: see my visitors — wait / send now / complete. */
 class MyQueue extends Component
 {
-    /** Remarks typed before completing a visitor. */
     public string $remarks = '';
 
-    /** Which visitor we are completing (id). */
     public ?int $completingId = null;
 
-    /** List filters (see previous days too). */
     public string $filter_date = '';
 
     public string $filter_status = '';
@@ -38,24 +32,28 @@ class MyQueue extends Component
         $this->filter_status = '';
     }
 
-    /**
-     * Can this user open My Visitors?
-     * Admins / permission OR any logged-in staff (they only see their own queue).
-     */
-    protected function canUseMyQueue(): bool
+    protected function canUse(): bool
     {
         $user = auth()->user();
 
-        if (! $user) {
-            return false;
+        return $user && ($user->isAdmin() || $user->isStaff());
+    }
+
+    /** Find a visitor that belongs to me (admins can open any). */
+    protected function findMine(int $id): ?DailyVisitor
+    {
+        $user = auth()->user();
+        $visitor = DailyVisitor::with('creator')->find($id);
+
+        if (! $visitor) {
+            return null;
         }
 
-        if ($user->isAdmin()) {
-            return true;
+        if (! $user->isAdmin() && (int) $visitor->assigned_to !== (int) $user->id) {
+            return null;
         }
 
-        // Own queue — always for staff (separate My Visitors block)
-        return $user->isStaff();
+        return $visitor;
     }
 
     public function pleaseWait(int $id): void
@@ -68,7 +66,6 @@ class MyQueue extends Component
         $this->setStatus($id, 'send_now', 'Marked as Send now. Reception was notified.');
     }
 
-    /** Open the complete box for one visitor. */
     public function startComplete(int $id): void
     {
         $this->completingId = $id;
@@ -87,9 +84,7 @@ class MyQueue extends Component
         $this->successMessage = null;
         $this->errorMessage = null;
 
-        $user = auth()->user();
-
-        if (! $this->canUseMyQueue()) {
+        if (! $this->canUse()) {
             $this->errorMessage = 'You do not have access to My Visitors.';
 
             return;
@@ -105,17 +100,10 @@ class MyQueue extends Component
             'remarks' => ['required', 'string', 'max:500'],
         ]);
 
-        $visitor = DailyVisitor::query()->with('creator')->find($this->completingId);
+        $visitor = $this->findMine($this->completingId);
 
         if (! $visitor) {
-            $this->errorMessage = 'Visitor not found.';
-
-            return;
-        }
-
-        // Only the assigned person (or admin) can complete
-        if ((int) $visitor->assigned_to !== (int) $user->id && ! $user->isAdmin()) {
-            $this->errorMessage = 'This visitor is not assigned to you.';
+            $this->errorMessage = 'Visitor not found or not assigned to you.';
 
             return;
         }
@@ -124,8 +112,7 @@ class MyQueue extends Component
         $visitor->remarks = trim($this->remarks);
         $visitor->save();
 
-        // Tell reception the meeting is done
-        if ($visitor->creator && (int) $visitor->creator->id !== (int) $user->id) {
+        if ($visitor->creator && (int) $visitor->creator->id !== (int) auth()->id()) {
             UserNotifier::send(
                 $visitor->creator,
                 'visitor_completed',
@@ -141,32 +128,21 @@ class MyQueue extends Component
         $this->successMessage = 'Visitor marked as completed.';
     }
 
-    /**
-     * Shared helper for Please wait / Send now.
-     */
     protected function setStatus(int $id, string $status, string $okMessage): void
     {
         $this->successMessage = null;
         $this->errorMessage = null;
 
-        $user = auth()->user();
-
-        if (! $this->canUseMyQueue()) {
+        if (! $this->canUse()) {
             $this->errorMessage = 'You do not have access to My Visitors.';
 
             return;
         }
 
-        $visitor = DailyVisitor::query()->with('creator')->find($id);
+        $visitor = $this->findMine($id);
 
         if (! $visitor) {
-            $this->errorMessage = 'Visitor not found.';
-
-            return;
-        }
-
-        if ((int) $visitor->assigned_to !== (int) $user->id && ! $user->isAdmin()) {
-            $this->errorMessage = 'This visitor is not assigned to you.';
+            $this->errorMessage = 'Visitor not found or not assigned to you.';
 
             return;
         }
@@ -180,8 +156,7 @@ class MyQueue extends Component
         $visitor->status = $status;
         $visitor->save();
 
-        // Tell reception what to do with the waiting visitor
-        if ($visitor->creator && (int) $visitor->creator->id !== (int) $user->id) {
+        if ($visitor->creator && (int) $visitor->creator->id !== (int) auth()->id()) {
             $actionText = $status === 'send_now'
                 ? 'Please SEND the visitor in now.'
                 : 'Please ask the visitor to WAIT.';
@@ -190,7 +165,7 @@ class MyQueue extends Component
                 $visitor->creator,
                 'visitor_response',
                 'Update for visitor '.$visitor->name,
-                $user->name.': '.$actionText,
+                auth()->user()->name.': '.$actionText,
                 'daily-visitors',
                 'register'
             );
@@ -201,9 +176,7 @@ class MyQueue extends Component
 
     public function render()
     {
-        $user = auth()->user();
-
-        if (! $this->canUseMyQueue()) {
+        if (! $this->canUse()) {
             return view('livewire.admin.daily-visitors.my-queue', [
                 'denied' => true,
                 'myVisitors' => collect(),
@@ -213,59 +186,40 @@ class MyQueue extends Component
             ]);
         }
 
-        $today = now(app_timezone())->toDateString();
         $user = auth()->user();
 
         if ($this->filter_date === '') {
-            $this->filter_date = $today;
+            $this->filter_date = now(app_timezone())->toDateString();
         }
 
-        // Counts for selected date (staff = only mine)
-        $allDayQuery = DailyVisitor::query()
-            ->whereDate('created_at', $this->filter_date);
+        // Counts for selected date
+        $countQuery = DailyVisitor::whereDate('created_at', $this->filter_date);
 
         if (! $user->isAdmin()) {
-            $allDayQuery->where('assigned_to', $user->id);
+            $countQuery->where('assigned_to', $user->id);
         }
 
-        $allDay = $allDayQuery->get(['id', 'status']);
+        $dayRows = $countQuery->get(['status']);
 
-        $countInQueue = 0;
-        $countMeeting = 0;
-        $countDone = 0;
-
-        foreach ($allDay as $row) {
-            if ($row->status === 'completed') {
-                $countDone++;
-            } elseif ($row->status === 'in_meeting') {
-                $countMeeting++;
-            } else {
-                $countInQueue++;
-            }
-        }
-
-        // List for selected date (includes completed so staff can read remarks)
-        $query = DailyVisitor::query()
-            ->with(['desk', 'creator'])
+        // List for selected date
+        $listQuery = DailyVisitor::with(['desk', 'creator'])
             ->whereDate('created_at', $this->filter_date)
-            // Open visits first, then done; newest within each group
-            ->orderByRaw("CASE WHEN status = 'completed' THEN 1 ELSE 0 END")
             ->orderByDesc('id');
 
         if (! $user->isAdmin()) {
-            $query->where('assigned_to', $user->id);
+            $listQuery->where('assigned_to', $user->id);
         }
 
         if ($this->filter_status !== '') {
-            $query->where('status', $this->filter_status);
+            $listQuery->where('status', $this->filter_status);
         }
 
         return view('livewire.admin.daily-visitors.my-queue', [
             'denied' => false,
-            'myVisitors' => $query->limit(100)->get(),
-            'countInQueue' => $countInQueue,
-            'countMeeting' => $countMeeting,
-            'countDone' => $countDone,
+            'myVisitors' => $listQuery->limit(100)->get(),
+            'countInQueue' => $dayRows->whereNotIn('status', ['in_meeting', 'completed'])->count(),
+            'countMeeting' => $dayRows->where('status', 'in_meeting')->count(),
+            'countDone' => $dayRows->where('status', 'completed')->count(),
         ]);
     }
 }

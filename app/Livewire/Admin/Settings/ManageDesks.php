@@ -6,10 +6,7 @@ use App\Models\Desk;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
-/**
- * Admin: add office desks any time (Umrah, Ticketing, etc.).
- * Keep this file simple — add / list / turn off.
- */
+/** Admin: add / turn on / turn off desks. */
 class ManageDesks extends Component
 {
     public string $name = '';
@@ -36,17 +33,10 @@ class ManageDesks extends Component
         $name = trim($this->name);
         $key = Str::slug($name);
 
-        if ($key === '') {
-            $this->errorMessage = 'Please enter a valid desk name.';
-
-            return;
-        }
-
-        // Same key already exists?
-        $exists = Desk::query()->where('key', $key)->exists();
-
-        if ($exists) {
-            $this->errorMessage = 'A desk with this name already exists.';
+        if ($key === '' || Desk::where('key', $key)->exists()) {
+            $this->errorMessage = $key === ''
+                ? 'Please enter a valid desk name.'
+                : 'A desk with this name already exists.';
 
             return;
         }
@@ -64,31 +54,15 @@ class ManageDesks extends Component
 
     public function turnOff(int $id): void
     {
-        $this->successMessage = null;
-        $this->errorMessage = null;
-
-        if (! auth()->user()?->isAdmin()) {
-            $this->errorMessage = 'Only admin or super admin can manage desks.';
-
-            return;
-        }
-
-        $desk = Desk::query()->find($id);
-
-        if (! $desk) {
-            $this->errorMessage = 'Desk not found.';
-
-            return;
-        }
-
-        $desk->is_active = false;
-        $desk->save();
-
-        $this->successMessage = 'Desk turned off. It will not show in new forms.';
-        $this->js('window.dispatchEvent(new CustomEvent("staff-list-changed"))');
+        $this->setActive($id, false, 'Desk turned off.');
     }
 
     public function turnOn(int $id): void
+    {
+        $this->setActive($id, true, 'Desk turned on again.');
+    }
+
+    protected function setActive(int $id, bool $active, string $okMessage): void
     {
         $this->successMessage = null;
         $this->errorMessage = null;
@@ -99,7 +73,7 @@ class ManageDesks extends Component
             return;
         }
 
-        $desk = Desk::query()->find($id);
+        $desk = Desk::find($id);
 
         if (! $desk) {
             $this->errorMessage = 'Desk not found.';
@@ -107,10 +81,10 @@ class ManageDesks extends Component
             return;
         }
 
-        $desk->is_active = true;
+        $desk->is_active = $active;
         $desk->save();
 
-        $this->successMessage = 'Desk turned on again.';
+        $this->successMessage = $okMessage;
         $this->js('window.dispatchEvent(new CustomEvent("staff-list-changed"))');
     }
 
@@ -125,7 +99,7 @@ class ManageDesks extends Component
 
         return view('livewire.admin.settings.manage-desks', [
             'denied' => false,
-            'desks' => Desk::query()->orderBy('name')->get(),
+            'desks' => Desk::orderBy('name')->get(),
         ]);
     }
 }
