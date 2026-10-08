@@ -126,6 +126,7 @@ return [
                 ['key' => 'register', 'label' => 'Register Visitor', 'route' => null],
                 // Admin / super_admin only
                 ['key' => 'list', 'label' => 'All Visitors', 'route' => null, 'admin_only' => true],
+                ['key' => 'reminders-list', 'label' => 'Reminders', 'route' => null, 'admin_only' => true],
             ],
         ],
         [

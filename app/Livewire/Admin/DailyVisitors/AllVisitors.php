@@ -41,9 +41,6 @@ class AllVisitors extends Component
                 'denied' => true,
                 'desks' => collect(),
                 'visitors' => collect(),
-                'countInQueue' => 0,
-                'countMeeting' => 0,
-                'countDone' => 0,
             ]);
         }
 
@@ -72,15 +69,10 @@ class AllVisitors extends Component
             $query->where('desk_id', (int) $this->filter_desk);
         }
 
-        $dayRows = DailyVisitor::whereDate('created_at', $this->filter_date)->get(['status']);
-
         return view('livewire.admin.daily-visitors.all-visitors', [
             'denied' => false,
             'desks' => $desks,
             'visitors' => $query->limit(200)->get(),
-            'countInQueue' => $dayRows->whereNotIn('status', ['in_meeting', 'completed'])->count(),
-            'countMeeting' => $dayRows->where('status', 'in_meeting')->count(),
-            'countDone' => $dayRows->where('status', 'completed')->count(),
         ]);
     }
 }

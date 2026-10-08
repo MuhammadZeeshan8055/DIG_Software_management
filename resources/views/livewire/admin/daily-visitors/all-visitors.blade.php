@@ -9,24 +9,6 @@
         </div>
     @else
 
-        <div class="stat-grid" style="margin-bottom: 16px;">
-            <article class="stat-card stat-card--amber">
-                <div class="stat-card__top"><p class="stat-card__label">In queue</p></div>
-                <p class="stat-card__value">{{ $countInQueue }}</p>
-                <p class="stat-card__hint">For selected date</p>
-            </article>
-            <article class="stat-card stat-card--blue">
-                <div class="stat-card__top"><p class="stat-card__label">In meeting</p></div>
-                <p class="stat-card__value">{{ $countMeeting }}</p>
-                <p class="stat-card__hint">For selected date</p>
-            </article>
-            <article class="stat-card stat-card--green">
-                <div class="stat-card__top"><p class="stat-card__label">Done</p></div>
-                <p class="stat-card__value">{{ $countDone }}</p>
-                <p class="stat-card__hint">For selected date</p>
-            </article>
-        </div>
-
         <div class="my-att-filter data-panel">
             <div class="my-att-filter__inner">
                 <div class="my-att-filter__group">

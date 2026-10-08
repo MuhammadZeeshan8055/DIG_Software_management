@@ -6,7 +6,10 @@ use App\Models\VisitorReminder;
 use App\Support\UserNotifier;
 use Livewire\Component;
 
-/** Desk staff: list of my visitor reminders. */
+/**
+ * Staff: own reminders.
+ * Admin / super_admin: all reminders.
+ */
 class MyReminders extends Component
 {
     /** open | done | all */
@@ -25,7 +28,24 @@ class MyReminders extends Component
     {
         $user = auth()->user();
 
-        return $user && $user->isStaff();
+        return $user && ($user->isAdmin() || $user->isStaff());
+    }
+
+    protected function isAdminView(): bool
+    {
+        return (bool) auth()->user()?->isAdmin();
+    }
+
+    /** Find reminder — staff: own only; admin: any. */
+    protected function findReminder(int $id): ?VisitorReminder
+    {
+        $query = VisitorReminder::with(['visitor', 'user'])->where('id', $id);
+
+        if (! $this->isAdminView()) {
+            $query->where('user_id', auth()->id());
+        }
+
+        return $query->first();
     }
 
     public function startMarkDone(int $id): void
@@ -62,10 +82,7 @@ class MyReminders extends Component
             'done_note' => ['required', 'string', 'max:500'],
         ]);
 
-        $reminder = VisitorReminder::with('visitor')
-            ->where('id', $this->completingId)
-            ->where('user_id', auth()->id())
-            ->first();
+        $reminder = $this->findReminder($this->completingId);
 
         if (! $reminder) {
             $this->errorMessage = 'Reminder not found.';
@@ -84,16 +101,18 @@ class MyReminders extends Component
         $reminder->done_at = now();
         $reminder->save();
 
-        // Tell admins what happened after the reminder
-        $visitorName = $reminder->visitor?->name ?? 'Visitor';
-        UserNotifier::send(
-            UserNotifier::admins(),
-            'visitor_reminder_done',
-            'Reminder follow-up: '.$visitorName,
-            auth()->user()->name.' — '.$reminder->done_note,
-            'daily-visitors',
-            'list'
-        );
+        // Tell other admins (skip if current user is already an admin doing it)
+        if (! $this->isAdminView()) {
+            $visitorName = $reminder->visitor?->name ?? 'Visitor';
+            UserNotifier::send(
+                UserNotifier::admins(),
+                'visitor_reminder_done',
+                'Reminder follow-up: '.$visitorName,
+                auth()->user()->name.' — '.$reminder->done_note,
+                'daily-visitors',
+                'reminders-list'
+            );
+        }
 
         $this->completingId = null;
         $this->done_note = '';
@@ -111,13 +130,9 @@ class MyReminders extends Component
             return;
         }
 
-        $reminder = VisitorReminder::query()
-            ->where('id', $id)
-            ->where('user_id', auth()->id())
-            ->where('is_done', false)
-            ->first();
+        $reminder = $this->findReminder($id);
 
-        if (! $reminder) {
+        if (! $reminder || $reminder->is_done) {
             $this->errorMessage = 'Reminder not found or already done.';
 
             return;
@@ -137,6 +152,7 @@ class MyReminders extends Component
         if (! $this->canUse()) {
             return view('livewire.admin.daily-visitors.my-reminders', [
                 'denied' => true,
+                'isAdminView' => false,
                 'reminders' => collect(),
                 'countOpen' => 0,
                 'countDue' => 0,
@@ -144,17 +160,25 @@ class MyReminders extends Component
             ]);
         }
 
-        $userId = auth()->id();
+        $adminView = $this->isAdminView();
         $today = now(app_timezone())->toDateString();
+        $userId = auth()->id();
 
-        $countOpen = VisitorReminder::where('user_id', $userId)->where('is_done', false)->count();
-        $countDue = VisitorReminder::where('user_id', $userId)
-            ->where('is_done', false)
-            ->whereDate('remind_on', '<=', $today)
-            ->count();
-        $countDone = VisitorReminder::where('user_id', $userId)->where('is_done', true)->count();
+        $countOpenQ = VisitorReminder::query()->where('is_done', false);
+        $countDueQ = VisitorReminder::query()->where('is_done', false)->whereDate('remind_on', '<=', $today);
+        $countDoneQ = VisitorReminder::query()->where('is_done', true);
+        $list = VisitorReminder::with(['visitor', 'user']);
 
-        $list = VisitorReminder::with('visitor')->where('user_id', $userId);
+        if (! $adminView) {
+            $countOpenQ->where('user_id', $userId);
+            $countDueQ->where('user_id', $userId);
+            $countDoneQ->where('user_id', $userId);
+            $list->where('user_id', $userId);
+        }
+
+        $countOpen = $countOpenQ->count();
+        $countDue = $countDueQ->count();
+        $countDone = $countDoneQ->count();
 
         if ($this->filter === 'open') {
             $list->where('is_done', false)->orderBy('remind_on')->orderBy('id');
@@ -166,7 +190,8 @@ class MyReminders extends Component
 
         return view('livewire.admin.daily-visitors.my-reminders', [
             'denied' => false,
-            'reminders' => $list->limit(100)->get(),
+            'isAdminView' => $adminView,
+            'reminders' => $list->limit(200)->get(),
             'countOpen' => $countOpen,
             'countDue' => $countDue,
             'countDone' => $countDone,

@@ -370,10 +370,10 @@
         <livewire:admin.daily-visitors.my-queue />
     </div>
 
-    {{-- Reminders (under My Visitors) --}}
+    {{-- Reminders (staff: My Visitors; admin: Daily Visitors) --}}
     <div
         class="dashboard-view dashboard-view--panel"
-        x-show="activeModule === 'my-visitors' && activeOption === 'reminders-list' && !viewingMyAttendance && !viewingMyAccount"
+        x-show="(activeModule === 'my-visitors' || activeModule === 'daily-visitors') && activeOption === 'reminders-list' && !viewingMyAttendance && !viewingMyAccount"
         x-cloak
         x-transition.opacity.duration.200ms>
         <livewire:admin.daily-visitors.my-reminders />

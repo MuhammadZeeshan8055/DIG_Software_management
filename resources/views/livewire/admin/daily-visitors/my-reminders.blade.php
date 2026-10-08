@@ -51,7 +51,7 @@
 
         <div class="data-panel">
             <div class="data-panel__head">
-                <h3 class="data-panel__title">Reminders</h3>
+                <h3 class="data-panel__title">{{ ($isAdminView ?? false) ? 'All reminders' : 'Reminders' }}</h3>
                 <span class="add-account__count">{{ $reminders->count() }} shown</span>
             </div>
             <div class="data-table-wrap">
@@ -61,6 +61,9 @@
                             <th>Visitor</th>
                             <th>Contact</th>
                             <th>Purpose</th>
+                            @if ($isAdminView ?? false)
+                                <th>Staff</th>
+                            @endif
                             <th>Remind on</th>
                             <th>Note</th>
                             <th>Outcome</th>
@@ -74,14 +77,18 @@
                                 $visitor = $reminder->visitor;
                                 $today = now(app_timezone())->toDateString();
                                 $isDue = ! $reminder->is_done && $reminder->remind_on->toDateString() <= $today;
+                                $colspan = ($isAdminView ?? false) ? 9 : 8;
                             @endphp
                             <tr wire:key="reminder-{{ $reminder->id }}">
                                 <td>{{ $visitor?->name ?? '—' }}</td>
                                 <td>{{ $visitor?->contact_no ?? '—' }}</td>
-                                <td style="max-width: 200px; white-space: normal; word-break: break-word;">{{ $visitor?->purpose ?? '—' }}</td>
+                                <td style="max-width: 180px; white-space: normal; word-break: break-word;">{{ $visitor?->purpose ?? '—' }}</td>
+                                @if ($isAdminView ?? false)
+                                    <td>{{ $reminder->user?->name ?? '—' }}</td>
+                                @endif
                                 <td>{{ $reminder->remind_on->format('d M Y') }}</td>
-                                <td style="max-width: 160px; white-space: normal; word-break: break-word;">{{ $reminder->note ?: '—' }}</td>
-                                <td style="max-width: 180px; white-space: normal; word-break: break-word;">{{ $reminder->done_note ?: '—' }}</td>
+                                <td style="max-width: 140px; white-space: normal; word-break: break-word;">{{ $reminder->note ?: '—' }}</td>
+                                <td style="max-width: 160px; white-space: normal; word-break: break-word;">{{ $reminder->done_note ?: '—' }}</td>
                                 <td>
                                     @if ($reminder->is_done)
                                         <span class="payment-badge payment-badge--paid">Done</span>
@@ -103,7 +110,7 @@
 
                             @if ($completingId === $reminder->id && ! $reminder->is_done)
                                 <tr wire:key="reminder-done-{{ $reminder->id }}">
-                                    <td colspan="8" style="background: #f8fafc; padding: 12px 16px;">
+                                    <td colspan="{{ $colspan }}" style="background: #f8fafc; padding: 12px 16px;">
                                         <label class="mu-field__label" for="done-note-{{ $reminder->id }}">What happened? (required)</label>
                                         <input
                                             id="done-note-{{ $reminder->id }}"
@@ -124,7 +131,7 @@
                             @endif
                         @empty
                             <tr>
-                                <td colspan="8">No reminders for this filter.</td>
+                                <td colspan="{{ ($isAdminView ?? false) ? 9 : 8 }}">No reminders for this filter.</td>
                             </tr>
                         @endforelse
                     </tbody>
