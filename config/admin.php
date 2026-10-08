@@ -117,6 +117,16 @@ return [
             ],
         ],
         [
+            'key' => 'daily-visitors',
+            'title' => 'Daily Visitors',
+            'description' => 'Register walk-in visitors and send them to a desk person.',
+            'icon' => 'grid',
+            'status' => 'active',
+            'children' => [
+                ['key' => 'register', 'label' => 'Register Visitor', 'route' => null],
+            ],
+        ],
+        [
             'key' => 'attendance',
             'title' => 'Attendance',
             'description' => 'My attendance, leave, office hours, and holidays.',
@@ -142,7 +152,7 @@ return [
             'status' => 'active',
             'children' => [
                 ['key' => 'users', 'label' => 'Manage Users', 'route' => null],
-                // ['key' => 'desks', 'label' => 'Manage Desks', 'route' => null],
+                ['key' => 'desks', 'label' => 'Manage Desks', 'route' => null],
             ],
         ],
     ],

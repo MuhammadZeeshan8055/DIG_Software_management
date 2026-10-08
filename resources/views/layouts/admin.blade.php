@@ -180,6 +180,12 @@ $workspace = $workspace ?? config('admin_workspace', []);
                     window.dispatchEvent(new CustomEvent('salary-slips-panel-opened'));
                 });
             }
+
+            if (this.activeOption === 'register') {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('daily-visitors-panel-opened'));
+                });
+            }
         },
 
         currentModule() {
@@ -227,6 +233,15 @@ $workspace = $workspace ?? config('admin_workspace', []);
             this.viewingMyAccount = false;
             this.activeModule = key;
             this.activeOption = null;
+
+            // Daily Visitors has one main screen — open it right away
+            if (key === 'daily-visitors') {
+                this.activeOption = 'register';
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('daily-visitors-panel-opened'));
+                });
+            }
+
             this.saveLastPage();
             if (window.matchMedia('(max-width: 1024px)').matches) {
                 this.sidebarOpen = true;
@@ -303,6 +318,9 @@ $workspace = $workspace ?? config('admin_workspace', []);
             }
             if (key === 'salary-slips') {
                 window.dispatchEvent(new CustomEvent('salary-slips-panel-opened'));
+            }
+            if (key === 'register') {
+                window.dispatchEvent(new CustomEvent('daily-visitors-panel-opened'));
             }
             if (window.matchMedia('(max-width: 1024px)').matches) {
                 this.sidebarOpen = false;
