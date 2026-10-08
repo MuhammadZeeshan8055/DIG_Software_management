@@ -24,14 +24,34 @@ class RegisterVisitor extends Component
 
     public string $assigned_to = '';
 
+    /** Filters for the visitors list (past days too). */
+    public string $filter_date = '';
+
+    public string $filter_status = '';
+
+    public string $filter_desk = '';
+
     public ?string $successMessage = null;
 
     public ?string $errorMessage = null;
+
+    public function mount(): void
+    {
+        $this->filter_date = now(app_timezone())->toDateString();
+    }
 
     /** When desk changes, clear the selected person. */
     public function updatedDeskId(): void
     {
         $this->assigned_to = '';
+    }
+
+    /** Reset list filters to today / all. */
+    public function resetFilters(): void
+    {
+        $this->filter_date = now(app_timezone())->toDateString();
+        $this->filter_status = '';
+        $this->filter_desk = '';
     }
 
     public function save(): void
@@ -147,11 +167,15 @@ class RegisterVisitor extends Component
                 'denied' => true,
                 'desks' => collect(),
                 'staffList' => collect(),
-                'todayVisitors' => collect(),
+                'visitors' => collect(),
                 'countInQueue' => 0,
                 'countMeeting' => 0,
                 'countDone' => 0,
             ]);
+        }
+
+        if ($this->filter_date === '') {
+            $this->filter_date = now(app_timezone())->toDateString();
         }
 
         // Active desks for the dropdown
@@ -184,28 +208,37 @@ class RegisterVisitor extends Component
             }
         }
 
-        // Today's visitors (newest first)
-        $today = now(app_timezone())->toDateString();
-
-        $todayVisitors = DailyVisitor::query()
+        // Visitors for selected date (+ optional status / desk)
+        $query = DailyVisitor::query()
             ->with(['desk', 'assignedUser'])
-            ->whereDate('created_at', $today)
-            ->orderByDesc('id')
-            ->limit(50)
-            ->get();
+            ->whereDate('created_at', $this->filter_date)
+            ->orderByDesc('id');
 
-        // Simple counts for today
+        if ($this->filter_status !== '') {
+            $query->where('status', $this->filter_status);
+        }
+
+        if ($this->filter_desk !== '') {
+            $query->where('desk_id', (int) $this->filter_desk);
+        }
+
+        $visitors = $query->limit(100)->get();
+
+        // Counts for the selected date (ignore status/desk filters so cards stay clear)
+        $dayRows = DailyVisitor::query()
+            ->whereDate('created_at', $this->filter_date)
+            ->get(['id', 'status']);
+
         $countInQueue = 0;
         $countMeeting = 0;
         $countDone = 0;
 
-        foreach ($todayVisitors as $visitor) {
+        foreach ($dayRows as $visitor) {
             if ($visitor->status === 'completed') {
                 $countDone++;
             } elseif ($visitor->status === 'in_meeting') {
                 $countMeeting++;
             } else {
-                // waiting, please_wait, send_now
                 $countInQueue++;
             }
         }
@@ -214,7 +247,7 @@ class RegisterVisitor extends Component
             'denied' => false,
             'desks' => $desks,
             'staffList' => $staffList,
-            'todayVisitors' => $todayVisitors,
+            'visitors' => $visitors,
             'countInQueue' => $countInQueue,
             'countMeeting' => $countMeeting,
             'countDone' => $countDone,

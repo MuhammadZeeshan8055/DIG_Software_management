@@ -10,7 +10,7 @@
         </div>
     @else
 
-        <section class="module-workspace__hero" style="margin-bottom: 16px;">
+        <!-- <section class="module-workspace__hero" style="margin-bottom: 16px;">
             <div class="module-workspace__hero-main">
                 <p class="module-workspace__eyebrow">
                     <span class="module-workspace__eyebrow-dot"></span>
@@ -21,7 +21,7 @@
                     Register a visitor, pick a desk and person to meet. Today’s list updates every few seconds when status changes.
                 </p>
             </div>
-        </section>
+        </section> -->
 
         @if ($successMessage)
             <x-admin-toast wire-property="successMessage" :seconds="6">
@@ -41,21 +41,21 @@
                     <p class="stat-card__label">In queue</p>
                 </div>
                 <p class="stat-card__value">{{ $countInQueue }}</p>
-                <p class="stat-card__hint">Waiting / please wait / send now</p>
+                <p class="stat-card__hint">For selected date</p>
             </article>
             <article class="stat-card stat-card--blue">
                 <div class="stat-card__top">
                     <p class="stat-card__label">In meeting</p>
                 </div>
                 <p class="stat-card__value">{{ $countMeeting }}</p>
-                <p class="stat-card__hint">Sent to desk</p>
+                <p class="stat-card__hint">For selected date</p>
             </article>
             <article class="stat-card stat-card--navy">
                 <div class="stat-card__top">
                     <p class="stat-card__label">Done</p>
                 </div>
                 <p class="stat-card__value">{{ $countDone }}</p>
-                <p class="stat-card__hint">Completed today</p>
+                <p class="stat-card__hint">For selected date</p>
             </article>
         </div>
 
@@ -119,10 +119,40 @@
             </form>
         </div>
 
+        <div class="my-att-filter data-panel">
+            <div class="my-att-filter__inner">
+                <div class="my-att-filter__group">
+                    <label class="my-att-filter__label" for="filter-date">Date</label>
+                    <input id="filter-date" type="date" class="my-att-filter__input" style="min-width: 150px;" wire:model.live="filter_date">
+                </div>
+                <div class="my-att-filter__group">
+                    <label class="my-att-filter__label" for="filter-status">Status</label>
+                    <select id="filter-status" class="my-att-filter__input" style="min-width: 150px;" wire:model.live="filter_status">
+                        <option value="">All statuses</option>
+                        <option value="waiting">Waiting</option>
+                        <option value="please_wait">Please wait</option>
+                        <option value="send_now">Send now</option>
+                        <option value="in_meeting">In meeting</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="my-att-filter__group">
+                    <label class="my-att-filter__label" for="filter-desk">Desk</label>
+                    <select id="filter-desk" class="my-att-filter__input" style="min-width: 150px;" wire:model.live="filter_desk">
+                        <option value="">All desks</option>
+                        @foreach ($desks as $desk)
+                            <option value="{{ $desk->id }}">{{ $desk->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <button type="button" class="payment-actions__btn" wire:click="resetFilters">Today</button>
+            </div>
+        </div>
+
         <div class="data-panel">
             <div class="data-panel__head">
-                <h3 class="data-panel__title">Today’s visitors</h3>
-                <span class="add-account__count">{{ $todayVisitors->count() }} shown</span>
+                <h3 class="data-panel__title">Visitors</h3>
+                <span class="add-account__count">{{ $visitors->count() }} shown</span>
             </div>
             <div class="data-table-wrap">
                 <table class="data-table">
@@ -134,12 +164,13 @@
                             <th>Desk</th>
                             <th>Meet with</th>
                             <th>Status</th>
+                            <th>Remarks</th>
                             <th>Time</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($todayVisitors as $visitor)
+                        @forelse ($visitors as $visitor)
                             <tr wire:key="visitor-{{ $visitor->id }}-{{ $visitor->status }}">
                                 <td>{{ $visitor->name }}</td>
                                 <td>{{ $visitor->contact_no }}</td>
@@ -162,6 +193,11 @@
                                     @else
                                         <span class="payment-badge">{{ $visitor->statusLabel() }}</span>
                                     @endif
+                                </td>
+                                <td>
+                                    <span style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; word-break: break-word; max-width: 180px; line-height: 1.35;">
+                                        {{ $visitor->remarks ?: '—' }}
+                                    </span>
                                 </td>
                                 <td>{{ optional($visitor->created_at)->timezone(app_timezone())->format('h:i A') }}</td>
                                 <td class="manage-users-actions">
@@ -186,7 +222,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8">No visitors registered today yet.</td>
+                                <td colspan="9">No visitors for this filter.</td>
                             </tr>
                         @endforelse
                     </tbody>

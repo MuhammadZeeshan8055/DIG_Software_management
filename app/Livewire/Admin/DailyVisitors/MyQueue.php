@@ -18,9 +18,25 @@ class MyQueue extends Component
     /** Which visitor we are completing (id). */
     public ?int $completingId = null;
 
+    /** List filters (see previous days too). */
+    public string $filter_date = '';
+
+    public string $filter_status = '';
+
     public ?string $successMessage = null;
 
     public ?string $errorMessage = null;
+
+    public function mount(): void
+    {
+        $this->filter_date = now(app_timezone())->toDateString();
+    }
+
+    public function resetFilters(): void
+    {
+        $this->filter_date = now(app_timezone())->toDateString();
+        $this->filter_status = '';
+    }
 
     /**
      * Can this user open My Visitors?
@@ -204,21 +220,25 @@ class MyQueue extends Component
         $today = now(app_timezone())->toDateString();
         $user = auth()->user();
 
-        // All of today's visitors for counts (staff = only mine)
-        $allTodayQuery = DailyVisitor::query()
-            ->whereDate('created_at', $today);
-
-        if (! $user->isAdmin()) {
-            $allTodayQuery->where('assigned_to', $user->id);
+        if ($this->filter_date === '') {
+            $this->filter_date = $today;
         }
 
-        $allToday = $allTodayQuery->get(['id', 'status']);
+        // Counts for selected date (staff = only mine)
+        $allDayQuery = DailyVisitor::query()
+            ->whereDate('created_at', $this->filter_date);
+
+        if (! $user->isAdmin()) {
+            $allDayQuery->where('assigned_to', $user->id);
+        }
+
+        $allDay = $allDayQuery->get(['id', 'status']);
 
         $countInQueue = 0;
         $countMeeting = 0;
         $countDone = 0;
 
-        foreach ($allToday as $row) {
+        foreach ($allDay as $row) {
             if ($row->status === 'completed') {
                 $countDone++;
             } elseif ($row->status === 'in_meeting') {
@@ -228,20 +248,25 @@ class MyQueue extends Component
             }
         }
 
-        // Open list (not completed)
+        // List for selected date (includes completed so staff can read remarks)
         $query = DailyVisitor::query()
             ->with(['desk', 'creator'])
-            ->whereDate('created_at', $today)
-            ->where('status', '!=', 'completed')
+            ->whereDate('created_at', $this->filter_date)
+            // Open visits first, then done; newest within each group
+            ->orderByRaw("CASE WHEN status = 'completed' THEN 1 ELSE 0 END")
             ->orderByDesc('id');
 
         if (! $user->isAdmin()) {
             $query->where('assigned_to', $user->id);
         }
 
+        if ($this->filter_status !== '') {
+            $query->where('status', $this->filter_status);
+        }
+
         return view('livewire.admin.daily-visitors.my-queue', [
             'denied' => false,
-            'myVisitors' => $query->limit(50)->get(),
+            'myVisitors' => $query->limit(100)->get(),
             'countInQueue' => $countInQueue,
             'countMeeting' => $countMeeting,
             'countDone' => $countDone,
