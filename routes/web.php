@@ -6,12 +6,29 @@ use App\Livewire\Admin\Attendance\AttendanceGate;
 use App\Models\Invoice;
 use App\Models\SalarySlip;
 use App\Models\TicketImport;
+use App\Support\SendDueVisitorReminders;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::match(['get', 'head', 'post'], '/', function () {
     return redirect()->route('login');
 });
+
+/**
+ * Cron / scheduled URL — hit once a day (e.g. 9:00 AM).
+ * Example: https://yoursite.com/cron/visitor-reminders?key=YOUR_SECRET
+ */
+Route::get('/cron/visitor-reminders', function (Request $request) {
+    $secret = (string) config('app.cron_secret', '');
+
+    if ($secret === '' || ! hash_equals($secret, (string) $request->query('key', ''))) {
+        abort(403, 'Invalid cron key.');
+    }
+
+    $sent = SendDueVisitorReminders::run();
+
+    return response('OK — sent '.$sent.' reminder(s).', 200);
+})->middleware('throttle:10,1')->name('cron.visitor-reminders');
 
 Route::get('/verify/invoice/{token}', function (string $token) {
     $invoice = Invoice::query()
