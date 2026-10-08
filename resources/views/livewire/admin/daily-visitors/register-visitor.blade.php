@@ -33,7 +33,7 @@
                 <p class="stat-card__value">{{ $countMeeting }}</p>
                 <p class="stat-card__hint">For selected date</p>
             </article>
-            <article class="stat-card stat-card--navy">
+            <article class="stat-card stat-card--green">
                 <div class="stat-card__top"><p class="stat-card__label">Done</p></div>
                 <p class="stat-card__value">{{ $countDone }}</p>
                 <p class="stat-card__hint">For selected date</p>
