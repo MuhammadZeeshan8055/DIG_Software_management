@@ -1,5 +1,6 @@
 <div
     class="my-queue-page"
+    wire:poll.5s.visible
     @my-queue-panel-opened.window="$wire.$refresh()"
     @staff-list-changed.window="$wire.$refresh()"
 >
@@ -54,24 +55,54 @@
                     </thead>
                     <tbody>
                         @forelse ($myVisitors as $visitor)
-                            <tr wire:key="my-vis-{{ $visitor->id }}">
+                            <tr wire:key="my-vis-{{ $visitor->id }}-{{ $visitor->status }}">
                                 <td>{{ $visitor->name }}</td>
                                 <td>{{ $visitor->contact_no }}</td>
-                                <td>{{ $visitor->purpose }}</td>
+                                <td>
+                                    <span style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; word-break: break-word; max-width: 220px; line-height: 1.35;">
+                                        {{ $visitor->purpose }}
+                                    </span>
+                                </td>
                                 <td>{{ $visitor->desk?->name ?? '—' }}</td>
-                                <td>{{ $visitor->statusLabel() }}</td>
+                                <td>
+                                    @if ($visitor->status === 'send_now')
+                                        <span class="payment-badge payment-badge--paid">{{ $visitor->statusLabel() }}</span>
+                                    @elseif ($visitor->status === 'please_wait')
+                                        <span class="payment-badge payment-badge--draft">{{ $visitor->statusLabel() }}</span>
+                                    @elseif ($visitor->status === 'in_meeting')
+                                        <span class="payment-badge payment-badge--paid">{{ $visitor->statusLabel() }}</span>
+                                    @else
+                                        <span class="payment-badge">{{ $visitor->statusLabel() }}</span>
+                                    @endif
+                                </td>
                                 <td>{{ optional($visitor->created_at)->timezone(app_timezone())->format('h:i A') }}</td>
                                 <td class="manage-users-actions">
                                     <button
                                         type="button"
                                         class="payment-actions__btn"
+                                        @if ($visitor->status === 'please_wait')
+                                            style="border: 2px solid #0f766e; background: #ccfbf1; color: #0f766e; font-weight: 700;"
+                                        @endif
                                         wire:click="pleaseWait({{ $visitor->id }})"
-                                    >Please wait</button>
+                                    >
+                                        Please wait
+                                        @if ($visitor->status === 'please_wait')
+                                            ✓
+                                        @endif
+                                    </button>
                                     <button
                                         type="button"
                                         class="payment-actions__btn"
+                                        @if ($visitor->status === 'send_now')
+                                            style="border: 2px solid #166534; background: #dcfce7; color: #166534; font-weight: 700;"
+                                        @endif
                                         wire:click="sendNow({{ $visitor->id }})"
-                                    >Send now</button>
+                                    >
+                                        Send now
+                                        @if ($visitor->status === 'send_now')
+                                            ✓
+                                        @endif
+                                    </button>
                                     <button
                                         type="button"
                                         class="hero-btn hero-btn--primary"

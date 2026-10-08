@@ -1,5 +1,6 @@
 <div
     class="register-visitor-page"
+    wire:poll.5s.visible
     @daily-visitors-panel-opened.window="$wire.$refresh()"
     @staff-list-changed.window="$wire.$refresh()"
 >
@@ -17,7 +18,7 @@
                 </p>
                 <h2 class="module-workspace__title">Daily Visitors</h2>
                 <p class="module-workspace__desc" style="margin: 8px 0 0; font-size: 0.9rem; opacity: 0.85;">
-                    Register a visitor, pick a desk and person to meet. Notifications come in the next step.
+                    Register a visitor, pick a desk and person to meet. Today’s list updates every few seconds when status changes.
                 </p>
             </div>
         </section>
@@ -110,22 +111,58 @@
                             <th>Meet with</th>
                             <th>Status</th>
                             <th>Time</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($todayVisitors as $visitor)
-                            <tr wire:key="visitor-{{ $visitor->id }}">
+                            <tr wire:key="visitor-{{ $visitor->id }}-{{ $visitor->status }}">
                                 <td>{{ $visitor->name }}</td>
                                 <td>{{ $visitor->contact_no }}</td>
-                                <td>{{ $visitor->purpose }}</td>
+                                <td>
+                                    <span style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; word-break: break-word; max-width: 220px; line-height: 1.35;">
+                                        {{ $visitor->purpose }}
+                                    </span>
+                                </td>
                                 <td>{{ $visitor->desk?->name ?? '—' }}</td>
                                 <td>{{ $visitor->assignedUser?->name ?? '—' }}</td>
-                                <td>{{ $visitor->statusLabel() }}</td>
+                                <td>
+                                    @if ($visitor->status === 'send_now')
+                                        <span class="payment-badge payment-badge--paid">{{ $visitor->statusLabel() }}</span>
+                                    @elseif ($visitor->status === 'please_wait')
+                                        <span class="payment-badge payment-badge--draft">{{ $visitor->statusLabel() }}</span>
+                                    @elseif ($visitor->status === 'in_meeting')
+                                        <span class="payment-badge payment-badge--paid">{{ $visitor->statusLabel() }}</span>
+                                    @elseif ($visitor->status === 'completed')
+                                        <span class="payment-badge payment-badge--paid">{{ $visitor->statusLabel() }}</span>
+                                    @else
+                                        <span class="payment-badge">{{ $visitor->statusLabel() }}</span>
+                                    @endif
+                                </td>
                                 <td>{{ optional($visitor->created_at)->timezone(app_timezone())->format('h:i A') }}</td>
+                                <td class="manage-users-actions">
+                                    @if ($visitor->status === 'in_meeting')
+                                        <button
+                                            type="button"
+                                            class="payment-actions__btn"
+                                            style="border: 2px solid #166534; background: #dcfce7; color: #166534; font-weight: 700;"
+                                            disabled
+                                        >Sent ✓</button>
+                                    @elseif ($visitor->status !== 'completed')
+                                        <button
+                                            type="button"
+                                            class="hero-btn hero-btn--primary"
+                                            style="padding: 6px 10px; font-size: 0.75rem;"
+                                            wire:click="markSent({{ $visitor->id }})"
+                                        >Mark sent</button>
+                                    @else
+                                        —
+                                    @endif
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7">No visitors registered today yet.</td>
+                                <td colspan="8">No visitors registered today yet.</td>
                             </tr>
                         @endforelse
                     </tbody>

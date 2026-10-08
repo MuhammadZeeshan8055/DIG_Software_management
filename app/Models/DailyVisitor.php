@@ -48,6 +48,10 @@ class DailyVisitor extends Model
             return 'Send now';
         }
 
+        if ($this->status === 'in_meeting') {
+            return 'In meeting';
+        }
+
         if ($this->status === 'completed') {
             return 'Completed';
         }

@@ -90,6 +90,54 @@ class RegisterVisitor extends Component
         $this->successMessage = 'Visitor registered. The assigned person was notified.';
     }
 
+    /**
+     * Reception: visitor has been sent to the desk / is in the meeting.
+     */
+    public function markSent(int $id): void
+    {
+        $this->successMessage = null;
+        $this->errorMessage = null;
+
+        $user = auth()->user();
+
+        if (! $user || ! $user->canView('daily-visitors', 'register')) {
+            $this->errorMessage = 'You do not have access to register visitors.';
+
+            return;
+        }
+
+        $visitor = DailyVisitor::query()->with('assignedUser')->find($id);
+
+        if (! $visitor) {
+            $this->errorMessage = 'Visitor not found.';
+
+            return;
+        }
+
+        if ($visitor->status === 'completed') {
+            $this->errorMessage = 'This visitor is already completed.';
+
+            return;
+        }
+
+        $visitor->status = 'in_meeting';
+        $visitor->save();
+
+        // Tell the desk person the visitor is on the way / in meeting
+        if ($visitor->assignedUser && (int) $visitor->assignedUser->id !== (int) $user->id) {
+            UserNotifier::send(
+                $visitor->assignedUser,
+                'visitor_sent',
+                'Visitor sent to you',
+                $visitor->name.' has been sent / is coming for the meeting.',
+                'daily-visitors',
+                'my-queue'
+            );
+        }
+
+        $this->successMessage = 'Marked as In meeting (sent).';
+    }
+
     public function render()
     {
         $user = auth()->user();
