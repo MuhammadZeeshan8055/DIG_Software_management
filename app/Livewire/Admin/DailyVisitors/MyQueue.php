@@ -195,12 +195,40 @@ class MyQueue extends Component
             return view('livewire.admin.daily-visitors.my-queue', [
                 'denied' => true,
                 'myVisitors' => collect(),
+                'countInQueue' => 0,
+                'countMeeting' => 0,
+                'countDone' => 0,
             ]);
         }
 
         $today = now(app_timezone())->toDateString();
+        $user = auth()->user();
 
-        // Admins see all active today; staff only their own
+        // All of today's visitors for counts (staff = only mine)
+        $allTodayQuery = DailyVisitor::query()
+            ->whereDate('created_at', $today);
+
+        if (! $user->isAdmin()) {
+            $allTodayQuery->where('assigned_to', $user->id);
+        }
+
+        $allToday = $allTodayQuery->get(['id', 'status']);
+
+        $countInQueue = 0;
+        $countMeeting = 0;
+        $countDone = 0;
+
+        foreach ($allToday as $row) {
+            if ($row->status === 'completed') {
+                $countDone++;
+            } elseif ($row->status === 'in_meeting') {
+                $countMeeting++;
+            } else {
+                $countInQueue++;
+            }
+        }
+
+        // Open list (not completed)
         $query = DailyVisitor::query()
             ->with(['desk', 'creator'])
             ->whereDate('created_at', $today)
@@ -214,6 +242,9 @@ class MyQueue extends Component
         return view('livewire.admin.daily-visitors.my-queue', [
             'denied' => false,
             'myVisitors' => $query->limit(50)->get(),
+            'countInQueue' => $countInQueue,
+            'countMeeting' => $countMeeting,
+            'countDone' => $countDone,
         ]);
     }
 }

@@ -351,6 +351,15 @@ $workspace = $workspace ?? config('admin_workspace', []);
             }
         },
         clearOption() {
+            // Daily Visitors has no Module Dashboard — keep first screen open
+            if (this.activeModule === 'daily-visitors') {
+                const mod = this.modules['daily-visitors'];
+                const kids = (mod && mod.children) ? mod.children : [];
+                if (kids.length > 0) {
+                    this.selectOption(kids[0].key);
+                    return;
+                }
+            }
             this.activeOption = null;
             this.saveLastPage();
         }

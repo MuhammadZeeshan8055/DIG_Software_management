@@ -148,6 +148,9 @@ class RegisterVisitor extends Component
                 'desks' => collect(),
                 'staffList' => collect(),
                 'todayVisitors' => collect(),
+                'countInQueue' => 0,
+                'countMeeting' => 0,
+                'countDone' => 0,
             ]);
         }
 
@@ -191,11 +194,30 @@ class RegisterVisitor extends Component
             ->limit(50)
             ->get();
 
+        // Simple counts for today
+        $countInQueue = 0;
+        $countMeeting = 0;
+        $countDone = 0;
+
+        foreach ($todayVisitors as $visitor) {
+            if ($visitor->status === 'completed') {
+                $countDone++;
+            } elseif ($visitor->status === 'in_meeting') {
+                $countMeeting++;
+            } else {
+                // waiting, please_wait, send_now
+                $countInQueue++;
+            }
+        }
+
         return view('livewire.admin.daily-visitors.register-visitor', [
             'denied' => false,
             'desks' => $desks,
             'staffList' => $staffList,
             'todayVisitors' => $todayVisitors,
+            'countInQueue' => $countInQueue,
+            'countMeeting' => $countMeeting,
+            'countDone' => $countDone,
         ]);
     }
 }

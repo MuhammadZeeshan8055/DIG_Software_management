@@ -35,6 +35,30 @@
             </x-admin-toast>
         @endif
 
+        <div class="stat-grid" style="margin-bottom: 16px;">
+            <article class="stat-card stat-card--amber">
+                <div class="stat-card__top">
+                    <p class="stat-card__label">In queue</p>
+                </div>
+                <p class="stat-card__value">{{ $countInQueue }}</p>
+                <p class="stat-card__hint">Waiting / please wait / send now</p>
+            </article>
+            <article class="stat-card stat-card--blue">
+                <div class="stat-card__top">
+                    <p class="stat-card__label">In meeting</p>
+                </div>
+                <p class="stat-card__value">{{ $countMeeting }}</p>
+                <p class="stat-card__hint">Sent to desk</p>
+            </article>
+            <article class="stat-card stat-card--navy">
+                <div class="stat-card__top">
+                    <p class="stat-card__label">Done</p>
+                </div>
+                <p class="stat-card__value">{{ $countDone }}</p>
+                <p class="stat-card__hint">Completed today</p>
+            </article>
+        </div>
+
         <div class="data-panel" style="margin-bottom: 16px;">
             <div class="data-panel__head">
                 <h3 class="data-panel__title">Register visitor</h3>

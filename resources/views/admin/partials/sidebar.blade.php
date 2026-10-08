@@ -41,7 +41,7 @@
             <div class="admin-nav-section admin-nav-section--module" x-cloak>
                 <p class="admin-nav-section__label" x-text="currentModule().title"></p>
                 <ul>
-                    <li>
+                    <li x-show="activeModule !== 'daily-visitors'">
                         <button
                             type="button"
                             class="admin-nav-link admin-nav-link--option"
