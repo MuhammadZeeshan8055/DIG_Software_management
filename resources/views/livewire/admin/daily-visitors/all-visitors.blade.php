@@ -74,6 +74,7 @@
                             <th>Registered by</th>
                             <th>Status</th>
                             <th>Remarks</th>
+                            <th>Follow-up</th>
                             <th>Time</th>
                         </tr>
                     </thead>
@@ -82,7 +83,7 @@
                             <tr wire:key="all-vis-{{ $visitor->id }}-{{ $visitor->status }}">
                                 <td>{{ $visitor->name }}</td>
                                 <td>{{ $visitor->contact_no }}</td>
-                                <td style="max-width: 220px; white-space: normal; word-break: break-word;">{{ $visitor->purpose }}</td>
+                                <td style="max-width: 180px; white-space: normal; word-break: break-word;">{{ $visitor->purpose }}</td>
                                 <td>{{ $visitor->desk?->name ?? '—' }}</td>
                                 <td>{{ $visitor->assignedUser?->name ?? '—' }}</td>
                                 <td>{{ $visitor->creator?->name ?? '—' }}</td>
@@ -95,12 +96,35 @@
                                         <span class="payment-badge">{{ $visitor->statusLabel() }}</span>
                                     @endif
                                 </td>
-                                <td style="max-width: 180px; white-space: normal; word-break: break-word;">{{ $visitor->remarks ?: '—' }}</td>
+                                <td style="max-width: 140px; white-space: normal; word-break: break-word;">{{ $visitor->remarks ?: '—' }}</td>
+                                <td style="max-width: 260px; white-space: normal; word-break: break-word; font-size: 0.85rem; line-height: 1.4;">
+                                    @if ($visitor->reminders->isEmpty())
+                                        —
+                                    @else
+                                        @foreach ($visitor->reminders as $reminder)
+                                            <div style="margin-bottom: 6px;">
+                                                <strong>{{ $reminder->remind_on->format('d M Y') }}</strong>
+                                                @if ($reminder->note)
+                                                    — {{ $reminder->note }}
+                                                @endif
+                                                <br>
+                                                @if ($reminder->is_done)
+                                                    Outcome: {{ $reminder->done_note ?: '—' }}
+                                                    @if ($reminder->user)
+                                                        <span style="color:#64748b;">(by {{ $reminder->user->name }})</span>
+                                                    @endif
+                                                @else
+                                                    <span style="color:#b45309;">Pending</span>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    @endif
+                                </td>
                                 <td>{{ optional($visitor->created_at)->timezone(app_timezone())->format('h:i A') }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9">No visitors for this filter.</td>
+                                <td colspan="10">No visitors for this filter.</td>
                             </tr>
                         @endforelse
                     </tbody>

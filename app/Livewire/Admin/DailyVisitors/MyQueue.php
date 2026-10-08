@@ -319,6 +319,7 @@ class MyQueue extends Component
                 'countInQueue' => 0,
                 'countMeeting' => 0,
                 'countDone' => 0,
+                'countReminders' => 0,
             ]);
         }
 
@@ -349,12 +350,18 @@ class MyQueue extends Component
             $listQuery->where('status', $this->filter_status);
         }
 
+        // Open reminders for this staff (all dates — not only selected day)
+        $countReminders = VisitorReminder::where('user_id', $user->id)
+            ->where('is_done', false)
+            ->count();
+
         return view('livewire.admin.daily-visitors.my-queue', [
             'denied' => false,
             'myVisitors' => $listQuery->limit(100)->get(),
             'countInQueue' => $dayRows->whereNotIn('status', ['in_meeting', 'completed'])->count(),
             'countMeeting' => $dayRows->where('status', 'in_meeting')->count(),
             'countDone' => $dayRows->where('status', 'completed')->count(),
+            'countReminders' => $countReminders,
         ]);
     }
 }

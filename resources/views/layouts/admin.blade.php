@@ -47,6 +47,9 @@ $workspace = $workspace ?? config('admin_workspace', []);
                     if ($event.detail.option === 'my-queue') {
                         window.dispatchEvent(new CustomEvent('my-queue-panel-opened'));
                     }
+                    if ($event.detail.option === 'reminders-list') {
+                        window.dispatchEvent(new CustomEvent('reminders-panel-opened'));
+                    }
                     if ($event.detail.option === 'register') {
                         window.dispatchEvent(new CustomEvent('daily-visitors-panel-opened'));
                     }
@@ -198,6 +201,12 @@ $workspace = $workspace ?? config('admin_workspace', []);
                     window.dispatchEvent(new CustomEvent('my-queue-panel-opened'));
                 });
             }
+
+            if (this.activeOption === 'reminders-list') {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('reminders-panel-opened'));
+                });
+            }
         },
 
         currentModule() {
@@ -258,6 +267,9 @@ $workspace = $workspace ?? config('admin_workspace', []);
                         }
                         if (this.activeOption === 'my-queue') {
                             window.dispatchEvent(new CustomEvent('my-queue-panel-opened'));
+                        }
+                        if (this.activeOption === 'reminders-list') {
+                            window.dispatchEvent(new CustomEvent('reminders-panel-opened'));
                         }
                     });
                 }
@@ -348,6 +360,9 @@ $workspace = $workspace ?? config('admin_workspace', []);
             }
             if (key === 'my-queue') {
                 window.dispatchEvent(new CustomEvent('my-queue-panel-opened'));
+            }
+            if (key === 'reminders-list') {
+                window.dispatchEvent(new CustomEvent('reminders-panel-opened'));
             }
             if (window.matchMedia('(max-width: 1024px)').matches) {
                 this.sidebarOpen = false;

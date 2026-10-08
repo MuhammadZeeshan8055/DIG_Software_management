@@ -132,12 +132,13 @@ return [
             // Desk staff only (hidden from admin / super_admin)
             'key' => 'my-visitors',
             'title' => 'My Visitors',
-            'description' => 'Visitors sent to meet you — wait, send now, or complete.',
+            'description' => 'Visitors sent to meet you — wait, send now, or complete. Optional reminders.',
             'icon' => 'grid',
             'status' => 'active',
             'staff_always' => true,
             'children' => [
                 ['key' => 'my-queue', 'label' => 'My Visitors', 'route' => null],
+                ['key' => 'reminders-list', 'label' => 'Reminders', 'route' => null],
             ],
         ],
         [

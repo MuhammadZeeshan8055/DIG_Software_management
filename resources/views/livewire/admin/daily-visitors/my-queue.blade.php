@@ -38,6 +38,17 @@
                 <p class="stat-card__value">{{ $countDone }}</p>
                 <p class="stat-card__hint">For selected date</p>
             </article>
+            <article
+                class="stat-card stat-card--blue"
+                style="cursor: pointer;"
+                role="button"
+                title="Open Reminders"
+                @click="selectOption('reminders-list')"
+            >
+                <div class="stat-card__top"><p class="stat-card__label">Reminders</p></div>
+                <p class="stat-card__value">{{ $countReminders }}</p>
+                <p class="stat-card__hint">Open — click to view</p>
+            </article>
         </div>
 
         <div class="my-att-filter data-panel">

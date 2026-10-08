@@ -53,7 +53,14 @@ class AllVisitors extends Component
 
         $desks = Desk::where('is_active', true)->orderBy('name')->get();
 
-        $query = DailyVisitor::with(['desk', 'assignedUser', 'creator'])
+        $query = DailyVisitor::with([
+            'desk',
+            'assignedUser',
+            'creator',
+            'reminders' => function ($q) {
+                $q->with('user')->orderBy('remind_on')->orderBy('id');
+            },
+        ])
             ->whereDate('created_at', $this->filter_date)
             ->orderByDesc('id');
 

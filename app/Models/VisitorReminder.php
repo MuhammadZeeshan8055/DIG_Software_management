@@ -14,6 +14,8 @@ class VisitorReminder extends Model
         'note',
         'notified_at',
         'is_done',
+        'done_note',
+        'done_at',
     ];
 
     protected function casts(): array
@@ -22,6 +24,7 @@ class VisitorReminder extends Model
             'remind_on' => 'date',
             'notified_at' => 'datetime',
             'is_done' => 'boolean',
+            'done_at' => 'datetime',
         ];
     }
 
