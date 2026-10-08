@@ -343,6 +343,9 @@ $workspace = $workspace ?? config('admin_workspace', []);
             if (key === 'register') {
                 window.dispatchEvent(new CustomEvent('daily-visitors-panel-opened'));
             }
+            if (key === 'list') {
+                window.dispatchEvent(new CustomEvent('all-visitors-panel-opened'));
+            }
             if (key === 'my-queue') {
                 window.dispatchEvent(new CustomEvent('my-queue-panel-opened'));
             }

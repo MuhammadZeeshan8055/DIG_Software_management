@@ -71,12 +71,12 @@ class DashboardController extends Controller
                     return $user->canManageUsers() ? $module : null;
                 }
 
-                if ($user->isAdmin()) {
-                    return $module;
+                // My Visitors is for desk staff only (admins use Daily Visitors → All Visitors)
+                if (! empty($module['staff_always'])) {
+                    return $user->isStaff() ? $module : null;
                 }
 
-                // Desk staff always get their own "My Visitors" block (not under Daily Visitors)
-                if (! empty($module['staff_always'])) {
+                if ($user->isAdmin()) {
                     return $module;
                 }
 

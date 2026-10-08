@@ -124,10 +124,12 @@ return [
             'status' => 'active',
             'children' => [
                 ['key' => 'register', 'label' => 'Register Visitor', 'route' => null],
+                // Admin / super_admin only
+                ['key' => 'list', 'label' => 'All Visitors', 'route' => null, 'admin_only' => true],
             ],
         ],
         [
-            // Always shown to staff (not assigned in Manage Users)
+            // Desk staff only (hidden from admin / super_admin)
             'key' => 'my-visitors',
             'title' => 'My Visitors',
             'description' => 'Visitors sent to meet you — wait, send now, or complete.',

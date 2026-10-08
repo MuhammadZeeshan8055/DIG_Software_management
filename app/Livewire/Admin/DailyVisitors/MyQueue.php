@@ -36,10 +36,11 @@ class MyQueue extends Component
     {
         $user = auth()->user();
 
-        return $user && ($user->isAdmin() || $user->isStaff());
+        // Desk staff only — admins use Daily Visitors
+        return $user && $user->isStaff();
     }
 
-    /** Find a visitor that belongs to me (admins can open any). */
+    /** Find a visitor assigned to me. */
     protected function findMine(int $id): ?DailyVisitor
     {
         $user = auth()->user();
@@ -49,7 +50,7 @@ class MyQueue extends Component
             return null;
         }
 
-        if (! $user->isAdmin() && (int) $visitor->assigned_to !== (int) $user->id) {
+        if ((int) $visitor->assigned_to !== (int) $user->id) {
             return null;
         }
 
@@ -192,23 +193,16 @@ class MyQueue extends Component
             $this->filter_date = now(app_timezone())->toDateString();
         }
 
-        // Counts for selected date
-        $countQuery = DailyVisitor::whereDate('created_at', $this->filter_date);
-
-        if (! $user->isAdmin()) {
-            $countQuery->where('assigned_to', $user->id);
-        }
+        // Only visitors assigned to this staff user
+        $countQuery = DailyVisitor::whereDate('created_at', $this->filter_date)
+            ->where('assigned_to', $user->id);
 
         $dayRows = $countQuery->get(['status']);
 
-        // List for selected date
         $listQuery = DailyVisitor::with(['desk', 'creator'])
             ->whereDate('created_at', $this->filter_date)
+            ->where('assigned_to', $user->id)
             ->orderByDesc('id');
-
-        if (! $user->isAdmin()) {
-            $listQuery->where('assigned_to', $user->id);
-        }
 
         if ($this->filter_status !== '') {
             $listQuery->where('status', $this->filter_status);
