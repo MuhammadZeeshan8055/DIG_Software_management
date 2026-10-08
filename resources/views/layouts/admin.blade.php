@@ -157,6 +157,12 @@ $workspace = $workspace ?? config('admin_workspace', []);
                 });
             }
 
+            if (this.activeOption === 'desks') {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('desks-panel-opened'));
+                });
+            }
+
             if (this.activeOption === 'leave-approvals') {
                 this.$nextTick(() => {
                     window.dispatchEvent(new CustomEvent('leave-approvals-panel-opened'));
@@ -282,6 +288,9 @@ $workspace = $workspace ?? config('admin_workspace', []);
             }
             if (key === 'users') {
                 window.dispatchEvent(new CustomEvent('users-panel-opened'));
+            }
+            if (key === 'desks') {
+                window.dispatchEvent(new CustomEvent('desks-panel-opened'));
             }
             if (key === 'my-daily-attendance') {
                 window.dispatchEvent(new CustomEvent('my-attendance-opened'));

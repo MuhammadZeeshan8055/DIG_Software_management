@@ -142,6 +142,7 @@ return [
             'status' => 'active',
             'children' => [
                 ['key' => 'users', 'label' => 'Manage Users', 'route' => null],
+                // ['key' => 'desks', 'label' => 'Manage Desks', 'route' => null],
             ],
         ],
     ],
