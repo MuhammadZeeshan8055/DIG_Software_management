@@ -59,6 +59,7 @@ class ManageDesks extends Component
 
         $this->name = '';
         $this->successMessage = 'Desk added.';
+        $this->js('window.dispatchEvent(new CustomEvent("staff-list-changed"))');
     }
 
     public function turnOff(int $id): void
@@ -84,6 +85,7 @@ class ManageDesks extends Component
         $desk->save();
 
         $this->successMessage = 'Desk turned off. It will not show in new forms.';
+        $this->js('window.dispatchEvent(new CustomEvent("staff-list-changed"))');
     }
 
     public function turnOn(int $id): void
@@ -109,6 +111,7 @@ class ManageDesks extends Component
         $desk->save();
 
         $this->successMessage = 'Desk turned on again.';
+        $this->js('window.dispatchEvent(new CustomEvent("staff-list-changed"))');
     }
 
     public function render()

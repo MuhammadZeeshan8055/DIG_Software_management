@@ -103,6 +103,19 @@ class RegisterVisitor extends Component
                 ->where('desk_id', (int) $this->desk_id)
                 ->orderBy('name')
                 ->get(['id', 'name']);
+
+            // If selected person is no longer on this desk, clear the choice
+            $stillThere = false;
+            foreach ($staffList as $staff) {
+                if ((int) $staff->id === (int) $this->assigned_to) {
+                    $stillThere = true;
+                    break;
+                }
+            }
+
+            if ($this->assigned_to !== '' && ! $stillThere) {
+                $this->assigned_to = '';
+            }
         }
 
         // Today's visitors (newest first)

@@ -1,6 +1,7 @@
 <div
     class="register-visitor-page"
     @daily-visitors-panel-opened.window="$wire.$refresh()"
+    @staff-list-changed.window="$wire.$refresh()"
 >
     @if ($denied ?? false)
         <div class="data-panel">

@@ -183,6 +183,9 @@ class ManageUsers extends Component
         $this->syncPermissions($user);
         $this->closeModal();
         $this->successMessage = $wasEditing ? 'User updated.' : 'User created.';
+
+        // Tell Daily Visitors (and similar screens) to reload Meet-with lists
+        $this->js('window.dispatchEvent(new CustomEvent("staff-list-changed"))');
     }
 
     public function deleteUser(int $id): void
@@ -207,6 +210,8 @@ class ManageUsers extends Component
         if ($this->editingId === $id) {
             $this->closeModal();
         }
+
+        $this->js('window.dispatchEvent(new CustomEvent("staff-list-changed"))');
     }
 
     protected function syncPermissions(User $user): void
