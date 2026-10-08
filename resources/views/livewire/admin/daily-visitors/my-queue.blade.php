@@ -10,19 +10,6 @@
         </div>
     @else
 
-        <section class="module-workspace__hero" style="margin-bottom: 16px;">
-            <div class="module-workspace__hero-main">
-                <p class="module-workspace__eyebrow">
-                    <span class="module-workspace__eyebrow-dot"></span>
-                    Daily Visitors
-                </p>
-                <h2 class="module-workspace__title">My Visitors</h2>
-                <p class="module-workspace__desc" style="margin: 8px 0 0; font-size: 0.9rem; opacity: 0.85;">
-                    Visitors sent to meet you. Use <strong>Please wait</strong> or <strong>Send now</strong>, then <strong>Complete</strong> with remarks.
-                </p>
-            </div>
-        </section>
-
         @if ($successMessage)
             <x-admin-toast wire-property="successMessage" :seconds="6">
                 {{ $successMessage }}

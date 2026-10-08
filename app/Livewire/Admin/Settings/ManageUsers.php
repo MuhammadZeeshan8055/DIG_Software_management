@@ -317,6 +317,8 @@ class ManageUsers extends Component
     {
         return collect(config('admin.modules', []))
             ->reject(fn (array $module) => ($module['key'] ?? '') === 'settings')
+            // My Visitors is always available to staff — not toggled here
+            ->reject(fn (array $module) => ! empty($module['staff_always']))
             ->values()
             ->all();
     }

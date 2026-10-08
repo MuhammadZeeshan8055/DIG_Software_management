@@ -95,7 +95,7 @@ class RegisterVisitor extends Component
                 'visitor_waiting',
                 'Visitor waiting for you',
                 $visitor->name.' ('.$visitor->contact_no.') — '.$visitor->purpose.'. Please reply: Send now or Please wait.',
-                'daily-visitors',
+                'my-visitors',
                 'my-queue'
             );
         }
@@ -150,7 +150,7 @@ class RegisterVisitor extends Component
                 'visitor_sent',
                 'Visitor sent to you',
                 $visitor->name.' has been sent / is coming for the meeting.',
-                'daily-visitors',
+                'my-visitors',
                 'my-queue'
             );
         }

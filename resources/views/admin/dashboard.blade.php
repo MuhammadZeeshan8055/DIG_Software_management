@@ -95,7 +95,7 @@
     {{-- Module workspace (replaces overview) --}}
     <div
         class="dashboard-view module-workspace"
-        x-show="activeModule && activeModule !== 'daily-visitors' && !viewingMyAttendance && !viewingMyAccount && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'invoices' && activeOption !== 'users' && activeOption !== 'desks' && activeOption !== 'my-daily-attendance' && activeOption !== 'staff-daily-attendance' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips' && activeOption !== 'register' && activeOption !== 'my-queue'"
+        x-show="activeModule && activeModule !== 'daily-visitors' && activeModule !== 'my-visitors' && !viewingMyAttendance && !viewingMyAccount && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'invoices' && activeOption !== 'users' && activeOption !== 'desks' && activeOption !== 'my-daily-attendance' && activeOption !== 'staff-daily-attendance' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips' && activeOption !== 'register' && activeOption !== 'my-queue'"
         x-cloak
         x-transition:enter="dash-enter"
         x-transition:enter-start="dash-enter-start"
@@ -352,10 +352,10 @@
         <livewire:admin.daily-visitors.register-visitor />
     </div>
 
-    {{-- Daily Visitors (my queue for desk staff) --}}
+    {{-- My Visitors (desk staff — separate block) --}}
     <div
         class="dashboard-view dashboard-view--panel"
-        x-show="activeModule === 'daily-visitors' && activeOption === 'my-queue' && !viewingMyAttendance && !viewingMyAccount"
+        x-show="activeModule === 'my-visitors' && activeOption === 'my-queue' && !viewingMyAttendance && !viewingMyAccount"
         x-cloak
         x-transition.opacity.duration.200ms>
         <livewire:admin.daily-visitors.my-queue />

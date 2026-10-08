@@ -119,11 +119,22 @@ return [
         [
             'key' => 'daily-visitors',
             'title' => 'Daily Visitors',
-            'description' => 'Register walk-in visitors and send them to a desk person.',
+            'description' => 'Reception: register walk-in visitors and send them to a desk.',
             'icon' => 'grid',
             'status' => 'active',
             'children' => [
                 ['key' => 'register', 'label' => 'Register Visitor', 'route' => null],
+            ],
+        ],
+        [
+            // Always shown to staff (not assigned in Manage Users)
+            'key' => 'my-visitors',
+            'title' => 'My Visitors',
+            'description' => 'Visitors sent to meet you — wait, send now, or complete.',
+            'icon' => 'grid',
+            'status' => 'active',
+            'staff_always' => true,
+            'children' => [
                 ['key' => 'my-queue', 'label' => 'My Visitors', 'route' => null],
             ],
         ],

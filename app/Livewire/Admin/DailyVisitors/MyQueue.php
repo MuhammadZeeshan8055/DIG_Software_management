@@ -54,11 +54,7 @@ class MyQueue extends Component
             return true;
         }
 
-        if ($user->canView('daily-visitors', 'my-queue')) {
-            return true;
-        }
-
-        // Staff can always open their own assigned visitors
+        // Own queue — always for staff (separate My Visitors block)
         return $user->isStaff();
     }
 

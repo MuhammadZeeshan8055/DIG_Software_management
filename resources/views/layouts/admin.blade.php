@@ -246,8 +246,8 @@ $workspace = $workspace ?? config('admin_workspace', []);
             this.activeModule = key;
             this.activeOption = null;
 
-            // Daily Visitors — open the first option this user can see
-            if (key === 'daily-visitors') {
+            // Single-screen modules — open first option (no Module Dashboard)
+            if (key === 'daily-visitors' || key === 'my-visitors') {
                 const mod = this.modules[key];
                 const kids = (mod && mod.children) ? mod.children : [];
                 if (kids.length > 0) {
@@ -351,9 +351,9 @@ $workspace = $workspace ?? config('admin_workspace', []);
             }
         },
         clearOption() {
-            // Daily Visitors has no Module Dashboard — keep first screen open
-            if (this.activeModule === 'daily-visitors') {
-                const mod = this.modules['daily-visitors'];
+            // These modules have no Module Dashboard — keep first screen open
+            if (this.activeModule === 'daily-visitors' || this.activeModule === 'my-visitors') {
+                const mod = this.modules[this.activeModule];
                 const kids = (mod && mod.children) ? mod.children : [];
                 if (kids.length > 0) {
                     this.selectOption(kids[0].key);

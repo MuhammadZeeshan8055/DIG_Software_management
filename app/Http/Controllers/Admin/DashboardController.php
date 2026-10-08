@@ -75,6 +75,11 @@ class DashboardController extends Controller
                     return $module;
                 }
 
+                // Desk staff always get their own "My Visitors" block (not under Daily Visitors)
+                if (! empty($module['staff_always'])) {
+                    return $module;
+                }
+
                 $children = collect($module['children'] ?? [])
                     ->reject(fn (array $child) => ! empty($child['admin_only']))
                     ->filter(function (array $child) use ($user, $moduleKey) {
@@ -86,17 +91,11 @@ class DashboardController extends Controller
                                 ->exists();
                         }
 
-                        // Desk staff always see "My Visitors" so they can answer notifications
-                        if ($moduleKey === 'daily-visitors' && $feature === 'my-queue') {
-                            return true;
-                        }
-
                         return $user->canView($moduleKey, $feature);
                     })
                     ->values()
                     ->all();
 
-                // If staff only got my-queue, still show the Daily Visitors module
                 if ($children === []) {
                     return null;
                 }

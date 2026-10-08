@@ -160,7 +160,7 @@
                             <div class="mu-access">
                                 <div class="mu-access__head">
                                     <p class="mu-access__title">Feature access</p>
-                                    <p class="mu-access__hint">Pick modules this staff user can use</p>
+                                    <p class="mu-access__hint">Pick modules this staff user can use. Enable <strong>Daily Visitors</strong> for receptionists (register). Desk staff get <strong>My Visitors</strong> automatically.</p>
                                 </div>
 
                                 <label class="mu-access__all">
