@@ -101,22 +101,50 @@ class MyReminders extends Component
         $reminder->done_at = now();
         $reminder->save();
 
+        // If all reminders are done, ask admin to review the case
+        $visitor = $reminder->visitor;
+        if ($visitor) {
+            $visitor->setAwaitingReview();
+        }
+
+        $readyForReview = false;
+        if ($visitor && $visitor->case_status === 'awaiting_review') {
+            $readyForReview = true;
+        }
+
         // Tell other admins (skip if current user is already an admin doing it)
         if (! $this->isAdminView()) {
-            $visitorName = $reminder->visitor?->name ?? 'Visitor';
+            $visitorName = 'Visitor';
+            if ($visitor) {
+                $visitorName = $visitor->name;
+            }
+
+            $title = 'Reminder follow-up: '.$visitorName;
+            $openFeature = 'reminders-list';
+
+            if ($readyForReview) {
+                $title = 'Case ready for review: '.$visitorName;
+                $openFeature = 'list';
+            }
+
             UserNotifier::send(
                 UserNotifier::admins(),
                 'visitor_reminder_done',
-                'Reminder follow-up: '.$visitorName,
+                $title,
                 auth()->user()->name.' — '.$reminder->done_note,
                 'daily-visitors',
-                'reminders-list'
+                $openFeature
             );
         }
 
         $this->completingId = null;
         $this->done_note = '';
-        $this->successMessage = 'Reminder marked as done.';
+
+        if ($readyForReview) {
+            $this->successMessage = 'Reminder marked as done. Case is awaiting admin review.';
+        } else {
+            $this->successMessage = 'Reminder marked as done.';
+        }
     }
 
     public function removeReminder(int $id): void

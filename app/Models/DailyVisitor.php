@@ -17,7 +17,18 @@ class DailyVisitor extends Model
         'created_by',
         'status',
         'remarks',
+        'case_status',
+        'case_admin_note',
+        'case_closed_by',
+        'case_closed_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'case_closed_at' => 'datetime',
+        ];
+    }
 
     public function desk(): BelongsTo
     {
@@ -34,6 +45,11 @@ class DailyVisitor extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function caseClosedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'case_closed_by');
+    }
+
     public function reminders(): HasMany
     {
         return $this->hasMany(VisitorReminder::class);
@@ -41,14 +57,46 @@ class DailyVisitor extends Model
 
     public function statusLabel(): string
     {
-        $labels = [
-            'waiting' => 'Waiting',
-            'please_wait' => 'Please wait',
-            'send_now' => 'Send now',
-            'in_meeting' => 'In meeting',
-            'completed' => 'Completed',
-        ];
+        if ($this->status === 'waiting') {
+            return 'Waiting';
+        }
+        if ($this->status === 'please_wait') {
+            return 'Please wait';
+        }
+        if ($this->status === 'send_now') {
+            return 'Send now';
+        }
+        if ($this->status === 'in_meeting') {
+            return 'In meeting';
+        }
+        if ($this->status === 'completed') {
+            return 'Completed';
+        }
 
-        return $labels[$this->status] ?? $this->status;
+        return $this->status;
+    }
+
+    /** When all reminders are done, mark case for admin review. */
+    public function setAwaitingReview(): void
+    {
+        // Do not change a closed case
+        if ($this->case_status === 'closed') {
+            return;
+        }
+
+        // Still have an open reminder? Wait.
+        $openCount = $this->reminders()->where('is_done', false)->count();
+        if ($openCount > 0) {
+            return;
+        }
+
+        // Need at least one finished reminder
+        $doneCount = $this->reminders()->where('is_done', true)->count();
+        if ($doneCount == 0) {
+            return;
+        }
+
+        $this->case_status = 'awaiting_review';
+        $this->save();
     }
 }

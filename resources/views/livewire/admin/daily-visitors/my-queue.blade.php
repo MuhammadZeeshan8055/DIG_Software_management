@@ -85,7 +85,8 @@
                             <th>Contact</th>
                             <th>Purpose</th>
                             <th>Desk</th>
-                            <th>Status</th>
+                            <th>Visit</th>
+                            <th>Case</th>
                             <th>Remarks</th>
                             <th>Time</th>
                             <th>Actions</th>
@@ -93,7 +94,7 @@
                     </thead>
                     <tbody>
                         @forelse ($myVisitors as $visitor)
-                            <tr wire:key="my-vis-{{ $visitor->id }}-{{ $visitor->status }}">
+                            <tr wire:key="my-vis-{{ $visitor->id }}-{{ $visitor->status }}-{{ $visitor->case_status }}">
                                 <td>{{ $visitor->name }}</td>
                                 <td>{{ $visitor->contact_no }}</td>
                                 <td style="max-width: 220px; white-space: normal; word-break: break-word;">{{ $visitor->purpose }}</td>
@@ -107,18 +108,38 @@
                                         <span class="payment-badge">{{ $visitor->statusLabel() }}</span>
                                     @endif
                                 </td>
+                                <td style="max-width: 180px; white-space: normal; word-break: break-word;">
+                                    @if ($visitor->case_status === 'awaiting_review')
+                                        <span class="payment-badge payment-badge--pending">Awaiting review</span>
+                                    @elseif ($visitor->case_status === 'pending')
+                                        <span class="payment-badge payment-badge--draft">Case pending</span>
+                                    @elseif ($visitor->case_status === 'closed')
+                                        <span class="payment-badge payment-badge--paid">Case closed</span>
+                                    @else
+                                        <span style="color:#94a3b8;">—</span>
+                                    @endif
+                                    @if ($visitor->case_admin_note)
+                                        <div style="font-size: 0.8rem; color: #475569; margin-top: 6px; line-height: 1.35;">
+                                            {{ $visitor->case_admin_note }}
+                                        </div>
+                                    @endif
+                                </td>
                                 <td style="max-width: 180px; white-space: normal; word-break: break-word;">{{ $visitor->remarks ?: '—' }}</td>
                                 <td>{{ optional($visitor->created_at)->timezone(app_timezone())->format('h:i A') }}</td>
                                 <td class="manage-users-actions">
                                     @if ($visitor->status === 'completed')
-                                        @php $openReminder = $visitor->reminders->first(); @endphp
-                                        <button type="button" class="payment-actions__btn" wire:click="startReminder({{ $visitor->id }})">
-                                            @if ($openReminder)
-                                                Reminder {{ $openReminder->remind_on->format('d M') }}
-                                            @else
-                                                Set reminder
-                                            @endif
-                                        </button>
+                                        @if ($visitor->case_status === 'closed')
+                                            <span style="color:#94a3b8; font-size: 0.85rem;">—</span>
+                                        @else
+                                            @php $openReminder = $visitor->reminders->first(); @endphp
+                                            <button type="button" class="payment-actions__btn" wire:click="startReminder({{ $visitor->id }})">
+                                                @if ($openReminder)
+                                                    Reminder {{ $openReminder->remind_on->format('d M') }}
+                                                @else
+                                                    Set reminder
+                                                @endif
+                                            </button>
+                                        @endif
                                     @else
                                         <button type="button" class="payment-actions__btn" wire:click="pleaseWait({{ $visitor->id }})">
                                             Please wait @if ($visitor->status === 'please_wait') ✓ @endif
@@ -133,7 +154,7 @@
 
                             @if ($completingId === $visitor->id && $visitor->status !== 'completed')
                                 <tr wire:key="my-vis-complete-{{ $visitor->id }}">
-                                    <td colspan="8" style="background: #f8fafc; padding: 12px 16px;">
+                                    <td colspan="9" style="background: #f8fafc; padding: 12px 16px;">
                                         <label class="mu-field__label" for="vis-remarks-{{ $visitor->id }}">Remarks (required)</label>
                                         <input
                                             id="vis-remarks-{{ $visitor->id }}"
@@ -153,9 +174,9 @@
                                 </tr>
                             @endif
 
-                            @if ($remindingId === $visitor->id && $visitor->status === 'completed')
+                            @if ($remindingId === $visitor->id && $visitor->status === 'completed' && $visitor->case_status !== 'closed')
                                 <tr wire:key="my-vis-remind-{{ $visitor->id }}">
-                                    <td colspan="8" style="background: #f8fafc; padding: 12px 16px;">
+                                    <td colspan="9" style="background: #f8fafc; padding: 12px 16px;">
                                         <p style="margin: 0 0 10px; font-size: 0.85rem; color: #64748b;">Optional — only save if you need a follow-up.</p>
                                         <div class="manage-users-form__grid" style="margin-bottom: 10px;">
                                             <div class="mu-field">
@@ -193,7 +214,7 @@
                             @endif
                         @empty
                             <tr>
-                                <td colspan="8">No visitors for this filter.</td>
+                                <td colspan="9">No visitors for this filter.</td>
                             </tr>
                         @endforelse
                     </tbody>

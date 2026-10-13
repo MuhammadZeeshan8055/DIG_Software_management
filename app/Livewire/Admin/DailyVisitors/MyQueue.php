@@ -142,6 +142,16 @@ class MyQueue extends Component
     {
         $this->errorMessage = null;
         $this->completingId = null;
+
+        $visitor = $this->findMine($id);
+
+        if ($visitor && $visitor->case_status === 'closed') {
+            $this->errorMessage = 'This case is closed. Ask an admin to reopen it before setting a reminder.';
+            $this->remindingId = null;
+
+            return;
+        }
+
         $this->remindingId = $id;
         $this->remind_on = '';
         $this->remind_note = '';
@@ -203,6 +213,12 @@ class MyQueue extends Component
             return;
         }
 
+        if ($visitor->case_status === 'closed') {
+            $this->errorMessage = 'This case is closed. Ask an admin to reopen it before setting a reminder.';
+
+            return;
+        }
+
         $userId = (int) auth()->id();
 
         // One open reminder per visitor for this user — update or create
@@ -224,6 +240,12 @@ class MyQueue extends Component
         $reminder->notified_at = null;
         $reminder->is_done = false;
         $reminder->save();
+
+        // New follow-up work — keep out of "awaiting review" until this reminder is done
+        if ($visitor->case_status === 'awaiting_review') {
+            $visitor->case_status = 'pending';
+            $visitor->save();
+        }
 
         $this->remindingId = null;
         $this->remind_on = '';
