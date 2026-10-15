@@ -24,6 +24,9 @@ class ImportTicketDetails extends Component
     /** @var array<int, array<string, string>> */
     public array $flightSegments = [];
 
+    /** @var array<int, array{passenger: string, segments: array<int, array<string, string>>}> */
+    public array $passengerExtras = [];
+
     public string $raw_pdf_text = '';
 
     public bool $parsed = false;
@@ -90,6 +93,7 @@ class ImportTicketDetails extends Component
             $this->raw_pdf_text = $text;
             $this->form = array_merge($this->emptyFormFields(), $parsed['fields']);
             $this->flightSegments = $parsed['flight_segments'] ?: [$this->parser->emptySegment()];
+            $this->passengerExtras = $parsed['passenger_extras'] ?? [];
 
             $this->parseError = $text === ''
                 ? 'No readable text found in this PDF. Fill the fields manually below.'
@@ -98,6 +102,7 @@ class ImportTicketDetails extends Component
         } catch (\Throwable $exception) {
             $this->parseError = 'Could not read this PDF. Fill the fields manually below.';
             $this->flightSegments = [$this->parser->emptySegment()];
+            $this->passengerExtras = [];
             $this->parsed = true;
             report($exception);
         }
@@ -184,6 +189,9 @@ class ImportTicketDetails extends Component
                     'pdf_path' => $storedPath,
                     'raw_pdf_text' => $this->raw_pdf_text,
                     ...$validated,
+                    'passenger_extras' => $this->passengerExtras !== []
+                        ? $this->passengerExtras
+                        : $this->parser->parseExtras($this->raw_pdf_text),
                     'status' => 'confirmed',
                     'confirmed_at' => now(),
                 ]);
@@ -219,6 +227,7 @@ class ImportTicketDetails extends Component
             'parsed',
             'parseError',
             'flightSegments',
+            'passengerExtras',
             'amount_agreed',
             'amount_paid',
             'receiving_account_id',

@@ -13,13 +13,18 @@ class TicketPdfParser
     }
 
     /**
-     * @return array{fields: array<string, string>, flight_segments: array<int, array<string, string>>}
+     * @return array{
+     *     fields: array<string, string>,
+     *     flight_segments: array<int, array<string, string>>,
+     *     passenger_extras: array<int, array{passenger: string, segments: array<int, array<string, string>>}>
+     * }
      */
     public function parse(string $text): array
     {
         return [
             'fields' => $this->parseFields($text),
             'flight_segments' => $this->parseFlightSegments($text),
+            'passenger_extras' => $this->parseExtras($text),
         ];
     }
 
@@ -39,10 +44,20 @@ class TicketPdfParser
                 continue;
             }
 
+            // Passenger and ticket number can have more than one — handled below
+            if ($field === 'passenger_name' || $field === 'ticket_number') {
+                continue;
+            }
+
             if (preg_match($pattern, $text, $matches)) {
                 $fields[$field] = trim(preg_replace('/\s+/', ' ', $matches[1]));
             }
         }
+
+        // Pair each passenger with their own ticket number
+        $passengerTickets = $this->parsePassengerTickets($text);
+        $fields['passenger_name'] = $passengerTickets['passenger_name'];
+        $fields['ticket_number'] = $passengerTickets['ticket_number'];
 
         if ($fields['frequent_flyer'] === '-') {
             $fields['frequent_flyer'] = '';
@@ -53,6 +68,214 @@ class TicketPdfParser
         }
 
         return $fields;
+    }
+
+    /**
+     * Get passengers and their ticket numbers.
+     * PDF table often looks like:
+     * Mr A (ADT) - 0842319320249
+     * Mrs B (ADT) - 0842319320250
+     *
+     * @return array{passenger_name: string, ticket_number: string}
+     */
+    private function parsePassengerTickets(string $text): array
+    {
+        $names = [];
+        $tickets = [];
+
+        // 1) Best: name + ticket number together in one row
+        //    Example: Mr ALEENA IJAZ (ADT) - 0842319320249
+        //    Also allows " - " for frequent flyer between name and ticket
+        if (preg_match_all(
+            '/((?:Mr|Mrs|Ms|Miss|Mstr|Master|Infant)\.?\s+[A-Za-z][A-Za-z .\'\-]*?\((?:ADT|CHD|INF)\))\s*(?:-\s*){0,3}(\d{10,15})/i',
+            $text,
+            $matches,
+            PREG_SET_ORDER
+        )) {
+            foreach ($matches as $match) {
+                $name = trim(preg_replace('/\s+/', ' ', $match[1]));
+                $ticket = trim($match[2]);
+
+                if ($name === '' || in_array($name, $names, true)) {
+                    continue;
+                }
+
+                $names[] = $name;
+                $tickets[] = $ticket;
+            }
+        }
+
+        // 2) If no pairs found, get names and ticket numbers separately
+        if (count($names) === 0) {
+            $names = $this->findPassengerNames($text);
+            $tickets = $this->findTicketNumbers($text);
+        }
+
+        // 3) If we have names but only 1 ticket (or fewer), find more ticket numbers
+        if (count($names) > 1 && count($tickets) < count($names)) {
+            $moreTickets = $this->findTicketNumbers($text);
+
+            if (count($moreTickets) >= count($names)) {
+                $tickets = $moreTickets;
+            }
+        }
+
+        // Keep same count order: name1 with ticket1, name2 with ticket2, ...
+        return [
+            'passenger_name' => implode(' / ', $names),
+            'ticket_number' => implode(' / ', $tickets),
+        ];
+    }
+
+    /** @return array<int, string> */
+    private function findPassengerNames(string $text): array
+    {
+        $names = [];
+
+        // TRAVELLER NAME Mr NAME (ADT)
+        if (preg_match_all('/TRAVELLER NAME\s+(.+?\((?:ADT|CHD|INF)\))/i', $text, $matches)) {
+            foreach ($matches[1] as $name) {
+                $name = trim(preg_replace('/\s+/', ' ', $name));
+                if ($name !== '' && ! in_array($name, $names, true)) {
+                    $names[] = $name;
+                }
+            }
+        }
+
+        if (count($names) <= 1) {
+            if (preg_match_all('/((?:Mr|Mrs|Ms|Miss|Mstr|Master|Infant)\.?\s+[A-Za-z][A-Za-z .\'\-]*?\((?:ADT|CHD|INF)\))/i', $text, $matches2)) {
+                foreach ($matches2[1] as $name) {
+                    $name = trim(preg_replace('/\s+/', ' ', $name));
+                    if ($name !== '' && ! in_array($name, $names, true)) {
+                        $names[] = $name;
+                    }
+                }
+            }
+        }
+
+        if (count($names) <= 1) {
+            if (preg_match_all('/([A-Za-z][A-Za-z .\'\-]{1,60}?\((?:ADT|CHD|INF)\))/', $text, $matches3)) {
+                foreach ($matches3[1] as $name) {
+                    $name = trim(preg_replace('/\s+/', ' ', $name));
+
+                    if (stripos($name, 'TRAVELLER') !== false) {
+                        continue;
+                    }
+
+                    if ($name !== '' && ! in_array($name, $names, true)) {
+                        $names[] = $name;
+                    }
+                }
+            }
+        }
+
+        return $names;
+    }
+
+    /** @return array<int, string> */
+    private function findTicketNumbers(string $text): array
+    {
+        $numbers = [];
+
+        // After "TICKET NO." label (may appear once as a header)
+        if (preg_match_all('/TICKET NO\.\s*(\d{10,15})/i', $text, $matches)) {
+            foreach ($matches[1] as $number) {
+                $number = trim($number);
+                if ($number !== '' && ! in_array($number, $numbers, true)) {
+                    $numbers[] = $number;
+                }
+            }
+        }
+
+        // Table style: many 13-digit ticket numbers in the PDF
+        if (count($numbers) <= 1) {
+            if (preg_match_all('/\b(\d{13})\b/', $text, $matches2)) {
+                foreach ($matches2[1] as $number) {
+                    $number = trim($number);
+                    if ($number !== '' && ! in_array($number, $numbers, true)) {
+                        $numbers[] = $number;
+                    }
+                }
+            }
+        }
+
+        // Broader: 10 to 15 digit numbers near passengers
+        if (count($numbers) <= 1) {
+            if (preg_match_all('/\b(\d{10,15})\b/', $text, $matches3)) {
+                foreach ($matches3[1] as $number) {
+                    $number = trim($number);
+
+                    // Skip phone-like numbers starting with country code tips
+                    if (str_starts_with($number, '92') && strlen($number) <= 12) {
+                        continue;
+                    }
+
+                    if ($number !== '' && ! in_array($number, $numbers, true)) {
+                        $numbers[] = $number;
+                    }
+                }
+            }
+        }
+
+        return $numbers;
+    }
+
+    /**
+     * Parse the EXTRAS table (seat / meal / baggage per passenger per segment).
+     *
+     * @return array<int, array{passenger: string, segments: array<int, array<string, string>>}>
+     */
+    public function parseExtras(string $text): array
+    {
+        $extras = [];
+
+        // Important: PDF TOC has a lone word "EXTRAS" early on — ignore that.
+        // Use the real table that starts with column headers.
+        $body = '';
+        if (preg_match('/PASSENGER\s+SEGMENTS\s+SEAT\s+MEAL\s+BAGGAGE\s+(.+)$/is', $text, $section)) {
+            $body = trim($section[1]);
+        }
+
+        if ($body === '') {
+            return [];
+        }
+
+        // Each passenger + their segment rows
+        // Example: Mr ALEENA IJAZ ISB - JED 11D None None JED - ISB 11A None None
+        if (! preg_match_all(
+            '/((?:Mr|Mrs|Ms|Miss|Mstr|Master|Infant)\.?\s+[A-Z][A-Za-z .\'\-]*)((?:\s+[A-Z]{3}\s*-\s*[A-Z]{3}\s+\S+\s+\S+\s+\S+)+)/',
+            $body,
+            $matches,
+            PREG_SET_ORDER
+        )) {
+            return [];
+        }
+
+        foreach ($matches as $match) {
+            $passenger = trim(preg_replace('/\s+/', ' ', $match[1]));
+            $segBlock = $match[2];
+            $segments = [];
+
+            if (preg_match_all('/([A-Z]{3})\s*-\s*([A-Z]{3})\s+(\S+)\s+(\S+)\s+(\S+)/', $segBlock, $segs, PREG_SET_ORDER)) {
+                foreach ($segs as $seg) {
+                    $segments[] = [
+                        'segment' => $seg[1].' - '.$seg[2],
+                        'seat' => $seg[3],
+                        'meal' => $seg[4],
+                        'baggage' => $seg[5],
+                    ];
+                }
+            }
+
+            if ($passenger !== '' && $segments !== []) {
+                $extras[] = [
+                    'passenger' => $passenger,
+                    'segments' => $segments,
+                ];
+            }
+        }
+
+        return $extras;
     }
 
     /**

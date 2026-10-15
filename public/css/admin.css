@@ -6028,6 +6028,77 @@ body.ticket-view-modal-open {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.ticket-doc__passenger-table {
+    width: 100%;
+    border-bottom: 1px solid rgba(45, 58, 97, 0.07);
+}
+
+.ticket-doc__passenger-head,
+.ticket-doc__passenger-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr);
+    gap: 0;
+    padding: 8px 14px;
+}
+
+.ticket-doc__passenger-head {
+    background: rgba(248, 250, 252, 0.95);
+    border-bottom: 1px solid rgba(45, 58, 97, 0.08);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.ticket-doc__passenger-row {
+    border-bottom: 1px solid rgba(45, 58, 97, 0.06);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--brand-navy);
+}
+
+.ticket-doc__passenger-row:last-child {
+    border-bottom: none;
+}
+
+.ticket-doc__extras-table {
+    width: 100%;
+}
+
+.ticket-doc__extras-head,
+.ticket-doc__extras-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 0.7fr) minmax(0, 0.7fr) minmax(0, 0.8fr);
+    gap: 0;
+    padding: 8px 14px;
+    align-items: center;
+}
+
+.ticket-doc__extras-head {
+    background: rgba(248, 250, 252, 0.95);
+    border-bottom: 1px solid rgba(45, 58, 97, 0.08);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.ticket-doc__extras-row {
+    border-bottom: 1px solid rgba(45, 58, 97, 0.06);
+    font-size: 0.8rem;
+    color: var(--brand-navy);
+}
+
+.ticket-doc__extras-row span:first-child {
+    font-weight: 700;
+}
+
+.ticket-doc__extras-row:last-child {
+    border-bottom: none;
+}
+
 .ticket-doc__grid--3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }

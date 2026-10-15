@@ -21,6 +21,7 @@ class TicketImport extends Model
         'frequent_flyer',
         'ticket_number',
         'flight_segments',
+        'passenger_extras',
         'status',
         'confirmed_at',
     ];
@@ -29,6 +30,7 @@ class TicketImport extends Model
     {
         return [
             'flight_segments' => 'array',
+            'passenger_extras' => 'array',
             'confirmed_at' => 'datetime',
         ];
     }
@@ -106,5 +108,65 @@ class TicketImport extends Model
         }
 
         return "{$from}-{$to}";
+    }
+
+    /**
+     * EXTRAS rows (seat / meal / baggage). Uses saved data, or reads from PDF text.
+     *
+     * @return array<int, array{passenger: string, segments: array<int, array<string, string>>}>
+     */
+    public function extrasRows(): array
+    {
+        $saved = $this->passenger_extras;
+
+        if (is_array($saved) && $saved !== []) {
+            return $saved;
+        }
+
+        $raw = trim((string) $this->raw_pdf_text);
+        if ($raw === '') {
+            return [];
+        }
+
+        return app(\App\Services\TicketPdfParser::class)->parseExtras($raw);
+    }
+
+    /**
+     * Split saved passengers and ticket numbers into rows.
+     * Example: name "A / B" + ticket "111 / 222" => two rows.
+     *
+     * @return array<int, array{name: string, ticket: string}>
+     */
+    public function passengerTicketRows(): array
+    {
+        $nameText = trim((string) $this->passenger_name);
+        $ticketText = trim((string) $this->ticket_number);
+
+        if ($nameText === '' && $ticketText === '') {
+            return [];
+        }
+
+        $names = preg_split('/\s*\/\s*/', $nameText) ?: [];
+        $tickets = preg_split('/\s*\/\s*/', $ticketText) ?: [];
+
+        // Old imports may use comma between ticket numbers
+        if (count($tickets) === 1 && str_contains($ticketText, ',')) {
+            $tickets = preg_split('/\s*,\s*/', $ticketText) ?: [];
+        }
+
+        $names = array_values(array_filter(array_map('trim', $names), fn ($v) => $v !== ''));
+        $tickets = array_values(array_filter(array_map('trim', $tickets), fn ($v) => $v !== ''));
+
+        $count = max(count($names), count($tickets));
+        $rows = [];
+
+        for ($i = 0; $i < $count; $i++) {
+            $rows[] = [
+                'name' => $names[$i] ?? '',
+                'ticket' => $tickets[$i] ?? '',
+            ];
+        }
+
+        return $rows;
     }
 }

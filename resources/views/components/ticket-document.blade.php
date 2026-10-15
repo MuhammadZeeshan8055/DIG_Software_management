@@ -7,10 +7,11 @@
     $payment = $import->paymentEntry;
     $currency = config('payment_status.currency', 'PKR');
     $airline = $outbound['airline'] ?? ($return['airline'] ?? 'the selected carrier');
-    $carrierTerms = array_map(
-        fn (string $term) => str_replace(':airline', $airline, $term),
-        config('ticket_carrier_terms.terms', [])
-    );
+    // Terms section commented out for now
+    // $carrierTerms = array_map(
+    //     fn (string $term) => str_replace(':airline', $airline, $term),
+    //     config('ticket_carrier_terms.terms', [])
+    // );
 @endphp
 
 <div {{ $attributes->merge(['class' => 'ticket-doc']) }}>
@@ -116,25 +117,84 @@
 
     <section class="ticket-doc__section">
         <div class="ticket-doc__section-head">Passenger &amp; Ticket Identity</div>
-        <div class="ticket-doc__grid ticket-doc__grid--3">
-            <div class="ticket-doc__field">
-                <span class="ticket-doc__field-label">Passenger / Group Name</span>
-                <span class="ticket-doc__field-value">{{ $import->passenger_name ?: '—' }}</span>
+
+        @php $passengerRows = $import->passengerTicketRows(); @endphp
+
+        @if (count($passengerRows) > 1)
+            <div class="ticket-doc__passenger-table">
+                <div class="ticket-doc__passenger-head">
+                    <span>Traveller Name</span>
+                    <span>Ticket No.</span>
+                </div>
+                @foreach ($passengerRows as $row)
+                    <div class="ticket-doc__passenger-row">
+                        <span>{{ $row['name'] !== '' ? $row['name'] : '—' }}</span>
+                        <span>{{ $row['ticket'] !== '' ? $row['ticket'] : '—' }}</span>
+                    </div>
+                @endforeach
             </div>
-            <div class="ticket-doc__field">
-                <span class="ticket-doc__field-label">PNR</span>
-                <span class="ticket-doc__field-value">{{ $import->agency_pnr ?: ($outbound['pnr'] ?? '—') }}</span>
+            <div class="ticket-doc__grid ticket-doc__grid--2" style="margin-top: 10px;">
+                <div class="ticket-doc__field">
+                    <span class="ticket-doc__field-label">PNR</span>
+                    <span class="ticket-doc__field-value">{{ $import->agency_pnr ?: ($outbound['pnr'] ?? '—') }}</span>
+                </div>
+                <div class="ticket-doc__field">
+                    <span class="ticket-doc__field-label">Ticket Supplier</span>
+                    <span class="ticket-doc__field-value">{{ $import->agency_name ?: '—' }}</span>
+                </div>
             </div>
-            <div class="ticket-doc__field">
-                <span class="ticket-doc__field-label">Ticket Number</span>
-                <span class="ticket-doc__field-value">{{ $import->ticket_number ?: '—' }}</span>
+        @else
+            <div class="ticket-doc__grid ticket-doc__grid--3">
+                <div class="ticket-doc__field">
+                    <span class="ticket-doc__field-label">Passenger / Group Name</span>
+                    <span class="ticket-doc__field-value">{{ $import->passenger_name ?: '—' }}</span>
+                </div>
+                <div class="ticket-doc__field">
+                    <span class="ticket-doc__field-label">PNR</span>
+                    <span class="ticket-doc__field-value">{{ $import->agency_pnr ?: ($outbound['pnr'] ?? '—') }}</span>
+                </div>
+                <div class="ticket-doc__field">
+                    <span class="ticket-doc__field-label">Ticket Number</span>
+                    <span class="ticket-doc__field-value">{{ $import->ticket_number ?: '—' }}</span>
+                </div>
             </div>
-        </div>
-        <div class="ticket-doc__field ticket-doc__field--full">
-            <span class="ticket-doc__field-label">Ticket Supplier</span>
-            <span class="ticket-doc__field-value">{{ $import->agency_name ?: '—' }}</span>
-        </div>
+            <div class="ticket-doc__field ticket-doc__field--full">
+                <span class="ticket-doc__field-label">Ticket Supplier</span>
+                <span class="ticket-doc__field-value">{{ $import->agency_name ?: '—' }}</span>
+            </div>
+        @endif
     </section>
+
+    @php $extrasRows = $import->extrasRows(); @endphp
+    @if (count($extrasRows) > 0)
+        <section class="ticket-doc__section">
+            <div class="ticket-doc__section-head">Extras</div>
+            <div class="ticket-doc__extras-table">
+                <div class="ticket-doc__extras-head">
+                    <span>Passenger</span>
+                    <span>Segments</span>
+                    <span>Seat</span>
+                    <span>Meal</span>
+                    <span>Baggage</span>
+                </div>
+                @foreach ($extrasRows as $extra)
+                    @foreach ($extra['segments'] as $index => $seg)
+                        <div class="ticket-doc__extras-row">
+                            <span>
+                                @if ($index === 0)
+                                    {{ $extra['passenger'] }}
+                                @endif
+                            </span>
+                            <span>{{ $seg['segment'] ?? '—' }}</span>
+                            <span>{{ $seg['seat'] ?? '—' }}</span>
+                            <span>{{ $seg['meal'] ?? '—' }}</span>
+                            <span>{{ $seg['baggage'] ?? '—' }}</span>
+                        </div>
+                    @endforeach
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     <section class="ticket-doc__section">
         <div class="ticket-doc__section-head">Ticketing &amp; Fare Details</div>
@@ -213,6 +273,7 @@
         </div>
     </section>
 
+    {{-- Terms & Conditions hidden for now
     <section class="ticket-doc__section ticket-doc__section--terms">
         <div class="ticket-doc__section-head">{{ strtoupper($airline) }} &bull; Terms &amp; Conditions</div>
 
@@ -230,6 +291,7 @@
             @endforeach
         </ol>
     </section>
+    --}}
 
     <div class="ticket-doc__notice">
         <strong>Important — Final Authority</strong>
