@@ -21,7 +21,7 @@ return [
         'agency_phone' => [
             'label' => 'Agency Phone',
             'type' => 'text',
-            'placeholder' => 'e.g. +923425083003',
+            'placeholder' => 'e.g. 03102786609',
         ],
         'booking_reference' => [
             'label' => 'Booking Reference',
