@@ -126,30 +126,36 @@
                             <div class="itinerary-receipt__flight" wire:key="segment-{{ $index }}">
                                 <div class="itinerary-receipt__flight-grid">
                                     <div class="itinerary-receipt__flight-col">
-                                        <input type="text" wire:model="flightSegments.{{ $index }}.flight_number" class="itinerary-receipt__flight-code" placeholder="TK-983">
+                                        <input type="text" wire:model="flightSegments.{{ $index }}.flight_number" class="itinerary-receipt__flight-code" placeholder="e.g. PK-786">
                                         <input type="text" wire:model="flightSegments.{{ $index }}.airline" class="itinerary-receipt__inline itinerary-receipt__inline--bold" placeholder="Airline">
                                     </div>
 
                                     <div class="itinerary-receipt__flight-col">
                                         <div class="itinerary-receipt__time-row">
-                                            <input type="text" wire:model="flightSegments.{{ $index }}.departure_time" class="itinerary-receipt__inline itinerary-receipt__inline--time" placeholder="17:40">
+                                            <input type="text" wire:model="flightSegments.{{ $index }}.departure_time" class="itinerary-receipt__inline itinerary-receipt__inline--time" placeholder="HH:MM">
                                             <span>(</span>
-                                            <input type="text" wire:model="flightSegments.{{ $index }}.departure_date" class="itinerary-receipt__inline itinerary-receipt__inline--date" placeholder="11 Oct">
+                                            <input type="text" wire:model="flightSegments.{{ $index }}.departure_date" class="itinerary-receipt__inline itinerary-receipt__inline--date" placeholder="e.g. 27 Oct">
                                             <span>)</span>
                                         </div>
-                                        <input type="text" wire:model="flightSegments.{{ $index }}.departure_location" class="itinerary-receipt__inline" placeholder="Nicosia (ECN)">
-                                        <span class="itinerary-receipt__muted">Terminal - NA</span>
+                                        <input type="text" wire:model="flightSegments.{{ $index }}.departure_location" class="itinerary-receipt__inline" placeholder="City (XXX)">
+                                        <label class="itinerary-receipt__meta-line itinerary-receipt__muted">
+                                            <span>Terminal -</span>
+                                            <input type="text" wire:model="flightSegments.{{ $index }}.departure_terminal" class="itinerary-receipt__inline" placeholder="NA">
+                                        </label>
                                     </div>
 
                                     <div class="itinerary-receipt__flight-col">
                                         <div class="itinerary-receipt__time-row">
-                                            <input type="text" wire:model="flightSegments.{{ $index }}.arrival_time" class="itinerary-receipt__inline itinerary-receipt__inline--time" placeholder="19:30">
+                                            <input type="text" wire:model="flightSegments.{{ $index }}.arrival_time" class="itinerary-receipt__inline itinerary-receipt__inline--time" placeholder="HH:MM">
                                             <span>(</span>
-                                            <input type="text" wire:model="flightSegments.{{ $index }}.arrival_date" class="itinerary-receipt__inline itinerary-receipt__inline--date" placeholder="11 Oct">
+                                            <input type="text" wire:model="flightSegments.{{ $index }}.arrival_date" class="itinerary-receipt__inline itinerary-receipt__inline--date" placeholder="e.g. 28 Oct">
                                             <span>)</span>
                                         </div>
-                                        <input type="text" wire:model="flightSegments.{{ $index }}.arrival_location" class="itinerary-receipt__inline" placeholder="Istanbul (IST)">
-                                        <span class="itinerary-receipt__muted">Terminal - NA</span>
+                                        <input type="text" wire:model="flightSegments.{{ $index }}.arrival_location" class="itinerary-receipt__inline" placeholder="City (XXX)">
+                                        <label class="itinerary-receipt__meta-line itinerary-receipt__muted">
+                                            <span>Terminal -</span>
+                                            <input type="text" wire:model="flightSegments.{{ $index }}.arrival_terminal" class="itinerary-receipt__inline" placeholder="NA">
+                                        </label>
                                     </div>
 
                                     <div class="itinerary-receipt__flight-col itinerary-receipt__flight-col--meta">
@@ -159,15 +165,15 @@
                                         </label>
                                         <label class="itinerary-receipt__meta-line">
                                             <span>Class :</span>
-                                            <input type="text" wire:model="flightSegments.{{ $index }}.class" class="itinerary-receipt__inline" placeholder="Economy (T)">
+                                            <input type="text" wire:model="flightSegments.{{ $index }}.class" class="itinerary-receipt__inline" placeholder="Economy (O)">
                                         </label>
                                         <label class="itinerary-receipt__meta-line">
                                             <span>Baggage :</span>
-                                            <input type="text" wire:model="flightSegments.{{ $index }}.baggage" class="itinerary-receipt__inline" placeholder="15.0 KG">
+                                            <input type="text" wire:model="flightSegments.{{ $index }}.baggage" class="itinerary-receipt__inline" placeholder="e.g. 2.0 P">
                                         </label>
                                         <label class="itinerary-receipt__meta-line">
                                             <span>PNR :</span>
-                                            <input type="text" wire:model="flightSegments.{{ $index }}.pnr" class="itinerary-receipt__inline" placeholder="RRGHVZ">
+                                            <input type="text" wire:model="flightSegments.{{ $index }}.pnr" class="itinerary-receipt__inline" placeholder="PNR">
                                         </label>
                                     </div>
                                 </div>

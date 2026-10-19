@@ -283,13 +283,15 @@ class TicketPdfParser
      */
     public function parseFlightSegments(string $text): array
     {
+        // Tip: do not use [^P]/[^B]/[^SC] fences — baggage "2.0 P", class
+        // "Business", and "Status" all break those. Stop on the next label instead.
         $pattern = '/(?<flight_number>[A-Z]{2}-\d+)\s+(?<airline>[A-Za-z][A-Za-z\s]+?)\s+'
             .'(?<departure_time>\d{2}:\d{2})\s*\(\s*(?<departure_date>[^)]+?)\s*\)\s+'
-            .'(?<departure_location>[^(]+?\([A-Z]{3}\))\s*Terminal[^0-9]*'
+            .'(?<departure_location>[^(]+?\([A-Z]{3}\))\s*Terminal\s*-\s*(?<departure_terminal>\S+)\s+'
             .'(?<arrival_time>\d{2}:\d{2})\s*\(\s*(?<arrival_date>[^)]+?)\s*\)\s+'
-            .'(?<arrival_location>[^(]+?\([A-Z]{3}\))\s*Terminal[^SC]*'
-            .'(?:Status\s*:\s*(?<status>\w+)\s*)?Class\s*:\s*(?<class>[^B]+?)\s*'
-            .'Baggage\s*:\s*(?<baggage>[^P]+?)\s*PNR\s*:\s*(?<pnr>[A-Z0-9]+)/i';
+            .'(?<arrival_location>[^(]+?\([A-Z]{3}\))\s*Terminal\s*-\s*(?<arrival_terminal>\S+)\s+'
+            .'(?:Status\s*:\s*(?<status>\w+)\s*)?Class\s*:\s*(?<class>.+?)\s+'
+            .'Baggage\s*:\s*(?<baggage>.+?)\s+PNR\s*:\s*(?<pnr>[A-Z0-9]+)/i';
 
         if (! preg_match_all($pattern, $text, $matches, PREG_SET_ORDER)) {
             return [];
