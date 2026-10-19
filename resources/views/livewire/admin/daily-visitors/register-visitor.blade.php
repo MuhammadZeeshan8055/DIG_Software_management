@@ -40,12 +40,26 @@
             </article>
         </div>
 
-        <div class="data-panel" style="margin-bottom: 16px;">
+        <div id="visitor-form-panel" class="data-panel" style="margin-bottom: 16px;">
             <div class="data-panel__head">
-                <h3 class="data-panel__title">Register visitor</h3>
+                <h3 class="data-panel__title">
+                    @if ($editingVisitorId)
+                        Update visitor
+                    @else
+                        Register visitor
+                    @endif
+                </h3>
             </div>
 
-            <form wire:submit="save" class="manage-users-form" style="padding: 16px;">
+            <form
+                @if ($editingVisitorId)
+                    wire:submit.prevent="requestUpdate"
+                @else
+                    wire:submit="save"
+                @endif
+                class="manage-users-form"
+                style="padding: 16px;"
+            >
                 <div class="manage-users-form__grid">
                     <div class="mu-field">
                         <label class="mu-field__label" for="vis-name">Name</label>
@@ -91,14 +105,51 @@
                     </div>
                 </div>
 
-                <div style="margin-top: 14px;">
-                    <button type="submit" class="hero-btn hero-btn--primary" wire:loading.attr="disabled">
-                        <span wire:loading.remove wire:target="save">Register visitor</span>
-                        <span wire:loading wire:target="save">Saving...</span>
-                    </button>
+                <div style="margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    @if ($editingVisitorId)
+                        <button type="submit" class="hero-btn hero-btn--primary" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="requestUpdate">Update visitor</span>
+                            <span wire:loading wire:target="requestUpdate">Checking...</span>
+                        </button>
+                        <button type="button" class="payment-actions__btn" wire:click="cancelEdit">Cancel</button>
+                    @else
+                        <button type="submit" class="hero-btn hero-btn--primary" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="save">Register visitor</span>
+                            <span wire:loading wire:target="save">Saving...</span>
+                        </button>
+                    @endif
                 </div>
             </form>
         </div>
+
+        @if ($showUpdateConfirm)
+            <div class="mu-modal" wire:keydown.escape.window="cancelUpdateConfirm">
+                <button type="button" class="mu-modal__backdrop" wire:click="cancelUpdateConfirm" aria-label="Close"></button>
+                <div class="mu-modal__dialog" style="width: min(420px, 100%);" role="dialog" aria-modal="true" aria-labelledby="vis-update-confirm-title">
+                    <div class="mu-modal__head">
+                        <h3 id="vis-update-confirm-title" class="mu-modal__title">Update visitor?</h3>
+                        <button type="button" class="mu-modal__close" wire:click="cancelUpdateConfirm" aria-label="Close">&times;</button>
+                    </div>
+                    <div style="padding: 18px 20px;">
+                        <p style="margin: 0; color: #475569; font-size: 0.95rem; line-height: 1.5;">
+                            Are you sure you want to update this visitor’s details?
+                        </p>
+                    </div>
+                    <div class="mu-modal__footer">
+                        <button type="button" class="payment-actions__btn" wire:click="cancelUpdateConfirm">Cancel</button>
+                        <button
+                            type="button"
+                            class="hero-btn hero-btn--primary"
+                            wire:click="updateVisitor"
+                            wire:loading.attr="disabled"
+                        >
+                            <span wire:loading.remove wire:target="updateVisitor">Yes, update</span>
+                            <span wire:loading wire:target="updateVisitor">Updating...</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         <div class="my-att-filter data-panel">
             <div class="my-att-filter__inner">
@@ -170,12 +221,15 @@
                                 <td style="max-width: 180px; white-space: normal; word-break: break-word;">{{ $visitor->remarks ?: '—' }}</td>
                                 <td>{{ optional($visitor->created_at)->timezone(app_timezone())->format('h:i A') }}</td>
                                 <td class="manage-users-actions">
-                                    @if ($visitor->status === 'in_meeting')
-                                        <button type="button" class="payment-actions__btn" disabled>Sent ✓</button>
-                                    @elseif ($visitor->status !== 'completed')
-                                        <button type="button" class="hero-btn hero-btn--primary" style="padding: 6px 10px; font-size: 0.75rem;" wire:click="markSent({{ $visitor->id }})">Mark sent</button>
+                                    @if ($editingVisitorId === $visitor->id)
+                                        <button type="button" class="payment-actions__btn" wire:click="cancelEdit">Cancel</button>
                                     @else
-                                        —
+                                        <button type="button" class="payment-actions__btn" wire:click="startEdit({{ $visitor->id }})">Edit</button>
+                                        @if ($visitor->status === 'in_meeting')
+                                            <button type="button" class="payment-actions__btn" disabled>Sent ✓</button>
+                                        @elseif ($visitor->status !== 'completed')
+                                            <button type="button" class="hero-btn hero-btn--primary" style="padding: 6px 10px; font-size: 0.75rem;" wire:click="markSent({{ $visitor->id }})">Mark sent</button>
+                                        @endif
                                     @endif
                                 </td>
                             </tr>

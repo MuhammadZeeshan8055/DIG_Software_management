@@ -31,6 +31,10 @@ class RegisterVisitor extends Component
 
     public ?string $errorMessage = null;
 
+    public ?int $editingVisitorId = null;
+
+    public bool $showUpdateConfirm = false;
+
     public function mount(): void
     {
         $this->filter_date = now(app_timezone())->toDateString();
@@ -55,6 +59,16 @@ class RegisterVisitor extends Component
         return $user && $user->canView('daily-visitors', 'register');
     }
 
+    protected function clearForm(): void
+    {
+        $this->name = '';
+        $this->contact_no = '';
+        $this->purpose = '';
+        $this->desk_id = '';
+        $this->assigned_to = '';
+        $this->resetValidation();
+    }
+
     public function save(): void
     {
         $this->successMessage = null;
@@ -62,6 +76,12 @@ class RegisterVisitor extends Component
 
         if (! $this->canRegister()) {
             $this->errorMessage = 'You do not have access to register visitors.';
+
+            return;
+        }
+
+        if ($this->editingVisitorId) {
+            $this->requestUpdate();
 
             return;
         }
@@ -100,11 +120,7 @@ class RegisterVisitor extends Component
             );
         }
 
-        $this->name = '';
-        $this->contact_no = '';
-        $this->purpose = '';
-        $this->desk_id = '';
-        $this->assigned_to = '';
+        $this->clearForm();
         $this->successMessage = 'Visitor registered. The assigned person was notified.';
     }
 
@@ -148,6 +164,152 @@ class RegisterVisitor extends Component
         }
 
         $this->successMessage = 'Marked as In meeting (sent).';
+    }
+
+    public function startEdit(int $id): void
+    {
+        $this->successMessage = null;
+        $this->errorMessage = null;
+
+        if (! $this->canRegister()) {
+            $this->errorMessage = 'You do not have access to edit visitors.';
+
+            return;
+        }
+
+        $visitor = DailyVisitor::find($id);
+
+        if (! $visitor) {
+            $this->errorMessage = 'Visitor not found.';
+
+            return;
+        }
+
+        $this->editingVisitorId = $visitor->id;
+        $this->name = $visitor->name;
+        $this->contact_no = $visitor->contact_no;
+        $this->purpose = $visitor->purpose;
+        $this->desk_id = (string) $visitor->desk_id;
+        $this->assigned_to = (string) $visitor->assigned_to;
+        $this->resetValidation();
+
+        $this->js(<<<'JS'
+            requestAnimationFrame(() => {
+                const el = document.getElementById('visitor-form-panel');
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        JS);
+    }
+
+    public function cancelEdit(): void
+    {
+        $this->showUpdateConfirm = false;
+        $this->editingVisitorId = null;
+        $this->clearForm();
+        $this->js('document.body.classList.remove("mu-modal-open")');
+    }
+
+    public function requestUpdate(): void
+    {
+        $this->successMessage = null;
+        $this->errorMessage = null;
+
+        if (! $this->canRegister()) {
+            $this->errorMessage = 'You do not have access to edit visitors.';
+
+            return;
+        }
+
+        if (! $this->editingVisitorId) {
+            $this->errorMessage = 'No visitor selected.';
+
+            return;
+        }
+
+        $this->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'contact_no' => ['required', 'string', 'max:40'],
+            'purpose' => ['required', 'string', 'max:255'],
+            'desk_id' => ['required', 'integer', 'exists:desks,id'],
+            'assigned_to' => ['required', 'integer', 'exists:users,id'],
+        ]);
+
+        $this->showUpdateConfirm = true;
+        $this->js('document.body.classList.add("mu-modal-open")');
+    }
+
+    public function cancelUpdateConfirm(): void
+    {
+        $this->showUpdateConfirm = false;
+        $this->js('document.body.classList.remove("mu-modal-open")');
+    }
+
+    public function updateVisitor(): void
+    {
+        $this->successMessage = null;
+        $this->errorMessage = null;
+        $this->showUpdateConfirm = false;
+        $this->js('document.body.classList.remove("mu-modal-open")');
+
+        if (! $this->canRegister()) {
+            $this->errorMessage = 'You do not have access to edit visitors.';
+
+            return;
+        }
+
+        if (! $this->editingVisitorId) {
+            $this->errorMessage = 'No visitor selected.';
+
+            return;
+        }
+
+        $this->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'contact_no' => ['required', 'string', 'max:40'],
+            'purpose' => ['required', 'string', 'max:255'],
+            'desk_id' => ['required', 'integer', 'exists:desks,id'],
+            'assigned_to' => ['required', 'integer', 'exists:users,id'],
+        ]);
+
+        $visitor = DailyVisitor::find($this->editingVisitorId);
+
+        if (! $visitor) {
+            $this->errorMessage = 'Visitor not found.';
+            $this->cancelEdit();
+
+            return;
+        }
+
+        $previousAssignedTo = (int) $visitor->assigned_to;
+        $newAssignedTo = (int) $this->assigned_to;
+
+        $visitor->name = trim($this->name);
+        $visitor->contact_no = trim($this->contact_no);
+        $visitor->purpose = trim($this->purpose);
+        $visitor->desk_id = (int) $this->desk_id;
+        $visitor->assigned_to = $newAssignedTo;
+        $visitor->save();
+
+        if ($previousAssignedTo !== $newAssignedTo && $visitor->status !== 'completed') {
+            $meetPerson = User::find($newAssignedTo);
+
+            if ($meetPerson) {
+                UserNotifier::send(
+                    $meetPerson,
+                    'visitor_waiting',
+                    'Visitor assigned to you',
+                    $visitor->name.' ('.$visitor->contact_no.') — '.$visitor->purpose.'. Please reply: Send now or Please wait.',
+                    'my-visitors',
+                    'my-queue'
+                );
+            }
+        }
+
+        $this->successMessage = 'Visitor details updated for '.$visitor->name.'.';
+        $this->editingVisitorId = null;
+        $this->clearForm();
     }
 
     public function render()
