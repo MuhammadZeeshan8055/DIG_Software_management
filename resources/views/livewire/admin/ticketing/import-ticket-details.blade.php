@@ -137,7 +137,7 @@
                                             <input type="text" wire:model="flightSegments.{{ $index }}.departure_date" class="itinerary-receipt__inline itinerary-receipt__inline--date" placeholder="e.g. 27 Oct">
                                             <span>)</span>
                                         </div>
-                                        <input type="text" wire:model="flightSegments.{{ $index }}.departure_location" class="itinerary-receipt__inline" placeholder="City (XXX)">
+                                        <input type="text" wire:model="flightSegments.{{ $index }}.departure_location" class="itinerary-receipt__inline" placeholder="City">
                                         <label class="itinerary-receipt__meta-line itinerary-receipt__muted">
                                             <span>Terminal -</span>
                                             <input type="text" wire:model="flightSegments.{{ $index }}.departure_terminal" class="itinerary-receipt__inline" placeholder="NA">
@@ -151,7 +151,7 @@
                                             <input type="text" wire:model="flightSegments.{{ $index }}.arrival_date" class="itinerary-receipt__inline itinerary-receipt__inline--date" placeholder="e.g. 28 Oct">
                                             <span>)</span>
                                         </div>
-                                        <input type="text" wire:model="flightSegments.{{ $index }}.arrival_location" class="itinerary-receipt__inline" placeholder="City (XXX)">
+                                        <input type="text" wire:model="flightSegments.{{ $index }}.arrival_location" class="itinerary-receipt__inline" placeholder="City">
                                         <label class="itinerary-receipt__meta-line itinerary-receipt__muted">
                                             <span>Terminal -</span>
                                             <input type="text" wire:model="flightSegments.{{ $index }}.arrival_terminal" class="itinerary-receipt__inline" placeholder="NA">
