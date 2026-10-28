@@ -26,6 +26,12 @@ class SalesReport extends Component
 
     public string $edit_profit = '';
 
+    public bool $showReplaceConfirm = false;
+
+    public string $replaceConfirmTitle = 'Replace month data?';
+
+    public string $replaceConfirmMessage = '';
+
     public function mount(): void
     {
         $this->report_month = now()->format('Y-m');
@@ -74,12 +80,9 @@ class SalesReport extends Component
             $label = $this->monthLabel();
             $rowsLabel = $existing === 1 ? '1 row' : "{$existing} rows";
 
-            $this->js(
-                'window.dispatchEvent(new CustomEvent("confirm-replace-sales", { detail: {'
-                .'title: '.json_encode('Replace month data?').','
-                .'message: '.json_encode("Sales data already exists for {$label} ({$rowsLabel}). Do you want to replace it with this file? Existing profit values for this month will be lost.")
-                .'} }))'
-            );
+            $this->replaceConfirmTitle = 'Replace month data?';
+            $this->replaceConfirmMessage = "Sales data already exists for {$label} ({$rowsLabel}). Do you want to replace it with this file? Existing profit values for this month will be lost.";
+            $this->showReplaceConfirm = true;
 
             return;
         }
@@ -87,8 +90,16 @@ class SalesReport extends Component
         $this->runImport(replace: false);
     }
 
+    public function cancelReplaceConfirm(): void
+    {
+        $this->showReplaceConfirm = false;
+        $this->replaceConfirmMessage = '';
+    }
+
     public function importSheetReplacing(): void
     {
+        $this->showReplaceConfirm = false;
+        $this->replaceConfirmMessage = '';
         $this->runImport(replace: true);
     }
 
