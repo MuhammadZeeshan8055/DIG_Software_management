@@ -7529,6 +7529,42 @@ tr.leave-row--rejected td {
 }
 
 /* Accounts → Sales Report */
+.sales-report__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.sales-report__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    border: 1px solid rgba(1, 145, 212, 0.28);
+    border-radius: 999px;
+    padding: 7px 12px 7px 14px;
+    background: rgba(1, 145, 212, 0.08);
+    color: var(--brand-navy);
+    font-size: 0.82rem;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.sales-report__toggle:hover {
+    background: rgba(1, 145, 212, 0.14);
+    border-color: rgba(1, 145, 212, 0.45);
+}
+
+.sales-report__toggle-chevron {
+    transition: transform 0.18s ease;
+}
+
+.sales-report__toggle-chevron--open {
+    transform: rotate(180deg);
+}
+
 .sales-report__body {
     padding-bottom: 4px;
 }
@@ -7537,12 +7573,41 @@ tr.leave-row--rejected td {
     display: flex;
     flex-wrap: wrap;
     gap: 14px;
-    margin-bottom: 16px;
+    margin-bottom: 4px;
 }
 
 .sales-report__month-field {
     min-width: 200px;
     max-width: 260px;
+}
+
+.sales-report__import-panel {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(45, 58, 97, 0.08);
+}
+
+.sales-report-collapse-enter {
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.sales-report-collapse-enter-start {
+    opacity: 0;
+    transform: translateY(-6px);
+}
+.sales-report-collapse-enter-end {
+    opacity: 1;
+    transform: translateY(0);
+}
+.sales-report-collapse-leave {
+    transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.sales-report-collapse-leave-start {
+    opacity: 1;
+    transform: translateY(0);
+}
+.sales-report-collapse-leave-end {
+    opacity: 0;
+    transform: translateY(-4px);
 }
 
 .sales-report__columns-hint {
