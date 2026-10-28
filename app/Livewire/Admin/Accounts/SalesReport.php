@@ -38,7 +38,31 @@ class SalesReport extends Component
         $this->errorMessage = null;
     }
 
-    public function importSheet(): void
+    /** Used by the UI before import to decide whether to show replace confirm. */
+    public function existingCountForMonth(): int
+    {
+        $month = $this->report_month ?: now()->format('Y-m');
+
+        return SaleEntry::query()->forMonth($month)->count();
+    }
+
+    public function monthLabel(): string
+    {
+        $month = $this->report_month ?: now()->format('Y-m');
+
+        try {
+            return \Carbon\Carbon::createFromFormat('Y-m', $month)->format('F Y');
+        } catch (\Throwable) {
+            return $month;
+        }
+    }
+
+    public function importSheetReplacing(): void
+    {
+        $this->importSheet(replace: true);
+    }
+
+    public function importSheet(bool $replace = false): void
     {
         abort_unless(auth()->user()->canView('accounts', 'reports'), 403);
 
@@ -53,6 +77,15 @@ class SalesReport extends Component
             'excelFile.mimes' => 'Upload an .xlsx, .xls, or .csv file.',
         ]);
 
+        $month = $this->report_month;
+        $existing = SaleEntry::query()->forMonth($month)->count();
+
+        if ($existing > 0 && ! $replace) {
+            $this->errorMessage = 'Sales data already exists for '.$this->monthLabel().'. Confirm replace to continue.';
+
+            return;
+        }
+
         try {
             $path = $this->excelFile->getRealPath();
             $rows = app(SaleSheetImporter::class)->parse($path);
@@ -65,9 +98,12 @@ class SalesReport extends Component
 
             $filename = $this->excelFile->getClientOriginalName();
             $userId = auth()->id();
-            $month = $this->report_month;
 
-            DB::transaction(function () use ($rows, $filename, $userId, $month) {
+            DB::transaction(function () use ($rows, $filename, $userId, $month, $replace) {
+                if ($replace) {
+                    SaleEntry::query()->forMonth($month)->delete();
+                }
+
                 foreach ($rows as $row) {
                     SaleEntry::create([
                         ...$row,
@@ -81,7 +117,10 @@ class SalesReport extends Component
 
             $count = count($rows);
             $this->excelFile = null;
-            $this->successMessage = "Imported {$count} row(s). Add profit for each entry below.";
+            $this->editingId = null;
+            $this->successMessage = $replace
+                ? "Replaced month data with {$count} row(s). Add profit for each entry below."
+                : "Imported {$count} row(s). Add profit for each entry below.";
         } catch (\Throwable $exception) {
             report($exception);
             $this->errorMessage = 'Could not read this file. Use the same columns as your monthly sales sheet.';

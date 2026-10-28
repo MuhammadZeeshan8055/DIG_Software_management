@@ -1,6 +1,28 @@
 <div
     class="sales-report-page"
     @sales-report-panel-opened.window="$wire.$refresh()"
+    x-data="{
+        async startImport() {
+            if (! $wire.excelFile) {
+                return;
+            }
+
+            const count = await $wire.existingCountForMonth();
+
+            if (count > 0) {
+                const label = await $wire.monthLabel();
+                window.dispatchEvent(new CustomEvent('confirm-replace-sales', {
+                    detail: {
+                        title: 'Replace month data?',
+                        message: 'Sales data already exists for ' + label + ' (' + count + ' row' + (count === 1 ? '' : 's') + '). Do you want to replace it with this file? Existing profit values for this month will be lost.'
+                    }
+                }));
+                return;
+            }
+
+            $wire.importSheet(false);
+        }
+    }"
 >
     @if ($denied ?? false)
         <div class="data-panel">
@@ -30,7 +52,7 @@
                 <p class="import-ticket__hint">Upload the monthly Excel sheet, then add profit for each row below.</p>
             </div>
 
-            <form wire:submit="importSheet" class="import-ticket__body sales-report__body">
+            <form wire:submit.prevent="startImport" class="import-ticket__body sales-report__body">
                 <div class="sales-report__toolbar">
                     <label class="import-ticket__field sales-report__month-field">
                         <span class="import-ticket__label">Report month</span>
@@ -102,11 +124,11 @@
                             type="submit"
                             class="hero-btn hero-btn--primary"
                             wire:loading.attr="disabled"
-                            wire:target="importSheet,excelFile"
+                            wire:target="importSheet,importSheetReplacing,excelFile,existingCountForMonth"
                             @disabled(! $excelFile)
                         >
-                            <span wire:loading.remove wire:target="importSheet">Import sheet</span>
-                            <span wire:loading wire:target="importSheet">Importing...</span>
+                            <span wire:loading.remove wire:target="importSheet,importSheetReplacing,existingCountForMonth">Import sheet</span>
+                            <span wire:loading wire:target="importSheet,importSheetReplacing,existingCountForMonth">Working...</span>
                         </button>
                     </div>
                 </div>
@@ -223,6 +245,13 @@
         </div>
 
         <x-confirm-delete-modal event="confirm-delete-sales" />
+
+        <x-confirm-delete-modal
+            event="confirm-replace-sales"
+            confirm-method="importSheetReplacing"
+            confirm-label="Yes, replace"
+            :pass-id="false"
+        />
 
     @endif
 </div>

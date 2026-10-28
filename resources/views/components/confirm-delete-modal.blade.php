@@ -2,12 +2,13 @@
     'event' => 'confirm-delete',
     'confirmMethod' => 'confirmPendingDelete',
     'confirmLabel' => 'Yes, delete',
+    'passId' => true,
 ])
 
 {{--
   Instant Alpine confirm (no Livewire round-trip to open).
-  Open:  $dispatch('{{ $event }}', { id, title, message })
-  Confirm calls $wire.{{ $confirmMethod }}(id)
+  Open:  $dispatch('{{ $event }}', { id?, title, message })
+  Confirm calls $wire.{{ $confirmMethod }}(id) or $wire.{{ $confirmMethod }}() when passId is false
 --}}
 <div
         class="mu-modal confirm-delete-modal"
@@ -16,8 +17,9 @@
             id: null,
             title: 'Delete this entry?',
             message: 'This action cannot be undone.',
+            passId: @js((bool) $passId),
             show(detail) {
-                this.id = detail.id;
+                this.id = detail.id ?? null;
                 this.title = detail.title || 'Delete this entry?';
                 this.message = detail.message || 'This action cannot be undone.';
                 this.open = true;
@@ -30,8 +32,12 @@
             confirm() {
                 const deleteId = this.id;
                 this.close();
-                if (deleteId != null) {
-                    $wire.{{ $confirmMethod }}(deleteId);
+                if (this.passId) {
+                    if (deleteId != null) {
+                        $wire.{{ $confirmMethod }}(deleteId);
+                    }
+                } else {
+                    $wire.{{ $confirmMethod }}();
                 }
             }
         }"
