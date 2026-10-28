@@ -238,23 +238,6 @@ class CreateInvoice extends Component
         $this->successMessage = 'Invoice '.$invoice->invoice_number.' approved.';
     }
 
-    public function askDeleteInvoice(int $id): void
-    {
-        abort_unless(auth()->user()->isAdmin(), 403);
-
-        $invoice = Invoice::find($id);
-
-        if (! $invoice) {
-            return;
-        }
-
-        $this->askDelete(
-            $id,
-            'Delete invoice?',
-            'Delete '.$invoice->invoice_number.' for '.$invoice->customer_name.'? Line items and payments will also be removed.'
-        );
-    }
-
     protected function performPendingDelete(int $id): void
     {
         $this->deleteInvoice($id);

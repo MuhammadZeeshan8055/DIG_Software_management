@@ -5289,6 +5289,73 @@ body.mu-modal-open .admin-sidebar {
     border-color: #b91c1c !important;
 }
 
+.confirm-delete-modal-enter,
+.ticket-modal-enter {
+    transition: opacity 0.12s ease-out;
+}
+.confirm-delete-modal-enter-start,
+.ticket-modal-enter-start {
+    opacity: 0;
+}
+.confirm-delete-modal-enter-end,
+.ticket-modal-enter-end {
+    opacity: 1;
+}
+.confirm-delete-modal-leave,
+.ticket-modal-leave {
+    transition: opacity 0.1s ease-in;
+}
+.confirm-delete-modal-leave-start,
+.ticket-modal-leave-start {
+    opacity: 1;
+}
+.confirm-delete-modal-leave-end,
+.ticket-modal-leave-end {
+    opacity: 0;
+}
+
+.confirm-delete-modal__dialog--pop,
+.ticket-view-modal__dialog--pop {
+    animation: modal-dialog-pop 0.14s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes modal-dialog-pop {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.ticket-view-modal__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 220px;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.ticket-view-modal__spinner {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2.5px solid rgba(1, 145, 212, 0.2);
+    border-top-color: #0191d4;
+    animation: ticket-modal-spin 0.7s linear infinite;
+}
+
+@keyframes ticket-modal-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .mu-access__level--off,
 .mu-access__level:disabled {
     opacity: 0.4;

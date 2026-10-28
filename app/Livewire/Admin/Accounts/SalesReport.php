@@ -140,17 +140,6 @@ class SalesReport extends Component
         $this->successMessage = 'Profit saved.';
     }
 
-    public function askDeleteEntry(int $id): void
-    {
-        abort_unless(auth()->user()->isAdmin(), 403);
-
-        $this->askDelete(
-            $id,
-            'Delete sale entry?',
-            'This sales row will be permanently removed from the report.'
-        );
-    }
-
     protected function performPendingDelete(int $id): void
     {
         $this->deleteEntry($id);

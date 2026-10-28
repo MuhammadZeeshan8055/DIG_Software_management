@@ -119,17 +119,6 @@ class PaymentEntries extends Component
         }
     }
 
-    public function askDeleteEntry(int $id): void
-    {
-        abort_unless(auth()->user()->isAdmin(), 403);
-
-        $this->askDelete(
-            $id,
-            'Delete payment entry?',
-            'This payment record will be permanently removed.'
-        );
-    }
-
     protected function performPendingDelete(int $id): void
     {
         $this->deleteEntry($id);

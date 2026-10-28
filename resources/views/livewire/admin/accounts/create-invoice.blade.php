@@ -1,9 +1,36 @@
 <div
     class="create-invoice-page"
     @invoices-panel-opened.window="$wire.$refresh()"
+    x-data="{
+        previewOpen: false,
+        previewLoading: false,
+        previewTitle: '',
+        openInvoicePreview(id, title) {
+            this.previewTitle = title || 'Loading…';
+            this.previewOpen = true;
+            this.previewLoading = true;
+            document.body.classList.add('invoice-modal-open');
+            $wire.openPreview(id).then(() => { this.previewLoading = false; }).catch(() => { this.previewLoading = false; });
+        },
+        closeInvoicePreview() {
+            this.previewOpen = false;
+            this.previewLoading = false;
+            document.body.classList.remove('invoice-modal-open');
+            $wire.closePreview();
+        },
+        openInvoiceForm() {
+            document.body.classList.add('invoice-modal-open');
+            $wire.openFormModal();
+        }
+    }"
     x-effect="
-        const open = $wire.showFormModal || $wire.showPreview;
-        document.body.classList.toggle('invoice-modal-open', open);
+        if ($wire.showPreview) {
+            previewOpen = true;
+            previewLoading = false;
+        } else if (!previewLoading) {
+            previewOpen = false;
+        }
+        document.body.classList.toggle('invoice-modal-open', $wire.showFormModal || previewOpen || $wire.showPreview);
     "
     x-on:destroy="document.body.classList.remove('invoice-modal-open')"
 >
@@ -17,7 +44,7 @@
         </div>
         <div>
             @if (auth()->user()->canView('accounts', 'invoices'))
-                <button type="button" class="hero-btn hero-btn--primary" wire:click="openFormModal">
+                <button type="button" class="hero-btn hero-btn--primary" @click="openInvoiceForm()">
                     + Add Invoice
                 </button>
             @endif
@@ -62,7 +89,7 @@
                             wire:key="inv-{{ $invoice->id }}"
                             @if ($canOpen)
                                 style="cursor: pointer;"
-                                wire:click="openPreview({{ $invoice->id }})"
+                                @click="openInvoicePreview({{ $invoice->id }}, @js($invoice->invoice_number))"
                             @endif
                         >
                             <td>{{ $invoice->invoice_number }}</td>
@@ -97,7 +124,11 @@
                                     <button
                                         type="button"
                                         class="payment-actions__btn payment-actions__btn--danger"
-                                        wire:click="askDeleteInvoice({{ $invoice->id }})"
+                                        @click="$dispatch('confirm-delete-invoices', {
+                                            id: {{ $invoice->id }},
+                                            title: 'Delete invoice?',
+                                            message: @js('Delete '.$invoice->invoice_number.' for '.$invoice->customer_name.'? Line items and payments will also be removed.')
+                                        })"
                                     >
                                         Delete
                                     </button>
@@ -370,74 +401,98 @@
         </div>
     @endif
 
-    @if ($showPreview && $previewInvoice)
-        <div
-            class="ticket-view-modal"
-            wire:key="invoice-preview-{{ $previewInvoice->id }}"
-        >
-            <button type="button" class="ticket-view-modal__backdrop" wire:click="closePreview" aria-label="Close"></button>
+    <div
+        class="ticket-view-modal"
+        x-show="previewOpen"
+        x-cloak
+        x-transition:enter="ticket-modal-enter"
+        x-transition:enter-start="ticket-modal-enter-start"
+        x-transition:enter-end="ticket-modal-enter-end"
+        x-transition:leave="ticket-modal-leave"
+        x-transition:leave-start="ticket-modal-leave-start"
+        x-transition:leave-end="ticket-modal-leave-end"
+        @keydown.escape.window="if (previewOpen) closeInvoicePreview()"
+        style="display: none;"
+    >
+        <button type="button" class="ticket-view-modal__backdrop" @click="closeInvoicePreview()" aria-label="Close"></button>
 
-            <div class="ticket-view-modal__dialog" role="dialog" aria-modal="true" style="max-width: 900px;">
-                <div class="ticket-view-modal__head">
-                    <div>
-                        <p class="ticket-view-modal__eyebrow">Invoice preview</p>
-                        <h3 class="ticket-view-modal__title">{{ $previewInvoice->invoice_number }}</h3>
-                        <p class="ticket-view-modal__meta">
+        <div class="ticket-view-modal__dialog ticket-view-modal__dialog--pop" role="dialog" aria-modal="true" style="max-width: 900px;">
+            <div class="ticket-view-modal__head">
+                <div>
+                    <p class="ticket-view-modal__eyebrow">Invoice preview</p>
+                    <h3 class="ticket-view-modal__title" x-text="previewTitle"></h3>
+                    @if ($previewInvoice)
+                        <p class="ticket-view-modal__meta" x-show="!previewLoading">
                             {{ optional($previewInvoice->invoice_date)->format('Y-m-d') }}
                             · Due {{ optional($previewInvoice->due_date)->format('Y-m-d') ?: '—' }}
                             · <span class="{{ $previewInvoice->paymentBadgeClass() }}">{{ $previewInvoice->paymentStatusLabel() }}</span>
                         </p>
-                    </div>
-                    <button type="button" class="ticket-view-modal__close" wire:click="closePreview" aria-label="Close">&times;</button>
-                </div>
-
-                <div class="ticket-view-modal__body" style="background: #fff; padding: 24px;">
-                    <x-invoice-document :invoice="$previewInvoice" />
-
-                    @if ($showPaymentForm)
-                        <div class="data-panel" style="margin-top:20px; padding:12px;">
-                            <h4 class="data-panel__title" style="margin-bottom:12px;">Record payment</h4>
-                            <div class="manage-users-form__grid" style="margin-bottom: 12px;">
-                                <div class="mu-field">
-                                    <label class="mu-field__label">Amount</label>
-                                    <input type="number" min="0.01" step="0.01" class="mu-field__input" wire:model="payment_amount">
-                                    @error('payment_amount') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
-                                </div>
-                                <div class="mu-field">
-                                    <label class="mu-field__label">Date</label>
-                                    <input type="date" class="mu-field__input" wire:model="payment_date">
-                                    @error('payment_date') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
-                                </div>
-                                <div class="mu-field" style="grid-column: 1 / -1;">
-                                    <label class="mu-field__label">Note (optional)</label>
-                                    <input type="text" class="mu-field__input" wire:model="payment_note">
-                                </div>
-                            </div>
-
-                            <x-receiving-account-picker
-                                :methods="$paymentMethods"
-                                :all-accounts="$allReceivingAccounts"
-                                :selected-method="$payment_method"
-                                :selected-account-id="$receiving_account_id"
-                                method-wire="payment_method"
-                                account-wire="receiving_account_id"
-                            />
-
-                            <div style="display:flex; gap:8px; margin-top:12px;">
-                                <button type="button" class="hero-btn" wire:click="$set('showPaymentForm', false)">Cancel</button>
-                                <button type="button" class="hero-btn hero-btn--primary" wire:click="recordPayment">Save payment</button>
-                            </div>
-                        </div>
                     @endif
                 </div>
+                <button type="button" class="ticket-view-modal__close" @click="closeInvoicePreview()" aria-label="Close">&times;</button>
+            </div>
 
-                <div style="display:flex; justify-content:flex-end; gap:8px; padding:12px 16px; border-top:1px solid #e5e5e5; background:#fafafa;">
-                    <button type="button" class="hero-btn" wire:click="closePreview">Close</button>
+            <div class="ticket-view-modal__body" style="background: #fff; padding: 24px;">
+                <div class="ticket-view-modal__loading" x-show="previewLoading" x-cloak>
+                    <span class="ticket-view-modal__spinner" aria-hidden="true"></span>
+                    <p>Loading invoice…</p>
+                </div>
+
+                <div x-show="!previewLoading">
+                    @if ($showPreview && $previewInvoice)
+                        <x-invoice-document :invoice="$previewInvoice" />
+
+                        @if ($showPaymentForm)
+                            <div class="data-panel" style="margin-top:20px; padding:12px;">
+                                <h4 class="data-panel__title" style="margin-bottom:12px;">Record payment</h4>
+                                <div class="manage-users-form__grid" style="margin-bottom: 12px;">
+                                    <div class="mu-field">
+                                        <label class="mu-field__label">Amount</label>
+                                        <input type="number" min="0.01" step="0.01" class="mu-field__input" wire:model="payment_amount">
+                                        @error('payment_amount') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="mu-field">
+                                        <label class="mu-field__label">Date</label>
+                                        <input type="date" class="mu-field__input" wire:model="payment_date">
+                                        @error('payment_date') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="mu-field" style="grid-column: 1 / -1;">
+                                        <label class="mu-field__label">Note (optional)</label>
+                                        <input type="text" class="mu-field__input" wire:model="payment_note">
+                                    </div>
+                                </div>
+
+                                <x-receiving-account-picker
+                                    :methods="$paymentMethods"
+                                    :all-accounts="$allReceivingAccounts"
+                                    :selected-method="$payment_method"
+                                    :selected-account-id="$receiving_account_id"
+                                    method-wire="payment_method"
+                                    account-wire="receiving_account_id"
+                                />
+
+                                <div style="display:flex; gap:8px; margin-top:12px;">
+                                    <button type="button" class="hero-btn" wire:click="$set('showPaymentForm', false)">Cancel</button>
+                                    <button type="button" class="hero-btn hero-btn--primary" wire:click="recordPayment">Save payment</button>
+                                </div>
+                            </div>
+                        @endif
+                    @endif
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:8px; padding:12px 16px; border-top:1px solid #e5e5e5; background:#fafafa;" x-show="!previewLoading">
+                <button type="button" class="hero-btn" @click="closeInvoicePreview()">Close</button>
+                @if ($previewInvoice)
                     @if (auth()->user()->isAdmin())
                         <button
                             type="button"
                             class="payment-actions__btn payment-actions__btn--danger"
-                            wire:click="askDeleteInvoice({{ $previewInvoice->id }})"
+                            @click="$dispatch('confirm-delete-invoices', {
+                                id: {{ $previewInvoice->id }},
+                                title: 'Delete invoice?',
+                                message: @js('Delete '.$previewInvoice->invoice_number.' for '.$previewInvoice->customer_name.'? Line items and payments will also be removed.')
+                            })"
                         >
                             Delete
                         </button>
@@ -461,14 +516,10 @@
                             Approve invoice
                         </button>
                     @endif
-                </div>
+                @endif
             </div>
         </div>
-    @endif
+    </div>
 
-    <x-confirm-delete-modal
-        :show="$pendingDeleteId !== null"
-        :title="$pendingDeleteTitle"
-        :message="$pendingDeleteMessage"
-    />
+    <x-confirm-delete-modal event="confirm-delete-invoices" />
 </div>

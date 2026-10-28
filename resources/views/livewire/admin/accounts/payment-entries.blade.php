@@ -151,9 +151,5 @@
         title="Payments"
     />
 
-    <x-confirm-delete-modal
-        :show="$pendingDeleteId !== null"
-        :title="$pendingDeleteTitle"
-        :message="$pendingDeleteMessage"
-    />
+    <x-confirm-delete-modal event="confirm-delete-payments" />
 </div>

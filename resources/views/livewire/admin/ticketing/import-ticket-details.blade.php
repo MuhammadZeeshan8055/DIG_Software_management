@@ -2,9 +2,36 @@
     class="import-ticket"
     wire:poll.15s.visible
     @import-ticket-panel-opened.window="$wire.$refresh()"
-    @close-ticket-view.window="$wire.closeView()"
-    x-data
-    x-effect="document.body.classList.toggle('ticket-view-modal-open', $wire.viewingImportId !== null)"
+    @close-ticket-view.window="closeTicketView()"
+    x-data="{
+        previewOpen: false,
+        previewLoading: false,
+        previewTitle: '',
+        previewMeta: '',
+        openTicketView(id, title, meta) {
+            this.previewTitle = title || 'Loading…';
+            this.previewMeta = meta || '';
+            this.previewOpen = true;
+            this.previewLoading = true;
+            document.body.classList.add('ticket-view-modal-open');
+            $wire.viewImport(id).then(() => { this.previewLoading = false; }).catch(() => { this.previewLoading = false; });
+        },
+        closeTicketView() {
+            this.previewOpen = false;
+            this.previewLoading = false;
+            document.body.classList.remove('ticket-view-modal-open');
+            $wire.closeView();
+        }
+    }"
+    x-effect="
+        if ($wire.viewingImportId !== null) {
+            previewOpen = true;
+            previewLoading = false;
+        } else if (!previewLoading) {
+            previewOpen = false;
+        }
+        document.body.classList.toggle('ticket-view-modal-open', previewOpen || $wire.viewingImportId !== null);
+    "
     x-on:destroy="document.body.classList.remove('ticket-view-modal-open')"
 >
     @if ($successMessage)
@@ -396,13 +423,21 @@
                                 <button
                                     type="button"
                                     class="payment-actions__pill payment-actions__pill--edit"
-                                    wire:click="viewImport({{ $import->id }})"
+                                    @click="openTicketView(
+                                        {{ $import->id }},
+                                        @js($import->passenger_name ?: $import->original_filename),
+                                        @js(($import->documentSerial()).' · '.($import->booking_reference ?: 'No CRM ref'))
+                                    )"
                                 >View</button>
                                 @if (auth()->user()->isAdmin())
                                     <button
                                         type="button"
                                         class="payment-actions__pill payment-actions__pill--delete"
-                                        wire:click="askDeleteImport({{ $import->id }})"
+                                        @click="$dispatch('confirm-delete-tickets', {
+                                            id: {{ $import->id }},
+                                            title: 'Delete imported ticket?',
+                                            message: 'This will also remove the linked payment entry. This cannot be undone.'
+                                        })"
                                     >Delete</button>
                                 @endif
                             </td>
@@ -417,44 +452,57 @@
         </div>
     </div>
 
-    @if ($viewingImport)
-        <template x-teleport="body">
-            <div
-                class="ticket-view-modal"
-                x-on:keydown.escape.window="$wire.closeView()"
-                wire:key="ticket-view-modal-{{ $viewingImport->id }}"
-            >
-                <button type="button" class="ticket-view-modal__backdrop" wire:click="closeView" aria-label="Close"></button>
+    <template x-teleport="body">
+        <div
+            class="ticket-view-modal"
+            x-show="previewOpen"
+            x-cloak
+            x-transition:enter="ticket-modal-enter"
+            x-transition:enter-start="ticket-modal-enter-start"
+            x-transition:enter-end="ticket-modal-enter-end"
+            x-transition:leave="ticket-modal-leave"
+            x-transition:leave-start="ticket-modal-leave-start"
+            x-transition:leave-end="ticket-modal-leave-end"
+            @keydown.escape.window="if (previewOpen) closeTicketView()"
+            style="display: none;"
+        >
+            <button type="button" class="ticket-view-modal__backdrop" @click="closeTicketView()" aria-label="Close"></button>
 
-                <div class="ticket-view-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="ticket-view-title">
-                    <div class="ticket-view-modal__head">
-                        <div>
-                            <p class="ticket-view-modal__eyebrow">Official Operations Document</p>
-                            <h3 id="ticket-view-title" class="ticket-view-modal__title">{{ $viewingImport->passenger_name ?: $viewingImport->original_filename }}</h3>
-                            <p class="ticket-view-modal__meta">{{ $viewingImport->documentSerial() }} · {{ $viewingImport->booking_reference ?: 'No CRM ref' }}</p>
-                        </div>
-                        <div class="ticket-view-modal__head-actions">
+            <div class="ticket-view-modal__dialog ticket-view-modal__dialog--pop" role="dialog" aria-modal="true" aria-labelledby="ticket-view-title">
+                <div class="ticket-view-modal__head">
+                    <div>
+                        <p class="ticket-view-modal__eyebrow">Official Operations Document</p>
+                        <h3 id="ticket-view-title" class="ticket-view-modal__title" x-text="previewTitle"></h3>
+                        <p class="ticket-view-modal__meta" x-text="previewMeta"></p>
+                    </div>
+                    <div class="ticket-view-modal__head-actions">
+                        @if ($viewingImport)
                             <a
                                 href="{{ route('ticket-imports.document', ['ticketImport' => $viewingImport, 'print' => 1]) }}"
                                 target="_blank"
                                 rel="noopener"
                                 class="hero-btn hero-btn--secondary ticket-view-modal__pdf-btn"
+                                x-show="!previewLoading"
                             >Download PDF</a>
-                            <button type="button" class="ticket-view-modal__close" wire:click="closeView" aria-label="Close">&times;</button>
-                        </div>
+                        @endif
+                        <button type="button" class="ticket-view-modal__close" @click="closeTicketView()" aria-label="Close">&times;</button>
                     </div>
+                </div>
 
-                    <div class="ticket-view-modal__body">
-                        <x-ticket-document :import="$viewingImport" />
+                <div class="ticket-view-modal__body">
+                    <div class="ticket-view-modal__loading" x-show="previewLoading" x-cloak>
+                        <span class="ticket-view-modal__spinner" aria-hidden="true"></span>
+                        <p>Loading document…</p>
+                    </div>
+                    <div x-show="!previewLoading">
+                        @if ($viewingImport)
+                            <x-ticket-document :import="$viewingImport" />
+                        @endif
                     </div>
                 </div>
             </div>
-        </template>
-    @endif
+        </div>
+    </template>
 
-    <x-confirm-delete-modal
-        :show="$pendingDeleteId !== null"
-        :title="$pendingDeleteTitle"
-        :message="$pendingDeleteMessage"
-    />
+    <x-confirm-delete-modal event="confirm-delete-tickets" />
 </div>

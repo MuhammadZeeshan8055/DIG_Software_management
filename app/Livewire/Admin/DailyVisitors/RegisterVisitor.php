@@ -249,23 +249,6 @@ class RegisterVisitor extends Component
         $this->js('document.body.classList.remove("mu-modal-open")');
     }
 
-    public function askDeleteVisitor(int $id): void
-    {
-        $user = auth()->user();
-
-        if (! $user || ! $user->isAdmin()) {
-            $this->errorMessage = 'Only admin or super admin can delete visitors.';
-
-            return;
-        }
-
-        $this->askDelete(
-            $id,
-            'Delete visitor?',
-            'This visitor entry and related reminders will be permanently removed.'
-        );
-    }
-
     protected function performPendingDelete(int $id): void
     {
         $this->deleteVisitor($id);

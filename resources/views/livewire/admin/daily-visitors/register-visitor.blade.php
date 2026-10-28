@@ -238,7 +238,11 @@
                                             <button
                                                 type="button"
                                                 class="payment-actions__btn payment-actions__btn--danger"
-                                                wire:click="askDeleteVisitor({{ $visitor->id }})"
+                                                @click="$dispatch('confirm-delete-visitors', {
+                                                    id: {{ $visitor->id }},
+                                                    title: 'Delete visitor?',
+                                                    message: 'This visitor entry and related reminders will be permanently removed.'
+                                                })"
                                             >Delete</button>
                                         @endif
                                     @endif
@@ -254,11 +258,7 @@
             </div>
         </div>
 
-        <x-confirm-delete-modal
-            :show="$pendingDeleteId !== null"
-            :title="$pendingDeleteTitle"
-            :message="$pendingDeleteMessage"
-        />
+        <x-confirm-delete-modal event="confirm-delete-visitors" />
 
     @endif
 </div>

@@ -87,21 +87,6 @@ class AllVisitors extends Component
         $this->case_admin_note = '';
     }
 
-    public function askDeleteVisitor(int $id): void
-    {
-        if (! $this->canViewList()) {
-            $this->errorMessage = 'Only admin or super admin can delete visitors.';
-
-            return;
-        }
-
-        $this->askDelete(
-            $id,
-            'Delete visitor?',
-            'This visitor entry and related reminders will be permanently removed.'
-        );
-    }
-
     protected function performPendingDelete(int $id): void
     {
         $this->deleteVisitor($id);

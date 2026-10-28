@@ -167,7 +167,11 @@
                                         <button
                                             type="button"
                                             class="payment-actions__btn payment-actions__btn--danger"
-                                            wire:click="askDeleteEntry({{ $entry->id }})"
+                                            @click="$dispatch('confirm-delete-sales', {
+                                                id: {{ $entry->id }},
+                                                title: 'Delete sale entry?',
+                                                message: 'This sales row will be permanently removed from the report.'
+                                            })"
                                         >Delete</button>
                                     @endif
                                 </td>
@@ -182,11 +186,7 @@
             </div>
         </div>
 
-        <x-confirm-delete-modal
-            :show="$pendingDeleteId !== null"
-            :title="$pendingDeleteTitle"
-            :message="$pendingDeleteMessage"
-        />
+        <x-confirm-delete-modal event="confirm-delete-sales" />
 
     @endif
 </div>

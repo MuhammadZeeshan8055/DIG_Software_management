@@ -136,17 +136,6 @@ class ImportTicketDetails extends Component
         $this->viewingImportId = null;
     }
 
-    public function askDeleteImport(int $id): void
-    {
-        abort_unless(auth()->user()->isAdmin(), 403);
-
-        $this->askDelete(
-            $id,
-            'Delete imported ticket?',
-            'This will also remove the linked payment entry. This cannot be undone.'
-        );
-    }
-
     protected function performPendingDelete(int $id): void
     {
         $this->deleteImport($id);
