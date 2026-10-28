@@ -25,9 +25,13 @@
     </section>
 
     @if ($successMessage)
-        <x-admin-alert type="success" wire-property="successMessage">
+        <x-admin-toast
+            :title="str_starts_with($successMessage, 'Deleted') ? 'Deleted' : 'Saved'"
+            wire-property="successMessage"
+            :seconds="5"
+        >
             {{ $successMessage }}
-        </x-admin-alert>
+        </x-admin-toast>
     @endif
 
     <div class="data-panel">
@@ -78,15 +82,24 @@
                                 @endif
                             </td>
                             <td>{{ optional($invoice->invoice_date)->format('Y-m-d') }}</td>
-                            <td>
+                            <td class="manage-users-actions" wire:click.stop>
                                 @if (! $invoice->isApproved() && auth()->user()->isAdmin())
                                     <button
                                         type="button"
                                         class="hero-btn hero-btn--primary"
                                         style="padding: 6px 10px; font-size: 0.75rem;"
-                                        wire:click.stop="approveInvoice({{ $invoice->id }})"
+                                        wire:click="approveInvoice({{ $invoice->id }})"
                                     >
                                         Approve
+                                    </button>
+                                @endif
+                                @if (auth()->user()->isAdmin())
+                                    <button
+                                        type="button"
+                                        class="payment-actions__btn payment-actions__btn--danger"
+                                        wire:click="askDeleteInvoice({{ $invoice->id }})"
+                                    >
+                                        Delete
                                     </button>
                                 @endif
                             </td>
@@ -420,6 +433,15 @@
 
                 <div style="display:flex; justify-content:flex-end; gap:8px; padding:12px 16px; border-top:1px solid #e5e5e5; background:#fafafa;">
                     <button type="button" class="hero-btn" wire:click="closePreview">Close</button>
+                    @if (auth()->user()->isAdmin())
+                        <button
+                            type="button"
+                            class="payment-actions__btn payment-actions__btn--danger"
+                            wire:click="askDeleteInvoice({{ $previewInvoice->id }})"
+                        >
+                            Delete
+                        </button>
+                    @endif
                     @if ($previewInvoice->isApproved())
                         <button type="button" class="hero-btn" wire:click="openPaymentForm">+ Record payment</button>
                         <a
@@ -443,4 +465,10 @@
             </div>
         </div>
     @endif
+
+    <x-confirm-delete-modal
+        :show="$pendingDeleteId !== null"
+        :title="$pendingDeleteTitle"
+        :message="$pendingDeleteMessage"
+    />
 </div>

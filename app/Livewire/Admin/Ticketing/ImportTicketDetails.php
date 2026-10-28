@@ -3,17 +3,20 @@
 namespace App\Livewire\Admin\Ticketing;
 
 use App\Http\Requests\ConfirmTicketImportRequest;
+use App\Livewire\Concerns\ConfirmsDeletion;
 use App\Models\PaymentEntry;
 use App\Models\ReceivingAccount;
 use App\Models\TicketImport;
 use App\Services\TicketPdfParser;
 use App\Support\PaymentLedgerRules;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
 class ImportTicketDetails extends Component
 {
+    use ConfirmsDeletion;
     use WithFileUploads;
 
     public $pdfFile;
@@ -131,6 +134,56 @@ class ImportTicketDetails extends Component
     public function closeView(): void
     {
         $this->viewingImportId = null;
+    }
+
+    public function askDeleteImport(int $id): void
+    {
+        abort_unless(auth()->user()->isAdmin(), 403);
+
+        $this->askDelete(
+            $id,
+            'Delete imported ticket?',
+            'This will also remove the linked payment entry. This cannot be undone.'
+        );
+    }
+
+    protected function performPendingDelete(int $id): void
+    {
+        $this->deleteImport($id);
+    }
+
+    public function deleteImport(int $id): void
+    {
+        abort_unless(auth()->user()->isAdmin(), 403);
+
+        $this->errorMessage = null;
+
+        $import = TicketImport::query()->with('paymentEntry')->find($id);
+
+        if (! $import) {
+            return;
+        }
+
+        try {
+            DB::transaction(function () use ($import) {
+                $import->paymentEntry?->delete();
+
+                if ($import->pdf_path) {
+                    Storage::disk('local')->delete($import->pdf_path);
+                }
+
+                $import->delete();
+            });
+
+            if ($this->viewingImportId === $id) {
+                $this->viewingImportId = null;
+            }
+
+            $this->successMessage = 'Deleted successfully.';
+        } catch (\Throwable $exception) {
+            report($exception);
+            $this->errorMessage = 'Could not delete this imported ticket.';
+        }
     }
 
     public function confirmWithLedger(

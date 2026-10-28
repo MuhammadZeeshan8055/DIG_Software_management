@@ -10,7 +10,11 @@
     @else
 
         @if ($successMessage)
-            <x-admin-toast wire-property="successMessage" :seconds="6">
+            <x-admin-toast
+                :title="str_starts_with($successMessage, 'Deleted') ? 'Deleted' : 'Saved'"
+                wire-property="successMessage"
+                :seconds="5"
+            >
                 {{ $successMessage }}
             </x-admin-toast>
         @endif
@@ -162,8 +166,13 @@
                                                 Keep pending
                                             </button>
                                         @endif
-                                    @else
-                                        <span style="color:#94a3b8;">—</span>
+                                    @endif
+                                    @if (auth()->user()->isAdmin())
+                                        <button
+                                            type="button"
+                                            class="payment-actions__btn payment-actions__btn--danger"
+                                            wire:click="askDeleteVisitor({{ $visitor->id }})"
+                                        >Delete</button>
                                     @endif
                                 </td>
                             </tr>
@@ -207,6 +216,12 @@
                 </table>
             </div>
         </div>
+
+        <x-confirm-delete-modal
+            :show="$pendingDeleteId !== null"
+            :title="$pendingDeleteTitle"
+            :message="$pendingDeleteMessage"
+        />
 
     @endif
 </div>

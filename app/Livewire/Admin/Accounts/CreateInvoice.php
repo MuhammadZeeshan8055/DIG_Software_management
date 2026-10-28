@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Accounts;
 
+use App\Livewire\Concerns\ConfirmsDeletion;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\InvoicePayment;
@@ -13,6 +14,8 @@ use Livewire\Component;
 
 class CreateInvoice extends Component
 {
+    use ConfirmsDeletion;
+
     public string $invoice_date = '';
     public string $due_date = '';
     public string $status = 'pending';
@@ -233,6 +236,51 @@ class CreateInvoice extends Component
         }
 
         $this->successMessage = 'Invoice '.$invoice->invoice_number.' approved.';
+    }
+
+    public function askDeleteInvoice(int $id): void
+    {
+        abort_unless(auth()->user()->isAdmin(), 403);
+
+        $invoice = Invoice::find($id);
+
+        if (! $invoice) {
+            return;
+        }
+
+        $this->askDelete(
+            $id,
+            'Delete invoice?',
+            'Delete '.$invoice->invoice_number.' for '.$invoice->customer_name.'? Line items and payments will also be removed.'
+        );
+    }
+
+    protected function performPendingDelete(int $id): void
+    {
+        $this->deleteInvoice($id);
+    }
+
+    public function deleteInvoice(int $id): void
+    {
+        abort_unless(auth()->user()->isAdmin(), 403);
+
+        $invoice = Invoice::find($id);
+
+        if (! $invoice) {
+            return;
+        }
+
+        DB::transaction(function () use ($invoice) {
+            $invoice->items()->delete();
+            $invoice->payments()->delete();
+            $invoice->delete();
+        });
+
+        if ($this->previewInvoiceId === $id) {
+            $this->closePreview();
+        }
+
+        $this->successMessage = 'Deleted successfully.';
     }
 
     public function closePreview(): void

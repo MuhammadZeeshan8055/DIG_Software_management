@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Accounts;
 
+use App\Livewire\Concerns\ConfirmsDeletion;
 use App\Models\PaymentEntry;
 use App\Models\ReceivingAccount;
 use App\Support\PaymentLedgerRules;
@@ -9,6 +10,8 @@ use Livewire\Component;
 
 class PaymentEntries extends Component
 {
+    use ConfirmsDeletion;
+
     public ?string $successMessage = null;
 
     public ?string $errorMessage = null;
@@ -116,9 +119,25 @@ class PaymentEntries extends Component
         }
     }
 
+    public function askDeleteEntry(int $id): void
+    {
+        abort_unless(auth()->user()->isAdmin(), 403);
+
+        $this->askDelete(
+            $id,
+            'Delete payment entry?',
+            'This payment record will be permanently removed.'
+        );
+    }
+
+    protected function performPendingDelete(int $id): void
+    {
+        $this->deleteEntry($id);
+    }
+
     public function deleteEntry(int $id): void
     {
-        abort_unless(auth()->user()->canManage('accounts', 'payments'), 403);
+        abort_unless(auth()->user()->isAdmin(), 403);
 
         if ($this->editingId === $id) {
             $this->cancelEdit();
@@ -127,7 +146,7 @@ class PaymentEntries extends Component
         $entry = PaymentEntry::find($id);
 
         if ($entry && $entry->delete()) {
-            $this->successMessage = 'Payment entry deleted.';
+            $this->successMessage = 'Deleted successfully.';
         }
     }
 

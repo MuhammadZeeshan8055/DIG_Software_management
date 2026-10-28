@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\DailyVisitors;
 
+use App\Livewire\Concerns\ConfirmsDeletion;
 use App\Models\DailyVisitor;
 use App\Models\Desk;
 use App\Models\User;
@@ -11,6 +12,8 @@ use Livewire\Component;
 /** Reception: register visitor and mark sent. */
 class RegisterVisitor extends Component
 {
+    use ConfirmsDeletion;
+
     public string $name = '';
 
     public string $contact_no = '';
@@ -244,6 +247,57 @@ class RegisterVisitor extends Component
     {
         $this->showUpdateConfirm = false;
         $this->js('document.body.classList.remove("mu-modal-open")');
+    }
+
+    public function askDeleteVisitor(int $id): void
+    {
+        $user = auth()->user();
+
+        if (! $user || ! $user->isAdmin()) {
+            $this->errorMessage = 'Only admin or super admin can delete visitors.';
+
+            return;
+        }
+
+        $this->askDelete(
+            $id,
+            'Delete visitor?',
+            'This visitor entry and related reminders will be permanently removed.'
+        );
+    }
+
+    protected function performPendingDelete(int $id): void
+    {
+        $this->deleteVisitor($id);
+    }
+
+    public function deleteVisitor(int $id): void
+    {
+        $this->successMessage = null;
+        $this->errorMessage = null;
+
+        $user = auth()->user();
+
+        if (! $user || ! $user->isAdmin()) {
+            $this->errorMessage = 'Only admin or super admin can delete visitors.';
+
+            return;
+        }
+
+        $visitor = DailyVisitor::find($id);
+
+        if (! $visitor) {
+            return;
+        }
+
+        if ($this->editingVisitorId === $id) {
+            $this->cancelEdit();
+        }
+
+        $visitor->reminders()->delete();
+        $visitor->delete();
+
+        $this->successMessage = 'Deleted successfully.';
     }
 
     public function updateVisitor(): void

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\DailyVisitors;
 
+use App\Livewire\Concerns\ConfirmsDeletion;
 use App\Models\DailyVisitor;
 use App\Models\Desk;
 use Livewire\Component;
@@ -9,6 +10,8 @@ use Livewire\Component;
 /** Admin: view all visitors and close / keep pending the case. */
 class AllVisitors extends Component
 {
+    use ConfirmsDeletion;
+
     public string $filter_date = '';
 
     public string $filter_status = '';
@@ -82,6 +85,53 @@ class AllVisitors extends Component
         $this->caseVisitorId = null;
         $this->caseAction = '';
         $this->case_admin_note = '';
+    }
+
+    public function askDeleteVisitor(int $id): void
+    {
+        if (! $this->canViewList()) {
+            $this->errorMessage = 'Only admin or super admin can delete visitors.';
+
+            return;
+        }
+
+        $this->askDelete(
+            $id,
+            'Delete visitor?',
+            'This visitor entry and related reminders will be permanently removed.'
+        );
+    }
+
+    protected function performPendingDelete(int $id): void
+    {
+        $this->deleteVisitor($id);
+    }
+
+    public function deleteVisitor(int $id): void
+    {
+        $this->successMessage = null;
+        $this->errorMessage = null;
+
+        if (! $this->canViewList()) {
+            $this->errorMessage = 'Only admin or super admin can delete visitors.';
+
+            return;
+        }
+
+        $visitor = DailyVisitor::find($id);
+
+        if (! $visitor) {
+            return;
+        }
+
+        if ($this->caseVisitorId === $id) {
+            $this->cancelCaseForm();
+        }
+
+        $visitor->reminders()->delete();
+        $visitor->delete();
+
+        $this->successMessage = 'Deleted successfully.';
     }
 
     public function saveCase(): void

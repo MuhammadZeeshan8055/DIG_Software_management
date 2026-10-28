@@ -10,15 +10,19 @@
     </section>
 
     @if ($successMessage)
-        <x-admin-alert type="success" wire-property="successMessage">
+        <x-admin-toast
+            :title="str_starts_with($successMessage, 'Deleted') ? 'Deleted' : 'Saved'"
+            wire-property="successMessage"
+            :seconds="5"
+        >
             {{ $successMessage }}
-        </x-admin-alert>
+        </x-admin-toast>
     @endif
 
     @if ($errorMessage)
-        <x-admin-alert type="error" :seconds="10" wire-property="errorMessage">
+        <x-admin-toast type="error" title="Error" wire-property="errorMessage" :seconds="6">
             {{ $errorMessage }}
-        </x-admin-alert>
+        </x-admin-toast>
     @endif
 
     @if ($editingId)
@@ -145,5 +149,11 @@
         :payment-statuses="$paymentStatuses"
         :show-actions="true"
         title="Payments"
+    />
+
+    <x-confirm-delete-modal
+        :show="$pendingDeleteId !== null"
+        :title="$pendingDeleteTitle"
+        :message="$pendingDeleteMessage"
     />
 </div>

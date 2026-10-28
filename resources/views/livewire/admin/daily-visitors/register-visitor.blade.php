@@ -11,7 +11,11 @@
     @else
 
         @if ($successMessage)
-            <x-admin-toast wire-property="successMessage" :seconds="6">
+            <x-admin-toast
+                :title="str_starts_with($successMessage, 'Deleted') ? 'Deleted' : 'Saved'"
+                wire-property="successMessage"
+                :seconds="5"
+            >
                 {{ $successMessage }}
             </x-admin-toast>
         @endif
@@ -230,6 +234,13 @@
                                         @elseif ($visitor->status !== 'completed')
                                             <button type="button" class="hero-btn hero-btn--primary" style="padding: 6px 10px; font-size: 0.75rem;" wire:click="markSent({{ $visitor->id }})">Mark sent</button>
                                         @endif
+                                        @if (auth()->user()->isAdmin())
+                                            <button
+                                                type="button"
+                                                class="payment-actions__btn payment-actions__btn--danger"
+                                                wire:click="askDeleteVisitor({{ $visitor->id }})"
+                                            >Delete</button>
+                                        @endif
                                     @endif
                                 </td>
                             </tr>
@@ -242,6 +253,12 @@
                 </table>
             </div>
         </div>
+
+        <x-confirm-delete-modal
+            :show="$pendingDeleteId !== null"
+            :title="$pendingDeleteTitle"
+            :message="$pendingDeleteMessage"
+        />
 
     @endif
 </div>
