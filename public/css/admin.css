@@ -7460,3 +7460,124 @@ tr.leave-row--rejected td {
         grid-template-columns: 1fr;
     }
 }
+
+/* Accounts → Sales Report */
+.sales-report__import {
+    padding: 4px 0 8px;
+}
+
+.sales-report__import-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px;
+}
+
+.sales-report__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 160px;
+}
+
+.sales-report__field span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.sales-report__field--file {
+    flex: 1;
+    min-width: 240px;
+}
+
+.sales-report__input,
+.sales-report__file,
+.sales-report__profit-input {
+    border: 1px solid rgba(45, 58, 97, 0.16);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    background: #fff;
+    color: var(--brand-navy);
+}
+
+.sales-report__file {
+    padding: 7px 10px;
+}
+
+.sales-report__hint,
+.sales-report__file-name {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.sales-report__profit-edit {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.sales-report__profit-input {
+    width: 110px;
+}
+
+/* Accounts → Sales Report */
+.sales-report__import {
+    padding: 16px 18px 18px;
+}
+
+.sales-report__import-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px;
+}
+
+.sales-report__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 160px;
+}
+
+.sales-report__field span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.sales-report__field--file {
+    flex: 1;
+    min-width: 240px;
+}
+
+.sales-report__input,
+.sales-report__file,
+.sales-report__profit-input {
+    border: 1px solid rgba(45, 58, 97, 0.16);
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 0.9rem;
+    background: #fff;
+    color: var(--brand-navy);
+}
+
+.sales-report__hint,
+.sales-report__file-name {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.sales-report__profit-edit {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.sales-report__profit-input {
+    width: 110px;
+    padding: 6px 8px;
+}

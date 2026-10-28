@@ -101,7 +101,7 @@ return [
                 ['key' => 'invoices', 'label' => 'Invoices', 'route' => null],
                 ['key' => 'bank-accounts', 'label' => 'Bank Accounts', 'route' => null],
                 ['key' => 'payments', 'label' => 'Payments', 'route' => null],
-                ['key' => 'reports', 'label' => 'Reports', 'route' => null],
+                ['key' => 'reports', 'label' => 'Sales Report', 'route' => null],
             ],
         ],
         [

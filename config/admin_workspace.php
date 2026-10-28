@@ -393,13 +393,9 @@ return [
                 ],
             ],
             'reports' => [
-                'title' => 'Reports',
-                'columns' => ['Report', 'Period', 'Generated', 'By', 'Status'],
-                'rows' => [
-                    ['Sales Summary', 'Aug 2026', '26 Aug 2026', 'Admin', 'Ready'],
-                    ['Receivables', 'Aug 2026', '26 Aug 2026', 'Admin', 'Ready'],
-                    ['Expense Log', 'Aug 2026', '25 Aug 2026', 'Finance', 'Ready'],
-                ],
+                'title' => 'Sales Report',
+                'columns' => [],
+                'rows' => [],
             ],
         ],
     ],

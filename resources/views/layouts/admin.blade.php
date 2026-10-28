@@ -44,6 +44,9 @@ $workspace = $workspace ?? config('admin_workspace', []);
                     if ($event.detail.option === 'invoices') {
                         window.dispatchEvent(new CustomEvent('invoices-panel-opened'));
                     }
+                    if ($event.detail.option === 'reports') {
+                        window.dispatchEvent(new CustomEvent('sales-report-panel-opened'));
+                    }
                     if ($event.detail.option === 'my-queue') {
                         window.dispatchEvent(new CustomEvent('my-queue-panel-opened'));
                     }
@@ -157,6 +160,12 @@ $workspace = $workspace ?? config('admin_workspace', []);
             if (this.activeOption === 'invoices') {
                 this.$nextTick(() => {
                     window.dispatchEvent(new CustomEvent('invoices-panel-opened'));
+                });
+            }
+
+            if (this.activeOption === 'reports') {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('sales-report-panel-opened'));
                 });
             }
 
@@ -333,6 +342,9 @@ $workspace = $workspace ?? config('admin_workspace', []);
             }
             if (key === 'invoices') {
                 window.dispatchEvent(new CustomEvent('invoices-panel-opened'));
+            }
+            if (key === 'reports') {
+                window.dispatchEvent(new CustomEvent('sales-report-panel-opened'));
             }
             if (key === 'users') {
                 window.dispatchEvent(new CustomEvent('users-panel-opened'));
