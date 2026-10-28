@@ -38,14 +38,6 @@ class SalesReport extends Component
         $this->errorMessage = null;
     }
 
-    /** Used by the UI before import to decide whether to show replace confirm. */
-    public function existingCountForMonth(): int
-    {
-        $month = $this->report_month ?: now()->format('Y-m');
-
-        return SaleEntry::query()->forMonth($month)->count();
-    }
-
     public function monthLabel(): string
     {
         $month = $this->report_month ?: now()->format('Y-m');
@@ -57,12 +49,10 @@ class SalesReport extends Component
         }
     }
 
-    public function importSheetReplacing(): void
-    {
-        $this->importSheet(replace: true);
-    }
-
-    public function importSheet(bool $replace = false): void
+    /**
+     * First step: validate file, then either import or ask to replace existing month data.
+     */
+    public function requestImport(): void
     {
         abort_unless(auth()->user()->canView('accounts', 'reports'), 403);
 
@@ -80,7 +70,46 @@ class SalesReport extends Component
         $month = $this->report_month;
         $existing = SaleEntry::query()->forMonth($month)->count();
 
-        if ($existing > 0 && ! $replace) {
+        if ($existing > 0) {
+            $label = $this->monthLabel();
+            $rowsLabel = $existing === 1 ? '1 row' : "{$existing} rows";
+
+            $this->js(
+                'window.dispatchEvent(new CustomEvent("confirm-replace-sales", { detail: {'
+                .'title: '.json_encode('Replace month data?').','
+                .'message: '.json_encode("Sales data already exists for {$label} ({$rowsLabel}). Do you want to replace it with this file? Existing profit values for this month will be lost.")
+                .'} }))'
+            );
+
+            return;
+        }
+
+        $this->runImport(replace: false);
+    }
+
+    public function importSheetReplacing(): void
+    {
+        $this->runImport(replace: true);
+    }
+
+    protected function runImport(bool $replace = false): void
+    {
+        abort_unless(auth()->user()->canView('accounts', 'reports'), 403);
+
+        $this->successMessage = null;
+        $this->errorMessage = null;
+
+        $this->validate([
+            'excelFile' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
+            'report_month' => ['required', 'date_format:Y-m'],
+        ], [
+            'excelFile.required' => 'Please choose an Excel file to import.',
+            'excelFile.mimes' => 'Upload an .xlsx, .xls, or .csv file.',
+        ]);
+
+        $month = $this->report_month;
+
+        if ($replace === false && SaleEntry::query()->forMonth($month)->exists()) {
             $this->errorMessage = 'Sales data already exists for '.$this->monthLabel().'. Confirm replace to continue.';
 
             return;
