@@ -285,13 +285,19 @@ class TicketPdfParser
     {
         // Tip: do not use [^P]/[^B]/[^SC] fences — baggage "2.0 P", class
         // "Business", and "Status" all break those. Stop on the next label instead.
+        //
+        // Baggage is optional: some itineraries (e.g. Air Sial / no-fare PDFs)
+        // go straight from Class → PNR with no Baggage line.
+        // Terminal is matched case-insensitively (PDF OCR often yields "TermInal").
         $pattern = '/(?<flight_number>[A-Z]{2}-\d+)\s+(?<airline>[A-Za-z][A-Za-z\s]+?)\s+'
             .'(?<departure_time>\d{2}:\d{2})\s*\(\s*(?<departure_date>[^)]+?)\s*\)\s+'
             .'(?<departure_location>[^(]+?\([A-Z]{3}\))\s*Terminal\s*-\s*(?<departure_terminal>\S+)\s+'
             .'(?<arrival_time>\d{2}:\d{2})\s*\(\s*(?<arrival_date>[^)]+?)\s*\)\s+'
             .'(?<arrival_location>[^(]+?\([A-Z]{3}\))\s*Terminal\s*-\s*(?<arrival_terminal>\S+)\s+'
-            .'(?:Status\s*:\s*(?<status>\w+)\s*)?Class\s*:\s*(?<class>.+?)\s+'
-            .'Baggage\s*:\s*(?<baggage>.+?)\s+PNR\s*:\s*(?<pnr>[A-Z0-9]+)/i';
+            .'(?:Status\s*:\s*(?<status>\w+)\s*)?'
+            .'Class\s*:\s*(?<class>.+?)'
+            .'(?:\s+Baggage\s*:\s*(?<baggage>.+?))?'
+            .'\s+PNR\s*:\s*(?<pnr>[A-Z0-9]+)/i';
 
         if (! preg_match_all($pattern, $text, $matches, PREG_SET_ORDER)) {
             return [];
@@ -316,6 +322,16 @@ class TicketPdfParser
 
         foreach (array_keys(config('ticket_import.flight_segment_fields', [])) as $key) {
             $segment[$key] = trim(preg_replace('/\s+/', ' ', $match[$key] ?? ''));
+        }
+
+        // PDF OCR often drops letters in "Confirm" (e.g. ConFim / Confim).
+        if ($segment['status'] !== '' && preg_match('/^con[fv]?i?m$/i', $segment['status'])) {
+            $segment['status'] = 'Confirm';
+        }
+
+        // Clean empty fare-class brackets: "Economy ()" → "Economy"
+        if ($segment['class'] !== '') {
+            $segment['class'] = trim(preg_replace('/\(\s*\)/', '', $segment['class']));
         }
 
         return $segment;
