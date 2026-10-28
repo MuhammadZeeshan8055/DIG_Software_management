@@ -7529,54 +7529,27 @@ tr.leave-row--rejected td {
 }
 
 /* Accounts → Sales Report */
-.sales-report__import {
-    padding: 4px 0 8px;
+.sales-report__body {
+    padding-bottom: 4px;
 }
 
-.sales-report__import-row {
+.sales-report__toolbar {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-end;
     gap: 14px;
+    margin-bottom: 16px;
 }
 
-.sales-report__field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 160px;
+.sales-report__month-field {
+    min-width: 200px;
+    max-width: 260px;
 }
 
-.sales-report__field span {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #475569;
-}
-
-.sales-report__field--file {
-    flex: 1;
-    min-width: 240px;
-}
-
-.sales-report__input,
-.sales-report__file,
-.sales-report__profit-input {
-    border: 1px solid rgba(45, 58, 97, 0.16);
-    border-radius: 10px;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    background: #fff;
-    color: var(--brand-navy);
-}
-
-.sales-report__file {
-    padding: 7px 10px;
-}
-
-.sales-report__hint,
-.sales-report__file-name {
+.sales-report__columns-hint {
+    margin: 10px 0 0;
     font-size: 0.78rem;
     color: #64748b;
+    line-height: 1.4;
 }
 
 .sales-report__profit-edit {
@@ -7588,6 +7561,12 @@ tr.leave-row--rejected td {
 
 .sales-report__profit-input {
     width: 110px;
+    border: 1px solid rgba(45, 58, 97, 0.16);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    background: #fff;
+    color: var(--brand-navy);
 }
 
 /* Accounts → Sales Report */
