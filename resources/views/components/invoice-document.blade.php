@@ -18,7 +18,7 @@
 
         @if ($invoice->verification_token)
             <div class="invoice-doc__verify-qr" title="Scan for live invoice status">
-                {!! QrCode::size(72)->margin(0)->generate($invoice->verificationUrl()) !!}
+                {!! QrCode::format('svg')->encoding('UTF-8')->size(72)->margin(0)->generate($invoice->verificationUrl()) !!}
             </div>
         @endif
 

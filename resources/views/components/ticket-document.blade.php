@@ -22,8 +22,11 @@
                 <strong class="ticket-doc__brand-name">DHOTHAR</strong>
                 <span class="ticket-doc__brand-group">International Group</span>
                 <small class="ticket-doc__brand-tagline">Travel &amp; Tours (Pvt Ltd)</small>
-                <!-- <small class="ticket-doc__brand-tagline">Private &amp; Limited</small> -->
             </div>
+        </div>
+
+        <div class="ticket-doc__qr" title="Scan for ticket details">
+            {!! QrCode::format('svg')->encoding('UTF-8')->size(72)->margin(0)->generate($import->qrPayload()) !!}
         </div>
 
         <div class="ticket-doc__title-block">

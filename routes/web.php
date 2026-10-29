@@ -43,6 +43,19 @@ Route::get('/verify/invoice/{token}', function (string $token) {
     ]);
 })->middleware('throttle:60,1')->name('invoices.verify');
 
+Route::get('/verify/ticket/{token}', function (string $token) {
+    $import = TicketImport::query()
+        ->where('verification_token', $token)
+        ->with(['user', 'paymentEntry'])
+        ->firstOrFail();
+
+    abort_unless($import->status === 'confirmed' || $import->confirmed_at !== null, 404);
+
+    return view('ticket-imports.verify', [
+        'import' => $import,
+    ]);
+})->middleware('throttle:60,1')->name('tickets.verify');
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'attendance.started'])
     ->name('dashboard');

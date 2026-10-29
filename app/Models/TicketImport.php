@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 class TicketImport extends Model
 {
@@ -24,7 +25,17 @@ class TicketImport extends Model
         'passenger_extras',
         'status',
         'confirmed_at',
+        'verification_token',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (TicketImport $import): void {
+            if (empty($import->verification_token)) {
+                $import->verification_token = (string) Str::uuid();
+            }
+        });
+    }
 
     protected function casts(): array
     {
@@ -78,6 +89,30 @@ class TicketImport extends Model
     public function documentSerial(): string
     {
         return 'DOC-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+    }
+
+    public function ensureVerificationToken(): string
+    {
+        if (empty($this->verification_token)) {
+            $this->forceFill([
+                'verification_token' => (string) Str::uuid(),
+            ])->save();
+        }
+
+        return (string) $this->verification_token;
+    }
+
+    public function verificationUrl(): string
+    {
+        return route('tickets.verify', $this->ensureVerificationToken(), absolute: true);
+    }
+
+    /**
+     * QR encodes the public verification page URL.
+     */
+    public function qrPayload(): string
+    {
+        return $this->verificationUrl();
     }
 
     public function locationCode(?string $location): string
