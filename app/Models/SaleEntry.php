@@ -16,6 +16,8 @@ class SaleEntry extends Model
         'payable',
         'received',
         'via',
+        'gross_profit',
+        'loss',
         'profit',
         'report_month',
         'original_filename',
@@ -28,6 +30,8 @@ class SaleEntry extends Model
             'sale_date' => 'date',
             'payable' => 'decimal:2',
             'received' => 'decimal:2',
+            'gross_profit' => 'decimal:2',
+            'loss' => 'decimal:2',
             'profit' => 'decimal:2',
         ];
     }
@@ -43,7 +47,16 @@ class SaleEntry extends Model
     }
 
     /**
-     * @return array{entries: int, payable: float, received: float, profit: float, profit_filled: int}
+     * Totals aligned with the Monthly Air Ticketing Register footer.
+     *
+     * @return array{
+     *     entries: int,
+     *     payable: float,
+     *     received: float,
+     *     gross_profit: float,
+     *     loss: float,
+     *     profit: float
+     * }
      */
     public static function totalsForMonth(string $month): array
     {
@@ -53,8 +66,9 @@ class SaleEntry extends Model
             'entries' => (clone $base)->count(),
             'payable' => (float) (clone $base)->sum('payable'),
             'received' => (float) (clone $base)->sum('received'),
-            'profit' => (float) (clone $base)->whereNotNull('profit')->sum('profit'),
-            'profit_filled' => (clone $base)->whereNotNull('profit')->count(),
+            'gross_profit' => (float) (clone $base)->sum('gross_profit'),
+            'loss' => (float) (clone $base)->sum('loss'),
+            'profit' => (float) (clone $base)->sum('profit'),
         ];
     }
 }

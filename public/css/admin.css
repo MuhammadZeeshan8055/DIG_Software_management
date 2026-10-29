@@ -7610,6 +7610,51 @@ tr.leave-row--rejected td {
     transform: translateY(-4px);
 }
 
+.sales-report__stats {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+    .sales-report__stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .sales-report__stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.sales-report__columns {
+    margin-top: 12px;
+}
+
+.sales-report__columns-title {
+    margin: 0 0 8px;
+    font-size: 0.78rem;
+    font-weight: 650;
+    color: #334155;
+}
+
+.sales-report__column-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.sales-report__column-chips span {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: #0f5c4c;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
 .sales-report__columns-hint {
     margin: 10px 0 0;
     font-size: 0.78rem;

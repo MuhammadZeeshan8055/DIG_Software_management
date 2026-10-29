@@ -7,6 +7,7 @@ use App\Models\SaleEntry;
 use App\Services\SaleSheetImporter;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 class SalesReport extends Component
@@ -22,15 +23,14 @@ class SalesReport extends Component
 
     public ?string $errorMessage = null;
 
-    public ?int $editingId = null;
-
-    public string $edit_profit = '';
-
     public bool $showReplaceConfirm = false;
 
     public string $replaceConfirmTitle = 'Replace month data?';
 
     public string $replaceConfirmMessage = '';
+
+    /** @var list<string> */
+    private const ALLOWED_EXTENSIONS = ['xlsx', 'xls', 'csv', 'html', 'htm'];
 
     public function mount(): void
     {
@@ -42,6 +42,15 @@ class SalesReport extends Component
         $this->resetValidation();
         $this->successMessage = null;
         $this->errorMessage = null;
+
+        if (! $this->excelFile) {
+            return;
+        }
+
+        // Validate as soon as Livewire finishes the temp upload so errors show immediately.
+        $this->validateOnly('excelFile', [
+            'excelFile' => $this->excelFileRules(),
+        ], $this->excelFileMessages());
     }
 
     public function monthLabel(): string
@@ -56,7 +65,7 @@ class SalesReport extends Component
     }
 
     /**
-     * First step: validate file, then either import or ask to replace existing month data.
+     * Validate file, then import — or ask to replace if that month already has rows.
      */
     public function requestImport(): void
     {
@@ -65,13 +74,7 @@ class SalesReport extends Component
         $this->successMessage = null;
         $this->errorMessage = null;
 
-        $this->validate([
-            'excelFile' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
-            'report_month' => ['required', 'date_format:Y-m'],
-        ], [
-            'excelFile.required' => 'Please choose an Excel file to import.',
-            'excelFile.mimes' => 'Upload an .xlsx, .xls, or .csv file.',
-        ]);
+        $this->validateImportFile();
 
         $month = $this->report_month;
         $existing = SaleEntry::query()->forMonth($month)->count();
@@ -81,7 +84,7 @@ class SalesReport extends Component
             $rowsLabel = $existing === 1 ? '1 row' : "{$existing} rows";
 
             $this->replaceConfirmTitle = 'Replace month data?';
-            $this->replaceConfirmMessage = "Sales data already exists for {$label} ({$rowsLabel}). Do you want to replace it with this file? Existing profit values for this month will be lost.";
+            $this->replaceConfirmMessage = "Sales data already exists for {$label} ({$rowsLabel}). Do you want to replace it with this file?";
             $this->showReplaceConfirm = true;
 
             return;
@@ -103,6 +106,53 @@ class SalesReport extends Component
         $this->runImport(replace: true);
     }
 
+    /**
+     * Accept by original filename only — Excel-HTML .xls is MIME text/html and fails mimes checks.
+     *
+     * @return array<string, mixed>
+     */
+    protected function excelFileRules(): array
+    {
+        $allowed = self::ALLOWED_EXTENSIONS;
+
+        return [
+            'required',
+            'max:20480',
+            function (string $attribute, mixed $value, \Closure $fail) use ($allowed): void {
+                if (! $value instanceof TemporaryUploadedFile && ! $value instanceof \Illuminate\Http\UploadedFile) {
+                    $fail('Please choose the Monthly Air Ticketing Register file to import.');
+
+                    return;
+                }
+
+                $ext = strtolower($value->getClientOriginalExtension());
+
+                if (! in_array($ext, $allowed, true)) {
+                    $fail('Upload the register as .xls, .xlsx, or .csv (Excel HTML .xls is supported).');
+                }
+            },
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function excelFileMessages(): array
+    {
+        return [
+            'excelFile.required' => 'Please choose the Monthly Air Ticketing Register file to import.',
+            'excelFile.max' => 'File is too large (max 20 MB).',
+        ];
+    }
+
+    protected function validateImportFile(): void
+    {
+        $this->validate([
+            'excelFile' => $this->excelFileRules(),
+            'report_month' => ['required', 'date_format:Y-m'],
+        ], $this->excelFileMessages());
+    }
+
     protected function runImport(bool $replace = false): void
     {
         abort_unless(auth()->user()->canView('accounts', 'reports'), 403);
@@ -110,13 +160,7 @@ class SalesReport extends Component
         $this->successMessage = null;
         $this->errorMessage = null;
 
-        $this->validate([
-            'excelFile' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
-            'report_month' => ['required', 'date_format:Y-m'],
-        ], [
-            'excelFile.required' => 'Please choose an Excel file to import.',
-            'excelFile.mimes' => 'Upload an .xlsx, .xls, or .csv file.',
-        ]);
+        $this->validateImportFile();
 
         $month = $this->report_month;
 
@@ -126,12 +170,14 @@ class SalesReport extends Component
             return;
         }
 
+        $tmpCopy = null;
+
         try {
-            $path = $this->excelFile->getRealPath();
+            $path = $this->resolveImportPath($tmpCopy);
             $rows = app(SaleSheetImporter::class)->parse($path);
 
             if ($rows === []) {
-                $this->errorMessage = 'No sales rows found in this file. Check the header row matches DATE / PASSENGER NAME / …';
+                $this->errorMessage = 'No sales rows found. Expected columns like Date, Passenger Name, Total Fare / Sales, Net Profit/Loss, Grand Total.';
 
                 return;
             }
@@ -146,8 +192,16 @@ class SalesReport extends Component
 
                 foreach ($rows as $row) {
                     SaleEntry::create([
-                        ...$row,
-                        'profit' => null,
+                        'sale_date' => $row['sale_date'],
+                        'passenger_name' => $row['passenger_name'],
+                        'sector' => $row['sector'],
+                        'airline' => $row['airline'],
+                        'payable' => $row['payable'],
+                        'received' => $row['received'],
+                        'via' => $row['via'],
+                        'gross_profit' => $row['gross_profit'],
+                        'loss' => $row['loss'],
+                        'profit' => $row['profit'],
                         'report_month' => $month,
                         'original_filename' => $filename,
                         'user_id' => $userId,
@@ -157,66 +211,38 @@ class SalesReport extends Component
 
             $count = count($rows);
             $this->excelFile = null;
-            $this->editingId = null;
             $this->successMessage = $replace
-                ? "Replaced month data with {$count} row(s). Add profit for each entry below."
-                : "Imported {$count} row(s). Add profit for each entry below.";
+                ? "Replaced month data with {$count} row(s)."
+                : "Imported {$count} row(s).";
+        } catch (\Illuminate\Database\QueryException $exception) {
+            report($exception);
+            $this->errorMessage = 'File was read, but saving failed. Check database columns and try again.';
         } catch (\Throwable $exception) {
             report($exception);
-            $this->errorMessage = 'Could not read this file. Use the same columns as your monthly sales sheet.';
+            $this->errorMessage = 'Could not read this file. Use the Monthly Air Ticketing Register (.xls / .xlsx / .csv).';
+        } finally {
+            if ($tmpCopy && is_file($tmpCopy)) {
+                @unlink($tmpCopy);
+            }
         }
     }
 
-    public function startEditProfit(int $id): void
+    /**
+     * Ensure the parser sees a path with the original extension (Livewire temp names can omit it).
+     */
+    protected function resolveImportPath(?string &$tmpCopy): string
     {
-        abort_unless(auth()->user()->canView('accounts', 'reports'), 403);
+        $path = $this->excelFile->getRealPath();
+        $ext = strtolower($this->excelFile->getClientOriginalExtension() ?: '');
 
-        $entry = SaleEntry::find($id);
-
-        if (! $entry) {
-            return;
+        if ($ext === '' || str_ends_with(strtolower($path), '.'.$ext)) {
+            return $path;
         }
 
-        $this->editingId = $id;
-        $this->edit_profit = $entry->profit !== null ? (string) $entry->profit : '';
-        $this->successMessage = null;
-        $this->errorMessage = null;
-    }
+        $tmpCopy = sys_get_temp_dir().DIRECTORY_SEPARATOR.'sale_import_'.uniqid('', true).'.'.$ext;
+        copy($path, $tmpCopy);
 
-    public function cancelEditProfit(): void
-    {
-        $this->editingId = null;
-        $this->edit_profit = '';
-    }
-
-    public function saveProfit(): void
-    {
-        abort_unless(auth()->user()->canView('accounts', 'reports'), 403);
-
-        if (! $this->editingId) {
-            return;
-        }
-
-        $this->validate([
-            'edit_profit' => ['required', 'numeric'],
-        ], [
-            'edit_profit.required' => 'Enter the profit amount.',
-        ]);
-
-        $entry = SaleEntry::find($this->editingId);
-
-        if (! $entry) {
-            $this->cancelEditProfit();
-
-            return;
-        }
-
-        $entry->update([
-            'profit' => round((float) $this->edit_profit, 2),
-        ]);
-
-        $this->cancelEditProfit();
-        $this->successMessage = 'Profit saved.';
+        return $tmpCopy;
     }
 
     protected function performPendingDelete(int $id): void
@@ -227,10 +253,6 @@ class SalesReport extends Component
     public function deleteEntry(int $id): void
     {
         abort_unless(auth()->user()->isAdmin(), 403);
-
-        if ($this->editingId === $id) {
-            $this->cancelEditProfit();
-        }
 
         $entry = SaleEntry::find($id);
 
@@ -249,8 +271,9 @@ class SalesReport extends Component
                     'entries' => 0,
                     'payable' => 0,
                     'received' => 0,
+                    'gross_profit' => 0,
+                    'loss' => 0,
                     'profit' => 0,
-                    'profit_filled' => 0,
                 ],
                 'currency' => config('payment_status.currency', 'PKR'),
             ]);
