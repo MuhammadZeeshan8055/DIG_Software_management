@@ -95,7 +95,7 @@
     {{-- Module workspace (replaces overview) --}}
     <div
         class="dashboard-view module-workspace"
-        x-show="activeModule && activeModule !== 'daily-visitors' && activeModule !== 'my-visitors' && !viewingMyAttendance && !viewingMyAccount && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'invoices' && activeOption !== 'reports' && activeOption !== 'users' && activeOption !== 'desks' && activeOption !== 'my-daily-attendance' && activeOption !== 'staff-daily-attendance' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips' && activeOption !== 'register' && activeOption !== 'list' && activeOption !== 'my-queue' && activeOption !== 'reminders-list'"
+        x-show="activeModule && activeModule !== 'daily-visitors' && activeModule !== 'my-visitors' && !viewingMyAttendance && !viewingMyAccount && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'invoices' && activeOption !== 'reports' && activeOption !== 'users' && activeOption !== 'desks' && activeOption !== 'my-daily-attendance' && activeOption !== 'staff-daily-attendance' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips' && activeOption !== 'register' && activeOption !== 'list' && activeOption !== 'my-queue' && activeOption !== 'reminders-list' && !(activeModule === 'hotel-vouchers' && activeOption === 'hotel-vouchers')"
         x-cloak
         x-transition:enter="dash-enter"
         x-transition:enter-start="dash-enter-start"
@@ -208,7 +208,7 @@
                 {{-- Other option tables (static demo data) --}}
                 <div
                     class="module-panel"
-                    x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'my-daily-attendance' && activeOption !== 'invoices' && activeOption !== 'reports' && activeOption !== 'staff-daily-attendance' && activeOption !== 'office-settings' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips' && activeOption !== 'users' && activeOption !== 'desks' && activeOption !== 'register' && activeOption !== 'list' && activeOption !== 'my-queue' && activeOption !== 'reminders-list'"
+                    x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'my-daily-attendance' && activeOption !== 'invoices' && activeOption !== 'reports' && activeOption !== 'staff-daily-attendance' && activeOption !== 'office-settings' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips' && activeOption !== 'users' && activeOption !== 'desks' && activeOption !== 'register' && activeOption !== 'list' && activeOption !== 'my-queue' && activeOption !== 'reminders-list' && activeOption !== 'hotel-vouchers'"
                     x-cloak
                     x-transition.opacity.duration.200ms>
                     <template x-if="currentTable()">
@@ -242,6 +242,30 @@
                 </div>
             </div>
         </template>
+    </div>
+
+    {{-- Umrah & Hajj → Hotel Vouchers (Livewire) --}}
+    <div
+        class="dashboard-view dashboard-view--panel"
+        x-show="activeModule === 'hotel-vouchers' && activeOption === 'hotel-vouchers' && !viewingMyAttendance && !viewingMyAccount"
+        x-cloak
+        x-transition.opacity.duration.200ms>
+        <section class="module-workspace__hero" style="margin-bottom: 16px;">
+            <div class="module-workspace__hero-glow" aria-hidden="true"></div>
+            <div class="module-workspace__hero-main">
+                <p class="module-workspace__eyebrow">
+                    <span class="module-workspace__eyebrow-dot"></span>
+                    Module workspace
+                </p>
+                <h2 class="module-workspace__title">Umrah &amp; Hajj Management</h2>
+                <p class="module-workspace__desc">Create vouchers and manage hotel allotments.</p>
+            </div>
+            <div class="module-workspace__hero-badge">
+                <span class="module-card__status-dot"></span>
+                Active
+            </div>
+        </section>
+        <livewire:admin.umrah.hotel-vouchers />
     </div>
 
     {{-- Import Ticket Details (Livewire — must be in page HTML on load, not inside Alpine x-if) --}}

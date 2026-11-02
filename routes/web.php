@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Livewire\Admin\Attendance\AttendanceGate;
+use App\Models\HotelVoucher;
 use App\Models\Invoice;
 use App\Models\SalarySlip;
 use App\Models\TicketImport;
@@ -56,6 +57,19 @@ Route::get('/verify/ticket/{token}', function (string $token) {
     ]);
 })->middleware('throttle:60,1')->name('tickets.verify');
 
+Route::get('/verify/hotel-voucher/{token}', function (string $token) {
+    $voucher = HotelVoucher::query()
+        ->where('verification_token', $token)
+        ->with('user')
+        ->firstOrFail();
+
+    abort_unless($voucher->status === 'issued', 404);
+
+    return view('hotel-vouchers.verify', [
+        'voucher' => $voucher,
+    ]);
+})->middleware('throttle:60,1')->name('hotel-vouchers.verify');
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'attendance.started'])
     ->name('dashboard');
@@ -99,6 +113,17 @@ Route::middleware('auth')->group(function () {
             'autoPrint' => $request->boolean('print'),
         ]);
     })->name('salary-slips.document');
+
+    Route::get('/hotel-vouchers/{hotelVoucher}/document', function (Request $request, HotelVoucher $hotelVoucher) {
+        abort_unless($request->user()->canView('hotel-vouchers', 'hotel-vouchers'), 403);
+
+        $hotelVoucher->load('user');
+
+        return view('hotel-vouchers.document', [
+            'voucher' => $hotelVoucher,
+            'autoPrint' => $request->boolean('print'),
+        ]);
+    })->name('hotel-vouchers.document');
 });
 
 require __DIR__.'/auth.php';
