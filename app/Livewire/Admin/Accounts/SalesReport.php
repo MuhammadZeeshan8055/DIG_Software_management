@@ -29,11 +29,12 @@ class SalesReport extends Component
 
     public string $replaceConfirmMessage = '';
 
-    /** @var list<string> */
+    // File types we allow for upload
     private const ALLOWED_EXTENSIONS = ['xlsx', 'xls', 'csv', 'html', 'htm'];
 
     public function mount(): void
     {
+        // Default to the current month, example: 2026-11
         $this->report_month = now()->format('Y-m');
     }
 
@@ -47,25 +48,34 @@ class SalesReport extends Component
             return;
         }
 
-        // Validate as soon as Livewire finishes the temp upload so errors show immediately.
+        // Check the file as soon as it finishes uploading
         $this->validateOnly('excelFile', [
             'excelFile' => $this->excelFileRules(),
         ], $this->excelFileMessages());
     }
 
+    /**
+     * Turn "2026-10" into "October 2026" for messages.
+     */
     public function monthLabel(): string
     {
-        $month = $this->report_month ?: now()->format('Y-m');
+        $month = $this->report_month;
+
+        if ($month === '') {
+            $month = now()->format('Y-m');
+        }
 
         try {
             return \Carbon\Carbon::createFromFormat('Y-m', $month)->format('F Y');
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
             return $month;
         }
     }
 
     /**
-     * Validate file, then import — or ask to replace if that month already has rows.
+     * Step 1: read the file.
+     * Step 2: if that month already has data, ask before replacing.
+     * Step 3: otherwise import now.
      */
     public function requestImport(): void
     {
@@ -76,21 +86,56 @@ class SalesReport extends Component
 
         $this->validateImportFile();
 
-        $month = $this->report_month;
-        $existing = SaleEntry::query()->forMonth($month)->count();
+        $tmpCopy = null;
 
-        if ($existing > 0) {
+        try {
+            $path = $this->resolveImportPath($tmpCopy);
+            $preview = app(SaleSheetImporter::class)->parse($path);
+        } catch (\Throwable $e) {
+            report($e);
+            $this->errorMessage = 'Could not read this file. Use the travel sales report (.xls / .xlsx / .csv).';
+
+            return;
+        } finally {
+            if ($tmpCopy && is_file($tmpCopy)) {
+                @unlink($tmpCopy);
+            }
+        }
+
+        if (count($preview) === 0) {
+            $this->errorMessage = 'No sales rows found. Expected columns: Date, Passenger Name, Sector, Airline, Payable, Received, Via.';
+
+            return;
+        }
+
+        // Use the month found in the Excel dates (so Oct file saves under October)
+        $detectedMonth = $this->mainMonthFromRows($preview);
+
+        if ($detectedMonth !== null) {
+            $this->report_month = $detectedMonth;
+        }
+
+        $month = $this->report_month;
+        $existingCount = SaleEntry::query()->forMonth($month)->count();
+
+        if ($existingCount > 0) {
             $label = $this->monthLabel();
-            $rowsLabel = $existing === 1 ? '1 row' : "{$existing} rows";
+            $fileRows = count($preview);
+
+            if ($existingCount === 1) {
+                $rowsLabel = '1 row';
+            } else {
+                $rowsLabel = $existingCount.' rows';
+            }
 
             $this->replaceConfirmTitle = 'Replace month data?';
-            $this->replaceConfirmMessage = "Sales data already exists for {$label} ({$rowsLabel}). Do you want to replace it with this file?";
+            $this->replaceConfirmMessage = "Sales data already exists for {$label} ({$rowsLabel}). Replace with {$fileRows} row(s) from this file?";
             $this->showReplaceConfirm = true;
 
             return;
         }
 
-        $this->runImport(replace: false);
+        $this->runImport(false);
     }
 
     public function cancelReplaceConfirm(): void
@@ -103,13 +148,11 @@ class SalesReport extends Component
     {
         $this->showReplaceConfirm = false;
         $this->replaceConfirmMessage = '';
-        $this->runImport(replace: true);
+        $this->runImport(true);
     }
 
     /**
-     * Accept by original filename only — Excel-HTML .xls is MIME text/html and fails mimes checks.
-     *
-     * @return array<string, mixed>
+     * Rules for the uploaded Excel file.
      */
     protected function excelFileRules(): array
     {
@@ -119,8 +162,11 @@ class SalesReport extends Component
             'required',
             'max:20480',
             function (string $attribute, mixed $value, \Closure $fail) use ($allowed): void {
-                if (! $value instanceof TemporaryUploadedFile && ! $value instanceof \Illuminate\Http\UploadedFile) {
-                    $fail('Please choose the Monthly Air Ticketing Register file to import.');
+                $isTempUpload = $value instanceof TemporaryUploadedFile;
+                $isNormalUpload = $value instanceof \Illuminate\Http\UploadedFile;
+
+                if (! $isTempUpload && ! $isNormalUpload) {
+                    $fail('Please choose the travel sales report file to import.');
 
                     return;
                 }
@@ -128,19 +174,16 @@ class SalesReport extends Component
                 $ext = strtolower($value->getClientOriginalExtension());
 
                 if (! in_array($ext, $allowed, true)) {
-                    $fail('Upload the register as .xls, .xlsx, or .csv (Excel HTML .xls is supported).');
+                    $fail('Upload the report as .xls, .xlsx, or .csv (Excel HTML .xls is supported).');
                 }
             },
         ];
     }
 
-    /**
-     * @return array<string, string>
-     */
     protected function excelFileMessages(): array
     {
         return [
-            'excelFile.required' => 'Please choose the Monthly Air Ticketing Register file to import.',
+            'excelFile.required' => 'Please choose the travel sales report file to import.',
             'excelFile.max' => 'File is too large (max 20 MB).',
         ];
     }
@@ -153,6 +196,9 @@ class SalesReport extends Component
         ], $this->excelFileMessages());
     }
 
+    /**
+     * Save all rows from the Excel file into the database.
+     */
     protected function runImport(bool $replace = false): void
     {
         abort_unless(auth()->user()->canView('accounts', 'reports'), 403);
@@ -176,10 +222,18 @@ class SalesReport extends Component
             $path = $this->resolveImportPath($tmpCopy);
             $rows = app(SaleSheetImporter::class)->parse($path);
 
-            if ($rows === []) {
-                $this->errorMessage = 'No sales rows found. Expected columns like Date, Passenger Name, Total Fare / Sales, Net Profit/Loss, Grand Total.';
+            if (count($rows) === 0) {
+                $this->errorMessage = 'No sales rows found. Expected columns: Date, Passenger Name, Sector, Airline, Payable, Received, Via.';
 
                 return;
+            }
+
+            // Match the report month to the dates inside the file
+            $detectedMonth = $this->mainMonthFromRows($rows);
+
+            if ($detectedMonth !== null) {
+                $this->report_month = $detectedMonth;
+                $month = $detectedMonth;
             }
 
             $filename = $this->excelFile->getClientOriginalName();
@@ -199,8 +253,6 @@ class SalesReport extends Component
                         'payable' => $row['payable'],
                         'received' => $row['received'],
                         'via' => $row['via'],
-                        'gross_profit' => $row['gross_profit'],
-                        'loss' => $row['loss'],
                         'profit' => $row['profit'],
                         'report_month' => $month,
                         'original_filename' => $filename,
@@ -211,15 +263,19 @@ class SalesReport extends Component
 
             $count = count($rows);
             $this->excelFile = null;
-            $this->successMessage = $replace
-                ? "Replaced month data with {$count} row(s)."
-                : "Imported {$count} row(s).";
-        } catch (\Illuminate\Database\QueryException $exception) {
-            report($exception);
+            $label = $this->monthLabel();
+
+            if ($replace) {
+                $this->successMessage = "Replaced {$label} with {$count} row(s).";
+            } else {
+                $this->successMessage = "Imported {$count} row(s) into {$label}.";
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            report($e);
             $this->errorMessage = 'File was read, but saving failed. Check database columns and try again.';
-        } catch (\Throwable $exception) {
-            report($exception);
-            $this->errorMessage = 'Could not read this file. Use the Monthly Air Ticketing Register (.xls / .xlsx / .csv).';
+        } catch (\Throwable $e) {
+            report($e);
+            $this->errorMessage = 'Could not read this file. Use the travel sales report (.xls / .xlsx / .csv).';
         } finally {
             if ($tmpCopy && is_file($tmpCopy)) {
                 @unlink($tmpCopy);
@@ -228,14 +284,59 @@ class SalesReport extends Component
     }
 
     /**
-     * Ensure the parser sees a path with the original extension (Livewire temp names can omit it).
+     * Find the most common month in the file dates.
+     * Example: many rows dated 2026-10-xx → returns "2026-10"
+     */
+    protected function mainMonthFromRows(array $rows): ?string
+    {
+        $counts = [];
+
+        foreach ($rows as $row) {
+            $saleDate = (string) ($row['sale_date'] ?? '');
+            $month = substr($saleDate, 0, 7);
+
+            // Must look like 2026-10
+            if (! preg_match('/^\d{4}-\d{2}$/', $month)) {
+                continue;
+            }
+
+            if (! isset($counts[$month])) {
+                $counts[$month] = 0;
+            }
+
+            $counts[$month] = $counts[$month] + 1;
+        }
+
+        if (count($counts) === 0) {
+            return null;
+        }
+
+        // Sort so the month with the most rows is first
+        arsort($counts);
+
+        $topMonth = array_key_first($counts);
+
+        if (! is_string($topMonth)) {
+            return null;
+        }
+
+        return $topMonth;
+    }
+
+    /**
+     * Livewire temp files sometimes lose the real extension.
+     * If needed, copy the file and add .xlsx / .xls / .csv back.
      */
     protected function resolveImportPath(?string &$tmpCopy): string
     {
         $path = $this->excelFile->getRealPath();
         $ext = strtolower($this->excelFile->getClientOriginalExtension() ?: '');
 
-        if ($ext === '' || str_ends_with(strtolower($path), '.'.$ext)) {
+        if ($ext === '') {
+            return $path;
+        }
+
+        if (str_ends_with(strtolower($path), '.'.$ext)) {
             return $path;
         }
 
@@ -271,15 +372,17 @@ class SalesReport extends Component
                     'entries' => 0,
                     'payable' => 0,
                     'received' => 0,
-                    'gross_profit' => 0,
-                    'loss' => 0,
                     'profit' => 0,
                 ],
                 'currency' => config('payment_status.currency', 'PKR'),
             ]);
         }
 
-        $month = $this->report_month ?: now()->format('Y-m');
+        $month = $this->report_month;
+
+        if ($month === '') {
+            $month = now()->format('Y-m');
+        }
 
         return view('livewire.admin.accounts.sales-report', [
             'denied' => false,

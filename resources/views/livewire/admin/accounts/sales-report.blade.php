@@ -31,7 +31,7 @@
             <div class="data-panel__head sales-report__head">
                 <div>
                     <h3 class="data-panel__title">Sales Report</h3>
-                    <p class="import-ticket__hint">Import the final monthly sheet — sales and profit come from the file.</p>
+                    <p class="import-ticket__hint">Import your monthly travel Excel. Profit = Received − Payable.</p>
                 </div>
                 <button
                     type="button"
@@ -79,7 +79,7 @@
                     style="display: none;"
                 >
                     <form wire:submit.prevent="requestImport" class="import-ticket__upload">
-                        <p class="import-ticket__label">Monthly Air Ticketing Register</p>
+                        <p class="import-ticket__label">Travel sales report</p>
 
                         <label
                             for="excelFile"
@@ -107,9 +107,9 @@
                             <span class="import-ticket__dropzone-text">
                                 @if ($excelFile)
                                     <strong class="import-ticket__file-name">{{ $excelFile->getClientOriginalName() }}</strong>
-                                    <span class="import-ticket__file-hint">Register selected — click to replace</span>
+                                    <span class="import-ticket__file-hint">Report selected — click to replace</span>
                                 @else
-                                    <strong class="import-ticket__file-name">Upload register file</strong>
+                                    <strong class="import-ticket__file-name">Upload travel report</strong>
                                     <span class="import-ticket__file-hint">.xls / .xlsx / .csv · Excel HTML .xls supported · up to 20 MB</span>
                                 @endif
                             </span>
@@ -119,23 +119,17 @@
 
                         <div class="sales-report__columns">
                             <p class="sales-report__columns-title">Expected columns</p>
-                            <div class="sales-report__column-chips" aria-label="Register columns">
-                                <span>S#</span>
-                                <span>Date</span>
-                                <span>Passenger Name</span>
-                                <span>PNR</span>
-                                <span>Airline</span>
-                                <span>Sector</span>
-                                <span>Fare / Person (PKR)</span>
-                                <span>Pax</span>
-                                <span>Total Fare / Sales (PKR)</span>
-                                <span>Profit (PKR)</span>
-                                <span>Loss (PKR)</span>
-                                <span>Net Profit/Loss (PKR)</span>
-                                <span>Grand Total (PKR)</span>
+                            <div class="sales-report__column-chips" aria-label="Report columns">
+                                <span>DATE</span>
+                                <span>PASSENGER NAME</span>
+                                <span>SECTOR</span>
+                                <span>AIRLINE</span>
+                                <span>PAYABLE</span>
+                                <span>RECEIVED</span>
+                                <span>VIA</span>
                             </div>
                             <p class="sales-report__columns-hint">
-                                Profit is taken from <strong>Net Profit/Loss</strong>. Month total rows (e.g. OCTOBER TOTAL) are skipped.
+                                Profit = RECEIVED − PAYABLE. Rows named TOTAL or BALANCE are ignored.
                             </p>
                         </div>
 
@@ -168,32 +162,22 @@
             </div>
         </div>
 
-        {{-- Summary cards — same totals as Monthly Air Ticketing Register footer --}}
+        {{-- Summary cards — Payable, Received, Profit (Received − Payable) --}}
         <div class="stat-grid sales-report__stats" style="margin-bottom: 16px;">
             <article class="stat-card stat-card--amber" style="--stat-i: 0">
-                <div class="stat-card__top"><p class="stat-card__label">Total Fare / Sales (PKR)</p></div>
+                <div class="stat-card__top"><p class="stat-card__label">Payable (PKR)</p></div>
                 <p class="stat-card__value">{{ $currency }} {{ number_format($totals['payable'], 2) }}</p>
                 <p class="stat-card__hint">{{ number_format($totals['entries'], 0) }} entries</p>
             </article>
-            <article class="stat-card stat-card--green" style="--stat-i: 1">
-                <div class="stat-card__top"><p class="stat-card__label">Profit (PKR)</p></div>
-                <p class="stat-card__value">{{ $currency }} {{ number_format($totals['gross_profit'], 2) }}</p>
-                <p class="stat-card__hint">From register</p>
-            </article>
-            <article class="stat-card stat-card--red" style="--stat-i: 2">
-                <div class="stat-card__top"><p class="stat-card__label">Loss (PKR)</p></div>
-                <p class="stat-card__value">{{ $currency }} {{ number_format($totals['loss'], 2) }}</p>
-                <p class="stat-card__hint">From register</p>
-            </article>
-            <article class="stat-card" style="--stat-i: 3">
-                <div class="stat-card__top"><p class="stat-card__label">Net Profit/Loss (PKR)</p></div>
-                <p class="stat-card__value">{{ $currency }} {{ number_format($totals['profit'], 2) }}</p>
-                <p class="stat-card__hint">From register</p>
-            </article>
-            <article class="stat-card stat-card--navy" style="--stat-i: 4">
-                <div class="stat-card__top"><p class="stat-card__label">Grand Total (PKR)</p></div>
+            <article class="stat-card" style="--stat-i: 1">
+                <div class="stat-card__top"><p class="stat-card__label">Received (PKR)</p></div>
                 <p class="stat-card__value">{{ $currency }} {{ number_format($totals['received'], 2) }}</p>
-                <p class="stat-card__hint">From register</p>
+                <p class="stat-card__hint">From report</p>
+            </article>
+            <article class="stat-card {{ $totals['profit'] < 0 ? 'stat-card--red' : 'stat-card--green' }}" style="--stat-i: 2">
+                <div class="stat-card__top"><p class="stat-card__label">Profit (PKR)</p></div>
+                <p class="stat-card__value">{{ $currency }} {{ number_format($totals['profit'], 2) }}</p>
+                <p class="stat-card__hint">Received − Payable</p>
             </article>
         </div>
 
@@ -210,14 +194,12 @@
                         <tr>
                             <th>Date</th>
                             <th>Passenger Name</th>
-                            <th>PNR</th>
-                            <th>Airline</th>
                             <th>Sector</th>
-                            <th>Total Fare / Sales</th>
+                            <th>Airline</th>
+                            <th>Payable</th>
+                            <th>Received</th>
+                            <th>Via</th>
                             <th>Profit</th>
-                            <th>Loss</th>
-                            <th>Net Profit/Loss</th>
-                            <th>Grand Total</th>
                             @if (auth()->user()->isAdmin())
                                 <th>Actions</th>
                             @endif
@@ -225,17 +207,19 @@
                     </thead>
                     <tbody>
                         @forelse ($entries as $entry)
+                            @php
+                                // Profit for this row = received - payable
+                                $rowProfit = round((float) $entry->received - (float) $entry->payable, 2);
+                            @endphp
                             <tr wire:key="sale-entry-{{ $entry->id }}">
                                 <td>{{ optional($entry->sale_date)->format('d-M-y') }}</td>
                                 <td>{{ $entry->passenger_name }}</td>
-                                <td>{{ $entry->via ?: '—' }}</td>
-                                <td>{{ $entry->airline ?: '—' }}</td>
-                                <td>{{ $entry->sector ?: '—' }}</td>
+                                <td>{{ $entry->sector ? $entry->sector : '—' }}</td>
+                                <td>{{ $entry->airline ? $entry->airline : '—' }}</td>
                                 <td>{{ number_format((float) $entry->payable, 2) }}</td>
-                                <td>{{ number_format((float) ($entry->gross_profit ?? 0), 2) }}</td>
-                                <td>{{ number_format((float) ($entry->loss ?? 0), 2) }}</td>
-                                <td>{{ $entry->profit !== null ? number_format((float) $entry->profit, 2) : '—' }}</td>
                                 <td>{{ number_format((float) $entry->received, 2) }}</td>
+                                <td>{{ $entry->via ? $entry->via : '—' }}</td>
+                                <td>{{ number_format($rowProfit, 2) }}</td>
                                 @if (auth()->user()->isAdmin())
                                     <td class="manage-users-actions">
                                         <button
@@ -252,7 +236,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ auth()->user()->isAdmin() ? 11 : 10 }}">No sales for this month yet. Import the Monthly Air Ticketing Register above.</td>
+                                <td colspan="{{ auth()->user()->isAdmin() ? 9 : 8 }}">No sales for this month yet. Import the travel sales report above.</td>
                             </tr>
                         @endforelse
                     </tbody>

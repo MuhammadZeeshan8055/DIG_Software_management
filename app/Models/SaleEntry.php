@@ -16,8 +16,6 @@ class SaleEntry extends Model
         'payable',
         'received',
         'via',
-        'gross_profit',
-        'loss',
         'profit',
         'report_month',
         'original_filename',
@@ -30,8 +28,6 @@ class SaleEntry extends Model
             'sale_date' => 'date',
             'payable' => 'decimal:2',
             'received' => 'decimal:2',
-            'gross_profit' => 'decimal:2',
-            'loss' => 'decimal:2',
             'profit' => 'decimal:2',
         ];
     }
@@ -41,34 +37,31 @@ class SaleEntry extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Only rows for one report month, example: 2026-10
+     */
     public function scopeForMonth(Builder $query, string $month): Builder
     {
         return $query->where('report_month', $month);
     }
 
     /**
-     * Totals aligned with the Monthly Air Ticketing Register footer.
-     *
-     * @return array{
-     *     entries: int,
-     *     payable: float,
-     *     received: float,
-     *     gross_profit: float,
-     *     loss: float,
-     *     profit: float
-     * }
+     * Add up Payable, Received, and Profit for one month.
+     * Profit = Received - Payable
      */
     public static function totalsForMonth(string $month): array
     {
-        $base = static::query()->forMonth($month);
+        $query = static::query()->forMonth($month);
+
+        $payable = (float) (clone $query)->sum('payable');
+        $received = (float) (clone $query)->sum('received');
+        $profit = round($received - $payable, 2);
 
         return [
-            'entries' => (clone $base)->count(),
-            'payable' => (float) (clone $base)->sum('payable'),
-            'received' => (float) (clone $base)->sum('received'),
-            'gross_profit' => (float) (clone $base)->sum('gross_profit'),
-            'loss' => (float) (clone $base)->sum('loss'),
-            'profit' => (float) (clone $base)->sum('profit'),
+            'entries' => (clone $query)->count(),
+            'payable' => $payable,
+            'received' => $received,
+            'profit' => $profit,
         ];
     }
 }
