@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\TicketJourneyClassifier;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -84,6 +85,108 @@ class TicketImport extends Model
         $numbers = array_filter(array_column($this->flight_segments ?? [], 'flight_number'));
 
         return $numbers === [] ? '—' : implode(', ', $numbers);
+    }
+
+    /**
+     * Split saved flights into outbound and return groups.
+     */
+    public function journeyGroups(): array
+    {
+        $classifier = app(TicketJourneyClassifier::class);
+
+        return $classifier->split($this->flight_segments ?? []);
+    }
+
+    /**
+     * All outbound flight legs (may include connections).
+     */
+    public function outboundSegments(): array
+    {
+        $groups = $this->journeyGroups();
+
+        return $groups['outbound'];
+    }
+
+    /**
+     * All return flight legs (may include connections).
+     */
+    public function returnSegments(): array
+    {
+        $groups = $this->journeyGroups();
+
+        return $groups['return'];
+    }
+
+    /**
+     * Build a simple summary for one journey (outbound or return).
+     *
+     * Uses the first leg for departure, and the last leg for arrival.
+     * That way a connection like DMM -> DXB -> SKT shows as DMM -> SKT.
+     */
+    public function summariseJourney(array $legs): array
+    {
+        $legs = array_values($legs);
+
+        // Empty journey
+        if (count($legs) === 0) {
+            return [
+                'airline' => '—',
+                'flight_numbers' => '—',
+                'route' => '—',
+                'departure_time' => '—',
+                'departure_date' => '—',
+                'arrival_time' => '—',
+                'arrival_date' => '—',
+                'departure_location' => '—',
+                'arrival_location' => '—',
+                'first' => null,
+                'last' => null,
+            ];
+        }
+
+        $first = $legs[0];
+        $last = $legs[count($legs) - 1];
+
+        // Collect airline names (unique, non-empty)
+        $airlines = [];
+        foreach ($legs as $leg) {
+            $name = isset($leg['airline']) ? trim($leg['airline']) : '';
+            if ($name !== '' && ! in_array($name, $airlines, true)) {
+                $airlines[] = $name;
+            }
+        }
+
+        // Collect flight numbers (non-empty)
+        $flightNumbers = [];
+        foreach ($legs as $leg) {
+            $number = isset($leg['flight_number']) ? trim($leg['flight_number']) : '';
+            if ($number !== '') {
+                $flightNumbers[] = $number;
+            }
+        }
+
+        $fromCode = $this->locationCode($first['departure_location'] ?? null);
+        $toCode = $this->locationCode($last['arrival_location'] ?? null);
+
+        if ($fromCode === '—' && $toCode === '—') {
+            $route = '—';
+        } else {
+            $route = $fromCode.'-'.$toCode;
+        }
+
+        return [
+            'airline' => count($airlines) === 0 ? '—' : implode(' / ', $airlines),
+            'flight_numbers' => count($flightNumbers) === 0 ? '—' : implode(', ', $flightNumbers),
+            'route' => $route,
+            'departure_time' => $first['departure_time'] ?? '—',
+            'departure_date' => $first['departure_date'] ?? '—',
+            'arrival_time' => $last['arrival_time'] ?? '—',
+            'arrival_date' => $last['arrival_date'] ?? '—',
+            'departure_location' => $first['departure_location'] ?? '—',
+            'arrival_location' => $last['arrival_location'] ?? '—',
+            'first' => $first,
+            'last' => $last,
+        ];
     }
 
     public function documentSerial(): string

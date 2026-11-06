@@ -5536,10 +5536,40 @@ body.mu-modal-open .admin-sidebar {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
     padding: 3px 10px;
     background: rgba(248, 250, 252, 0.9);
     font-size: 0.7rem;
     color: #64748b;
+}
+
+.itinerary-receipt__flight-label {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+}
+
+.itinerary-receipt__flight-remove {
+    border: 0;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 0.68rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+}
+
+.itinerary-receipt__flight-remove:hover {
+    color: #dc2626;
+}
+
+.itinerary-receipt__flight-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 10px 10px;
+    border-top: 1px dashed rgba(148, 163, 184, 0.35);
 }
 
 .itinerary-receipt__flight-grid {
@@ -6143,6 +6173,31 @@ body.ticket-view-modal-open {
 .ticket-doc__journey-locations span {
     margin: 0 4px;
     color: var(--brand-blue);
+}
+
+.ticket-doc__journey-legs {
+    display: grid;
+    gap: 4px;
+    margin-top: 10px;
+}
+
+.ticket-doc__journey-leg {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(45, 58, 97, 0.08);
+    background: rgba(248, 250, 252, 0.85);
+    font-size: 0.68rem;
+    color: #64748b;
+}
+
+.ticket-doc__journey-leg strong {
+    color: var(--brand-navy);
+    font-weight: 700;
+    font-family: var(--font-ui);
 }
 
 .ticket-doc__grid {

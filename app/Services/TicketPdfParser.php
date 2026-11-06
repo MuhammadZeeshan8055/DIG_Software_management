@@ -283,16 +283,22 @@ class TicketPdfParser
      */
     public function parseFlightSegments(string $text): array
     {
-        // Tip: do not use [^P]/[^B]/[^SC] fences — baggage "2.0 P", class
-        // "Business", and "Status" all break those. Stop on the next label instead.
+        // Read each flight block from the PDF text.
         //
-        // Baggage is optional: some itineraries (e.g. Air Sial / no-fare PDFs)
-        // go straight from Class → PNR with no Baggage line.
-        // Terminal is matched case-insensitively (PDF OCR often yields "TermInal").
-        $pattern = '/(?<flight_number>[A-Z]{2}-\d+)\s+(?<airline>[A-Za-z][A-Za-z\s]+?)\s+'
-            .'(?<departure_time>\d{2}:\d{2})\s*\(\s*(?<departure_date>[^)]+?)\s*\)\s+'
+        // A normal block looks like:
+        //   EK-828 Emirates 09:45 ( 03 Jan ) Dammam (DMM) Terminal - NA
+        //   12:15 ( 03 Jan ) Dubai (DXB) Terminal - 3
+        //   Status : Confirm Class : Economy (T) Baggage : 35.0 KG PNR : GHZMG6
+        //
+        // Notes for beginners:
+        // - Baggage line is optional (some PDFs skip it)
+        // - Flight number can be EK-828, EK 828, or EK828
+        // - Airline may say "Emirates Operated by Flydubai"
+        // - "Terminal" spelling can vary (OCR), so we match case-insensitive (/i)
+        $pattern = '/(?<flight_number>[A-Z]{2}\s*-?\s*\d{1,4})\s+(?<airline>[A-Za-z][A-Za-z0-9 &\-\/]*?(?:\s+Operated by\s+[A-Za-z][A-Za-z0-9 &\-\/]*?)?)\s+'
+            .'(?<departure_time>\d{1,2}:\d{2})\s*\(\s*(?<departure_date>[^)]+?)\s*\)\s+'
             .'(?<departure_location>[^(]+?\([A-Z]{3}\))\s*Terminal\s*-\s*(?<departure_terminal>\S+)\s+'
-            .'(?<arrival_time>\d{2}:\d{2})\s*\(\s*(?<arrival_date>[^)]+?)\s*\)\s+'
+            .'(?<arrival_time>\d{1,2}:\d{2})\s*\(\s*(?<arrival_date>[^)]+?)\s*\)\s+'
             .'(?<arrival_location>[^(]+?\([A-Z]{3}\))\s*Terminal\s*-\s*(?<arrival_terminal>\S+)\s+'
             .'(?:Status\s*:\s*(?<status>\w+)\s*)?'
             .'Class\s*:\s*(?<class>.+?)'
@@ -313,23 +319,42 @@ class TicketPdfParser
     }
 
     /**
-     * @param  array<string, string>  $match
-     * @return array<string, string>
+     * Clean one matched flight into a simple array of fields.
      */
     private function normalizeSegment(array $match): array
     {
         $segment = [];
+        $fields = array_keys(config('ticket_import.flight_segment_fields', []));
 
-        foreach (array_keys(config('ticket_import.flight_segment_fields', [])) as $key) {
-            $segment[$key] = trim(preg_replace('/\s+/', ' ', $match[$key] ?? ''));
+        foreach ($fields as $key) {
+            $value = isset($match[$key]) ? $match[$key] : '';
+            $value = preg_replace('/\s+/', ' ', $value);
+            $segment[$key] = trim($value);
         }
 
-        // PDF OCR often drops letters in "Confirm" (e.g. ConFim / Confim).
+        // Make flight number consistent: "EK 828" / "EK828" => "EK-828"
+        if ($segment['flight_number'] !== '') {
+            if (preg_match('/^([A-Za-z]{2})\s*-?\s*(\d{1,4})$/', $segment['flight_number'], $flightParts)) {
+                $segment['flight_number'] = strtoupper($flightParts[1]).'-'.$flightParts[2];
+            }
+        }
+
+        // Make times always HH:MM, e.g. "9:45" => "09:45"
+        $timeKeys = ['departure_time', 'arrival_time'];
+        foreach ($timeKeys as $timeKey) {
+            if (preg_match('/^(\d{1,2}):(\d{2})$/', $segment[$timeKey], $timeParts)) {
+                $hour = (int) $timeParts[1];
+                $minute = $timeParts[2];
+                $segment[$timeKey] = str_pad((string) $hour, 2, '0', STR_PAD_LEFT).':'.$minute;
+            }
+        }
+
+        // OCR sometimes breaks "Confirm" into "ConFim" / "Confim"
         if ($segment['status'] !== '' && preg_match('/^con[fv]?i?m$/i', $segment['status'])) {
             $segment['status'] = 'Confirm';
         }
 
-        // Clean empty fare-class brackets: "Economy ()" → "Economy"
+        // "Economy ()" => "Economy"
         if ($segment['class'] !== '') {
             $segment['class'] = trim(preg_replace('/\(\s*\)/', '', $segment['class']));
         }

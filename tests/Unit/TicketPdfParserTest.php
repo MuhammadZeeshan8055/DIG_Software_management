@@ -83,4 +83,18 @@ class TicketPdfParserTest extends TestCase
         $this->assertSame('PF-735', $segments[1]['flight_number']);
         $this->assertSame('20 KG', $segments[1]['baggage']);
     }
+
+    public function test_normalises_spaced_flight_number_and_operated_by_airline(): void
+    {
+        $text = 'EK 2115 Emirates Operated by Flydubai 17:35 ( 25 Mar ) Sialkot (SKT) Terminal - NA '
+            .'20:30 ( 25 Mar ) Dubai (DXB) Terminal - 2 '
+            .'Status : Confirm Class : Economy (T) Baggage : 25.0 KG PNR : GHZMG6';
+
+        $segments = $this->parser->parseFlightSegments($text);
+
+        $this->assertCount(1, $segments);
+        $this->assertSame('EK-2115', $segments[0]['flight_number']);
+        $this->assertSame('Emirates Operated by Flydubai', $segments[0]['airline']);
+        $this->assertSame('17:35', $segments[0]['departure_time']);
+    }
 }

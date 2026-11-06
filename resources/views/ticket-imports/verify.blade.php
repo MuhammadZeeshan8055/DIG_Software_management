@@ -1,9 +1,26 @@
 @php
+    // Clean list of flight legs
     $segments = array_values(array_filter($import->flight_segments ?? []));
-    $outbound = $segments[0] ?? [];
+
+    // Used to label each card: Outbound / Return / Connection
+    $classifier = app(\App\Services\TicketJourneyClassifier::class);
+    $journeys = $import->journeyGroups();
+
+    $outbound = [];
+    if (count($journeys['outbound']) > 0) {
+        $outbound = $journeys['outbound'][0];
+    }
+
     $payment = $import->paymentEntry;
     $currency = config('payment_status.currency', 'PKR');
-    $pnr = $import->agency_pnr ?: ($outbound['pnr'] ?? null);
+
+    if ($import->agency_pnr) {
+        $pnr = $import->agency_pnr;
+    } elseif (! empty($outbound['pnr'])) {
+        $pnr = $outbound['pnr'];
+    } else {
+        $pnr = null;
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -54,7 +71,7 @@
                         <article class="flight-card" aria-label="Flight {{ $loop->iteration }}">
                             <div class="flight-heading">
                                 <div class="flight-airline"><span class="airline-icon"><svg class="icon" aria-hidden="true"><use href="#icon-plane"/></svg></span><div><h3>{{ $segment['airline'] ?? 'Airline not provided' }}</h3><p>{{ $segment['flight_number'] ?? '—' }}</p></div></div>
-                                <span class="journey-label">{{ $loop->first ? 'Outbound' : ($loop->iteration === 2 ? 'Return / onward' : 'Onward') }}</span>
+                                <span class="journey-label">{{ $classifier->labelForIndex($segments, $loop->index) }}</span>
                             </div>
                             <div class="flight-route">
                                 <div class="airport"><span class="field-label">Departure</span><strong class="airport-code">{{ !empty($segment['departure_location']) ? $import->locationCode($segment['departure_location']) : '—' }}</strong><p class="airport-name">{{ $segment['departure_location'] ?? '—' }}</p><strong class="flight-time">{{ $segment['departure_time'] ?? '—' }}</strong><span class="flight-date">{{ $segment['departure_date'] ?? '—' }}</span></div>

@@ -7,6 +7,7 @@ use App\Livewire\Concerns\ConfirmsDeletion;
 use App\Models\PaymentEntry;
 use App\Models\ReceivingAccount;
 use App\Models\TicketImport;
+use App\Services\TicketJourneyClassifier;
 use App\Services\TicketPdfParser;
 use App\Support\PaymentLedgerRules;
 use Illuminate\Support\Facades\DB;
@@ -287,6 +288,7 @@ class ImportTicketDetails extends Component
         return view('livewire.admin.ticketing.import-ticket-details', [
             'formFields' => config('ticket_import.form_fields', []),
             'segmentFields' => config('ticket_import.flight_segment_fields', []),
+            'journeyClassifier' => app(TicketJourneyClassifier::class),
             'paymentStatuses' => config('payment_status.options', []),
             'paymentMethods' => config('payment_accounts.options', []),
             'allReceivingAccounts' => ReceivingAccount::pickerOptions(),

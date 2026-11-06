@@ -1,17 +1,46 @@
 @props(['import'])
 
 @php
+    // All raw flight legs saved on this ticket
     $segments = $import->flight_segments ?? [];
-    $outbound = $segments[0] ?? null;
-    $return = $segments[1] ?? null;
+
+    // Split into outbound vs return (handles connections correctly)
+    $journeys = $import->journeyGroups();
+    $outboundLegs = $journeys['outbound'];
+    $returnLegs = $journeys['return'];
+
+    // Build a simple summary for each journey box
+    $outboundSummary = null;
+    if (count($outboundLegs) > 0) {
+        $outboundSummary = $import->summariseJourney($outboundLegs);
+    }
+
+    $returnSummary = null;
+    if (count($returnLegs) > 0) {
+        $returnSummary = $import->summariseJourney($returnLegs);
+    }
+
+    // First leg of each journey (used in passenger / fare sections below)
+    $outbound = null;
+    if ($outboundSummary !== null) {
+        $outbound = $outboundSummary['first'];
+    }
+
+    $return = null;
+    if ($returnSummary !== null) {
+        $return = $returnSummary['first'];
+    }
+
     $payment = $import->paymentEntry;
     $currency = config('payment_status.currency', 'PKR');
-    $airline = $outbound['airline'] ?? ($return['airline'] ?? 'the selected carrier');
-    // Terms section commented out for now
-    // $carrierTerms = array_map(
-    //     fn (string $term) => str_replace(':airline', $airline, $term),
-    //     config('ticket_carrier_terms.terms', [])
-    // );
+
+    if ($outboundSummary !== null) {
+        $airline = $outboundSummary['airline'];
+    } elseif ($returnSummary !== null) {
+        $airline = $returnSummary['airline'];
+    } else {
+        $airline = 'the selected carrier';
+    }
 @endphp
 
 <div {{ $attributes->merge(['class' => 'ticket-doc']) }}>
@@ -64,26 +93,37 @@
         <div class="ticket-doc__schedule">
             <div class="ticket-doc__journey">
                 <p class="ticket-doc__journey-label">Outbound Journey</p>
-                @if ($outbound)
-                    <p class="ticket-doc__journey-airline">{{ $outbound['airline'] ?? '—' }} · {{ $outbound['flight_number'] ?? '—' }}</p>
-                    <p class="ticket-doc__journey-route">{{ $import->segmentRouteCode($outbound) }}</p>
+                @if ($outboundSummary)
+                    <p class="ticket-doc__journey-airline">{{ $outboundSummary['airline'] }} · {{ $outboundSummary['flight_numbers'] }}</p>
+                    <p class="ticket-doc__journey-route">{{ $outboundSummary['route'] }}</p>
                     <div class="ticket-doc__journey-times">
                         <div>
                             <span class="ticket-doc__time-label">Departure</span>
-                            <strong>{{ $outbound['departure_time'] ?? '—' }}</strong>
-                            <span>{{ $outbound['departure_date'] ?? '—' }}</span>
+                            <strong>{{ $outboundSummary['departure_time'] }}</strong>
+                            <span>{{ $outboundSummary['departure_date'] }}</span>
                         </div>
                         <div>
                             <span class="ticket-doc__time-label">Arrival</span>
-                            <strong>{{ $outbound['arrival_time'] ?? '—' }}</strong>
-                            <span>{{ $outbound['arrival_date'] ?? '—' }}</span>
+                            <strong>{{ $outboundSummary['arrival_time'] }}</strong>
+                            <span>{{ $outboundSummary['arrival_date'] }}</span>
                         </div>
                     </div>
                     <p class="ticket-doc__journey-locations">
-                        {{ $outbound['departure_location'] ?? '—' }}
+                        {{ $outboundSummary['departure_location'] }}
                         <span>→</span>
-                        {{ $outbound['arrival_location'] ?? '—' }}
+                        {{ $outboundSummary['arrival_location'] }}
                     </p>
+                    @if (count($outboundLegs) > 1)
+                        <div class="ticket-doc__journey-legs">
+                            @foreach ($outboundLegs as $leg)
+                                <div class="ticket-doc__journey-leg">
+                                    <strong>{{ $leg['flight_number'] ?? '—' }}</strong>
+                                    <span>{{ $import->segmentRouteCode($leg) }}</span>
+                                    <span>{{ $leg['departure_date'] ?? '—' }} {{ $leg['departure_time'] ?? '' }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
                 @else
                     <p class="ticket-doc__empty">No outbound flight saved.</p>
                 @endif
@@ -91,26 +131,37 @@
 
             <div class="ticket-doc__journey">
                 <p class="ticket-doc__journey-label">Return Journey</p>
-                @if ($return)
-                    <p class="ticket-doc__journey-airline">{{ $return['airline'] ?? '—' }} · {{ $return['flight_number'] ?? '—' }}</p>
-                    <p class="ticket-doc__journey-route">{{ $import->segmentRouteCode($return) }}</p>
+                @if ($returnSummary)
+                    <p class="ticket-doc__journey-airline">{{ $returnSummary['airline'] }} · {{ $returnSummary['flight_numbers'] }}</p>
+                    <p class="ticket-doc__journey-route">{{ $returnSummary['route'] }}</p>
                     <div class="ticket-doc__journey-times">
                         <div>
                             <span class="ticket-doc__time-label">Departure</span>
-                            <strong>{{ $return['departure_time'] ?? '—' }}</strong>
-                            <span>{{ $return['departure_date'] ?? '—' }}</span>
+                            <strong>{{ $returnSummary['departure_time'] }}</strong>
+                            <span>{{ $returnSummary['departure_date'] }}</span>
                         </div>
                         <div>
                             <span class="ticket-doc__time-label">Arrival</span>
-                            <strong>{{ $return['arrival_time'] ?? '—' }}</strong>
-                            <span>{{ $return['arrival_date'] ?? '—' }}</span>
+                            <strong>{{ $returnSummary['arrival_time'] }}</strong>
+                            <span>{{ $returnSummary['arrival_date'] }}</span>
                         </div>
                     </div>
                     <p class="ticket-doc__journey-locations">
-                        {{ $return['departure_location'] ?? '—' }}
+                        {{ $returnSummary['departure_location'] }}
                         <span>→</span>
-                        {{ $return['arrival_location'] ?? '—' }}
+                        {{ $returnSummary['arrival_location'] }}
                     </p>
+                    @if (count($returnLegs) > 1)
+                        <div class="ticket-doc__journey-legs">
+                            @foreach ($returnLegs as $leg)
+                                <div class="ticket-doc__journey-leg">
+                                    <strong>{{ $leg['flight_number'] ?? '—' }}</strong>
+                                    <span>{{ $import->segmentRouteCode($leg) }}</span>
+                                    <span>{{ $leg['departure_date'] ?? '—' }} {{ $leg['departure_time'] ?? '' }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
                 @else
                     <p class="ticket-doc__empty">No return flight saved.</p>
                 @endif
@@ -243,18 +294,6 @@
                 <span class="ticket-doc__field-value">{{ $import->routeLabel() }}</span>
             </div>
         </div>
-
-        @if (count($segments) > 2)
-            <div class="ticket-doc__extra-segments">
-                @foreach (array_slice($segments, 2) as $segment)
-                    <div class="ticket-doc__extra-segment">
-                        <strong>{{ $segment['flight_number'] ?? '—' }}</strong>
-                        <span>{{ $import->segmentRouteCode($segment) }}</span>
-                        <span>{{ $segment['departure_date'] ?? '—' }} {{ $segment['departure_time'] ?? '' }}</span>
-                    </div>
-                @endforeach
-            </div>
-        @endif
 
         <div class="ticket-doc__grid ticket-doc__grid--2 ticket-doc__grid--muted">
             <div class="ticket-doc__field">

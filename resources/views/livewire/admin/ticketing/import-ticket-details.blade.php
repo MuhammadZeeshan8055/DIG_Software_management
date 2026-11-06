@@ -155,6 +155,12 @@
 
                         @foreach ($flightSegments as $index => $segment)
                             <div class="itinerary-receipt__flight" wire:key="segment-{{ $index }}">
+                                <div class="itinerary-receipt__flight-toolbar">
+                                    <span class="itinerary-receipt__flight-label">{{ $journeyClassifier->labelForIndex($flightSegments, $index) }}</span>
+                                    @if (count($flightSegments) > 1)
+                                        <button type="button" class="itinerary-receipt__flight-remove" wire:click="removeFlightSegment({{ $index }})" title="Remove this leg">Remove</button>
+                                    @endif
+                                </div>
                                 <div class="itinerary-receipt__flight-grid">
                                     <div class="itinerary-receipt__flight-col">
                                         <input type="text" wire:model="flightSegments.{{ $index }}.flight_number" class="itinerary-receipt__flight-code" placeholder="e.g. PK-786">
@@ -210,6 +216,12 @@
                                 </div>
                             </div>
                         @endforeach
+
+                        <div class="itinerary-receipt__flight-actions">
+                            <button type="button" class="btn btn--ghost btn--sm" wire:click="addFlightSegment">
+                                + Add flight leg
+                            </button>
+                        </div>
                     </section>
 
                     {{-- Passenger & Ticket Details --}}
