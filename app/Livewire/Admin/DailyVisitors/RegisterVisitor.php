@@ -373,7 +373,7 @@ class RegisterVisitor extends Component
 
         if ($this->desk_id !== '') {
             $staffList = User::where('role', 'staff')
-                ->where('desk_id', (int) $this->desk_id)
+                ->whereHas('desks', fn ($q) => $q->where('desks.id', (int) $this->desk_id))
                 ->orderBy('name')
                 ->get(['id', 'name']);
 

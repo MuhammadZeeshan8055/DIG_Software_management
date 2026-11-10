@@ -27,7 +27,7 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Role</th>
-                        <th>Desk</th>
+                        <th>Desks</th>
                         <th>Monthly salary</th>
                         <th>Actions</th>
                     </tr>
@@ -42,7 +42,13 @@
                                     {{ str_replace('_', ' ', $user->role) }}
                                 </span>
                             </td>
-                            <td>{{ $user->desk?->name ?? '—' }}</td>
+                            <td>
+                                @if ($user->desks->isNotEmpty())
+                                    {{ $user->desks->pluck('name')->join(', ') }}
+                                @else
+                                    —
+                                @endif
+                            </td>
                             <td>
                                 @if ($user->monthly_salary !== null)
                                     Rs {{ number_format((float) $user->monthly_salary, 0) }}
@@ -144,14 +150,21 @@
                             </div>
 
                             @if ($role === 'staff')
-                                <div class="mu-field">
-                                    <label class="mu-field__label" for="mu-desk">Desk</label>
-                                    <select id="mu-desk" wire:model="desk_id" class="mu-field__input mu-field__input--select">
-                                        <option value="">No desk</option>
-                                        @foreach ($desks as $desk)
-                                            <option value="{{ $desk->id }}">{{ $desk->name }}</option>
-                                        @endforeach
-                                    </select>
+                                <div class="mu-field" style="grid-column: 1 / -1;">
+                                    <label class="mu-field__label">Desks</label>
+                                    <p class="mu-access__hint" style="margin: 0 0 8px;">Select one or more desks for this staff user.</p>
+                                    <div class="mu-access__list">
+                                        @forelse ($desks as $desk)
+                                            <label class="mu-access__check" wire:key="desk-opt-{{ $desk->id }}">
+                                                <input type="checkbox" value="{{ $desk->id }}" wire:model="desk_ids">
+                                                <span>{{ $desk->name }}</span>
+                                            </label>
+                                        @empty
+                                            <p class="mu-access__hint" style="margin: 0;">No active desks yet. Add desks first.</p>
+                                        @endforelse
+                                    </div>
+                                    @error('desk_ids') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
+                                    @error('desk_ids.*') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
                                 </div>
                             @endif
                         </div>

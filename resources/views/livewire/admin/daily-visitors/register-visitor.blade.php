@@ -104,7 +104,7 @@
                         </select>
                         @error('assigned_to') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
                         @if ($desk_id !== '' && $staffList->isEmpty())
-                            <span style="color:#b91c1c;font-size:12px;">No staff on this desk yet. Set desk in Manage Users.</span>
+                            <span style="color:#b91c1c;font-size:12px;">No staff on this desk yet. Assign desks in Manage Users.</span>
                         @endif
                     </div>
                 </div>
