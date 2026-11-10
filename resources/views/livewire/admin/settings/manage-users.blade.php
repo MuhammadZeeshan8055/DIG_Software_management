@@ -27,6 +27,7 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Role</th>
+                        <th>Manager</th>
                         <th>Desks</th>
                         <th>Monthly salary</th>
                         <th>Actions</th>
@@ -42,6 +43,7 @@
                                     {{ str_replace('_', ' ', $user->role) }}
                                 </span>
                             </td>
+                            <td>{{ $user->is_manager ? 'Yes' : '—' }}</td>
                             <td>
                                 @if ($user->desks->isNotEmpty())
                                     {{ $user->desks->pluck('name')->join(', ') }}
@@ -74,7 +76,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="receiving-accounts-table__empty">
+                            <td colspan="7" class="receiving-accounts-table__empty">
                                 No users yet. Click Add User to create one.
                             </td>
                         </tr>
@@ -151,8 +153,18 @@
 
                             @if ($role === 'staff')
                                 <div class="mu-field" style="grid-column: 1 / -1;">
+                                    <label class="mu-access__check">
+                                        <input type="checkbox" wire:model="is_manager">
+                                        <span>
+                                            <strong>Manager</strong>
+                                            <small style="display:block;color:#64748b;">CRO can send visitors to this user.</small>
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <div class="mu-field" style="grid-column: 1 / -1;">
                                     <label class="mu-field__label">Desks</label>
-                                    <p class="mu-access__hint" style="margin: 0 0 8px;">Select one or more desks for this staff user.</p>
+                                    <p class="mu-access__hint" style="margin: 0 0 8px;">Select one or more desks for this staff user. Use desk <strong>CRO</strong> for CRO staff.</p>
                                     <div class="mu-access__list">
                                         @forelse ($desks as $desk)
                                             <label class="mu-access__check" wire:key="desk-opt-{{ $desk->id }}">

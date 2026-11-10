@@ -3,11 +3,12 @@
 namespace App\Livewire\Admin\DailyVisitors;
 
 use App\Models\DailyVisitor;
+use App\Models\User;
 use App\Models\VisitorReminder;
 use App\Support\UserNotifier;
 use Livewire\Component;
 
-/** Desk staff: see my visitors — wait / send now / complete / remind. */
+/** Desk staff: see my visitors — wait / send now / complete / remind. CRO can send to a manager. */
 class MyQueue extends Component
 {
     public string $remarks = '';
@@ -20,6 +21,12 @@ class MyQueue extends Component
     public string $remind_on = '';
 
     public string $remind_note = '';
+
+    /** CRO only: which visitor we are sending to a manager. */
+    public ?int $sendingToManagerId = null;
+
+    /** Selected manager user id (string for the select). */
+    public string $manager_id = '';
 
     public string $filter_date = '';
 
@@ -48,11 +55,11 @@ class MyQueue extends Component
         return $user && $user->isStaff();
     }
 
-    /** Find a visitor assigned to me. */
+    /** Visitor currently assigned to me (manager / desk actions). */
     protected function findMine(int $id): ?DailyVisitor
     {
         $user = auth()->user();
-        $visitor = DailyVisitor::with('creator')->find($id);
+        $visitor = DailyVisitor::with(['creator', 'croUser', 'assignedUser'])->find($id);
 
         if (! $visitor) {
             return null;
@@ -65,18 +72,44 @@ class MyQueue extends Component
         return $visitor;
     }
 
+    /** Visitor I own as assignee OR as CRO who forwarded it. */
+    protected function findVisible(int $id): ?DailyVisitor
+    {
+        $user = auth()->user();
+        $visitor = DailyVisitor::with(['creator', 'croUser', 'assignedUser'])->find($id);
+
+        if (! $visitor) {
+            return null;
+        }
+
+        $uid = (int) $user->id;
+
+        if ((int) $visitor->assigned_to === $uid) {
+            return $visitor;
+        }
+
+        if ($visitor->cro_user_id && (int) $visitor->cro_user_id === $uid) {
+            return $visitor;
+        }
+
+        return null;
+    }
+
     public function pleaseWait(int $id): void
     {
-        $this->setStatus($id, 'please_wait', 'Marked as Please wait. Reception was notified.');
+        $this->setStatus($id, 'please_wait', 'Marked as Please wait. CRO / reception was notified.');
     }
 
     public function sendNow(int $id): void
     {
-        $this->setStatus($id, 'send_now', 'Marked as Send now. Reception was notified.');
+        $this->setStatus($id, 'send_now', 'Marked as Send now. CRO / reception was notified.');
     }
 
     public function startComplete(int $id): void
     {
+        $this->sendingToManagerId = null;
+        $this->manager_id = '';
+        $this->remindingId = null;
         $this->completingId = $id;
         $this->remarks = '';
         $this->errorMessage = null;
@@ -86,6 +119,231 @@ class MyQueue extends Component
     {
         $this->completingId = null;
         $this->remarks = '';
+    }
+
+    /** CRO only: open Send to manager form. */
+    public function startSendToManager(int $id): void
+    {
+        $this->successMessage = null;
+        $this->errorMessage = null;
+        $this->completingId = null;
+        $this->remindingId = null;
+        $this->manager_id = '';
+        $this->remarks = '';
+
+        if (! auth()->user()?->isCro()) {
+            $this->errorMessage = 'Only CRO can send a visitor to a manager.';
+
+            return;
+        }
+
+        $visitor = $this->findMine($id);
+
+        if (! $visitor) {
+            $this->errorMessage = 'Visitor not found or not assigned to you.';
+
+            return;
+        }
+
+        if ($visitor->status === 'completed') {
+            $this->errorMessage = 'This visitor is already completed.';
+
+            return;
+        }
+
+        if ($visitor->case_status === 'closed') {
+            $this->errorMessage = 'This case is closed.';
+
+            return;
+        }
+
+        if ($visitor->cro_user_id) {
+            $this->errorMessage = 'Already sent to a manager. Wait for Please wait / Send now.';
+
+            return;
+        }
+
+        // Prefill if CRO already typed remarks earlier
+        $this->remarks = (string) ($visitor->remarks ?? '');
+        $this->sendingToManagerId = $id;
+    }
+
+    public function cancelSendToManager(): void
+    {
+        $this->sendingToManagerId = null;
+        $this->manager_id = '';
+        $this->remarks = '';
+    }
+
+    /** CRO sends visitor to a Manager — manager is notified (bell + My Visitors). */
+    public function sendToManager(): void
+    {
+        $this->successMessage = null;
+        $this->errorMessage = null;
+
+        if (! $this->canUse()) {
+            $this->errorMessage = 'You do not have access to My Visitors.';
+
+            return;
+        }
+
+        if (! auth()->user()?->isCro()) {
+            $this->errorMessage = 'Only CRO can send a visitor to a manager.';
+
+            return;
+        }
+
+        if (! $this->sendingToManagerId) {
+            $this->errorMessage = 'No visitor selected.';
+
+            return;
+        }
+
+        $this->validate([
+            'manager_id' => ['required', 'integer', 'exists:users,id'],
+            'remarks' => ['required', 'string', 'max:500'],
+        ]);
+
+        $visitor = $this->findMine($this->sendingToManagerId);
+
+        if (! $visitor) {
+            $this->errorMessage = 'Visitor not found or not assigned to you.';
+
+            return;
+        }
+
+        if ($visitor->status === 'completed') {
+            $this->errorMessage = 'This visitor is already completed.';
+
+            return;
+        }
+
+        if ($visitor->case_status === 'closed') {
+            $this->errorMessage = 'This case is closed.';
+
+            return;
+        }
+
+        $managerId = (int) $this->manager_id;
+
+        if ($managerId === (int) auth()->id()) {
+            $this->errorMessage = 'Pick a different manager.';
+
+            return;
+        }
+
+        $manager = User::query()
+            ->where('id', $managerId)
+            ->where('role', 'staff')
+            ->where('is_manager', true)
+            ->first();
+
+        if (! $manager) {
+            $this->errorMessage = 'Selected user is not a manager.';
+
+            return;
+        }
+
+        $note = trim($this->remarks);
+
+        // Keep CRO on the case; manager becomes the assignee
+        $visitor->remarks = $note;
+        $visitor->cro_user_id = auth()->id();
+        $visitor->assigned_to = $manager->id;
+        $visitor->status = 'waiting';
+
+        // If manager has a desk, keep visitor desk in sync (first desk)
+        $managerDesk = $manager->desks()->orderBy('name')->first();
+        if ($managerDesk) {
+            $visitor->desk_id = $managerDesk->id;
+        }
+
+        $visitor->save();
+
+        // Notify manager (bell + My Visitors poll)
+        UserNotifier::send(
+            $manager,
+            'visitor_waiting',
+            'Visitor sent to you by CRO',
+            $visitor->name.' ('.$visitor->contact_no.') — '.$visitor->purpose.'. CRO remarks: '.$note,
+            'my-visitors',
+            'my-queue'
+        );
+
+        // Tell receptionist what happened
+        if ($visitor->creator && (int) $visitor->creator->id !== (int) auth()->id()) {
+            UserNotifier::send(
+                $visitor->creator,
+                'visitor_response',
+                'CRO sent visitor to manager',
+                auth()->user()->name.' sent '.$visitor->name.' to '.$manager->name.'.',
+                'daily-visitors',
+                'register'
+            );
+        }
+
+        $this->sendingToManagerId = null;
+        $this->manager_id = '';
+        $this->remarks = '';
+        $this->successMessage = 'Visitor sent to '.$manager->name.'. You will still see this visitor — wait for Please wait / Send now.';
+    }
+
+    /**
+     * CRO marks visitor as sent after manager says Send now (same idea as reception Mark sent).
+     */
+    public function markSentByCro(int $id): void
+    {
+        $this->successMessage = null;
+        $this->errorMessage = null;
+
+        if (! $this->canUse()) {
+            $this->errorMessage = 'You do not have access to My Visitors.';
+
+            return;
+        }
+
+        $visitor = $this->findVisible($id);
+
+        if (! $visitor) {
+            $this->errorMessage = 'Visitor not found.';
+
+            return;
+        }
+
+        // Only the CRO who forwarded can mark sent
+        if ((int) $visitor->cro_user_id !== (int) auth()->id()) {
+            $this->errorMessage = 'Only the CRO on this case can mark sent.';
+
+            return;
+        }
+
+        if ($visitor->status === 'completed') {
+            $this->errorMessage = 'This visitor is already completed.';
+
+            return;
+        }
+
+        if ($visitor->status === 'in_meeting') {
+            $this->errorMessage = 'Already marked as sent.';
+
+            return;
+        }
+
+        $visitor->status = 'in_meeting';
+        $visitor->save();
+
+        if ($visitor->assignedUser && (int) $visitor->assignedUser->id !== (int) auth()->id()) {
+            UserNotifier::send(
+                $visitor->assignedUser,
+                'visitor_sent',
+                'Visitor sent to you',
+                $visitor->name.' has been sent / is coming for the meeting.',
+                'my-visitors',
+                'my-queue'
+            );
+        }
+
+        $this->successMessage = 'Marked as In meeting (sent). Manager was notified.';
     }
 
     public function complete(): void
@@ -132,6 +390,21 @@ class MyQueue extends Component
             );
         }
 
+        // Also tell CRO if this was a forwarded case
+        if ($visitor->cro_user_id && (int) $visitor->cro_user_id !== (int) auth()->id()) {
+            $cro = $visitor->croUser ?: User::find($visitor->cro_user_id);
+            if ($cro) {
+                UserNotifier::send(
+                    $cro,
+                    'visitor_completed',
+                    'Visitor meeting completed',
+                    $visitor->name.' meeting is done. Remarks: '.$visitor->remarks,
+                    'my-visitors',
+                    'my-queue'
+                );
+            }
+        }
+
         $this->completingId = null;
         $this->remarks = '';
         $this->successMessage = 'Visitor marked as completed.';
@@ -142,6 +415,8 @@ class MyQueue extends Component
     {
         $this->errorMessage = null;
         $this->completingId = null;
+        $this->sendingToManagerId = null;
+        $this->manager_id = '';
 
         $visitor = $this->findMine($id);
 
@@ -314,11 +589,25 @@ class MyQueue extends Component
         $visitor->status = $status;
         $visitor->save();
 
-        if ($visitor->creator && (int) $visitor->creator->id !== (int) auth()->id()) {
-            $actionText = $status === 'send_now'
-                ? 'Please SEND the visitor in now.'
-                : 'Please ask the visitor to WAIT.';
+        $actionText = $status === 'send_now'
+            ? 'Please SEND the visitor in now.'
+            : 'Please ask the visitor to WAIT.';
 
+        // CRO path: notify CRO so they can Mark sent
+        if ($visitor->cro_user_id && (int) $visitor->cro_user_id !== (int) auth()->id()) {
+            $cro = $visitor->croUser ?: User::find($visitor->cro_user_id);
+            if ($cro) {
+                UserNotifier::send(
+                    $cro,
+                    'visitor_response',
+                    'Update for visitor '.$visitor->name,
+                    auth()->user()->name.': '.$actionText,
+                    'my-visitors',
+                    'my-queue'
+                );
+            }
+        } elseif ($visitor->creator && (int) $visitor->creator->id !== (int) auth()->id()) {
+            // Normal desk path: notify receptionist
             UserNotifier::send(
                 $visitor->creator,
                 'visitor_response',
@@ -337,6 +626,9 @@ class MyQueue extends Component
         if (! $this->canUse()) {
             return view('livewire.admin.daily-visitors.my-queue', [
                 'denied' => true,
+                'isCro' => false,
+                'myUserId' => 0,
+                'managers' => collect(),
                 'myVisitors' => collect(),
                 'countInQueue' => 0,
                 'countMeeting' => 0,
@@ -346,39 +638,63 @@ class MyQueue extends Component
         }
 
         $user = auth()->user();
+        $isCro = $user->isCro();
 
         if ($this->filter_date === '') {
             $this->filter_date = now(app_timezone())->toDateString();
         }
 
-        // Only visitors assigned to this staff user
+        $myId = $user->id;
+
+        // Show visitors assigned to me, OR ones I forwarded as CRO
         $countQuery = DailyVisitor::whereDate('created_at', $this->filter_date)
-            ->where('assigned_to', $user->id);
+            ->where(function ($query) use ($myId) {
+                $query->where('assigned_to', $myId)
+                    ->orWhere('cro_user_id', $myId);
+            });
 
         $dayRows = $countQuery->get(['status']);
 
         $listQuery = DailyVisitor::with([
             'desk',
             'creator',
-            'reminders' => function ($q) use ($user) {
-                $q->where('user_id', $user->id)->where('is_done', false)->orderByDesc('id');
+            'assignedUser',
+            'reminders' => function ($query) use ($myId) {
+                $query->where('user_id', $myId);
+                $query->where('is_done', false);
             },
         ])
             ->whereDate('created_at', $this->filter_date)
-            ->where('assigned_to', $user->id)
+            ->where(function ($query) use ($myId) {
+                $query->where('assigned_to', $myId);
+                $query->orWhere('cro_user_id', $myId);
+            })
             ->orderByDesc('id');
 
         if ($this->filter_status !== '') {
             $listQuery->where('status', $this->filter_status);
         }
 
-        // Open reminders for this staff (all dates — not only selected day)
-        $countReminders = VisitorReminder::where('user_id', $user->id)
+        // Open reminders for this staff (all dates)
+        $countReminders = VisitorReminder::where('user_id', $myId)
             ->where('is_done', false)
             ->count();
 
+        // Managers list for CRO "Send to manager"
+        $managers = collect();
+        if ($isCro) {
+            $managers = User::where('role', 'staff')
+                ->where('is_manager', true)
+                ->where('id', '!=', $myId)
+                ->orderBy('name')
+                ->get(['id', 'name']);
+        }
+
         return view('livewire.admin.daily-visitors.my-queue', [
             'denied' => false,
+            'isCro' => $isCro,
+            'myUserId' => $myId,
+            'managers' => $managers,
             'myVisitors' => $listQuery->limit(100)->get(),
             'countInQueue' => $dayRows->whereNotIn('status', ['in_meeting', 'completed'])->count(),
             'countMeeting' => $dayRows->where('status', 'in_meeting')->count(),

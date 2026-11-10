@@ -124,33 +124,130 @@
                                         </div>
                                     @endif
                                 </td>
-                                <td style="max-width: 180px; white-space: normal; word-break: break-word;">{{ $visitor->remarks ?: '—' }}</td>
-                                <td>{{ optional($visitor->created_at)->timezone(app_timezone())->format('h:i A') }}</td>
-                                <td class="manage-users-actions">
-                                    @if ($visitor->status === 'completed')
-                                        @if ($visitor->case_status === 'closed')
-                                            <span style="color:#94a3b8; font-size: 0.85rem;">—</span>
-                                        @else
-                                            @php $openReminder = $visitor->reminders->first(); @endphp
-                                            <button type="button" class="payment-actions__btn" wire:click="startReminder({{ $visitor->id }})">
-                                                @if ($openReminder)
-                                                    Reminder {{ $openReminder->remind_on->format('d M') }}
-                                                @else
-                                                    Set reminder
-                                                @endif
+                                <td style="max-width: 220px; white-space: normal; word-break: break-word; vertical-align: middle;">
+                                    <?php if ($visitor->remarks) { ?>
+                                        <span class="visitor-remark">{{ $visitor->remarks }}</span>
+                                    <?php } else { ?>
+                                        —
+                                    <?php } ?>
+                                </td>
+                                <td style="vertical-align: middle;">{{ optional($visitor->created_at)->timezone(app_timezone())->format('h:i A') }}</td>
+                                <td style="vertical-align: middle;">
+                                    <?php
+                                        // Simple flags for this row
+                                        $watchingAsCro = $visitor->isCroWatching((int) $myUserId);
+                                        $canShowSendToManager = ! empty($isCro)
+                                            && ! $visitor->cro_user_id
+                                            && $visitor->case_status !== 'closed';
+                                        $openReminder = $visitor->reminders->first();
+                                    ?>
+
+                                    <div class="manage-users-actions visitor-actions-row">
+
+                                        <?php if ($watchingAsCro) { ?>
+                                            {{-- CRO already sent this visitor to a manager --}}
+                                            <span class="visitor-mgr-chip">Manager · {{ $visitor->managerName() }}</span>
+
+                                            <?php if ($visitor->status === 'completed') { ?>
+                                                <span class="payment-badge payment-badge--paid">Done</span>
+                                            <?php } elseif ($visitor->status === 'in_meeting') { ?>
+                                                <button type="button" class="payment-actions__btn" disabled>Please wait</button>
+                                                <button type="button" class="payment-actions__btn" disabled>Send now</button>
+                                                <button type="button" class="payment-actions__btn" disabled>Sent ✓</button>
+                                            <?php } else { ?>
+                                                <button type="button" class="payment-actions__btn" disabled>
+                                                    Please wait <?php if ($visitor->status === 'please_wait') { ?>✓<?php } ?>
+                                                </button>
+                                                <button type="button" class="payment-actions__btn" disabled>
+                                                    Send now <?php if ($visitor->status === 'send_now') { ?>✓<?php } ?>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="hero-btn hero-btn--primary"
+                                                    style="padding: 6px 10px; font-size: 0.75rem;"
+                                                    wire:click="markSentByCro({{ $visitor->id }})"
+                                                    <?php if (! $visitor->managerReadyForCroSend()) { ?>disabled<?php } ?>
+                                                >Mark sent</button>
+                                            <?php } ?>
+
+                                        <?php } elseif ($visitor->status === 'completed') { ?>
+                                            {{-- Visit finished --}}
+                                            <?php if ($visitor->case_status === 'closed') { ?>
+                                                <span style="color:#94a3b8; font-size: 0.85rem;">—</span>
+                                            <?php } else { ?>
+                                                <button type="button" class="payment-actions__btn" wire:click="startReminder({{ $visitor->id }})">
+                                                    <?php if ($openReminder) { ?>
+                                                        Reminder {{ $openReminder->remind_on->format('d M') }}
+                                                    <?php } else { ?>
+                                                        Set reminder
+                                                    <?php } ?>
+                                                </button>
+                                            <?php } ?>
+
+                                        <?php } else { ?>
+                                            {{-- Normal desk / manager actions --}}
+                                            <button type="button" class="payment-actions__btn" wire:click="pleaseWait({{ $visitor->id }})">
+                                                Please wait <?php if ($visitor->status === 'please_wait') { ?>✓<?php } ?>
                                             </button>
-                                        @endif
-                                    @else
-                                        <button type="button" class="payment-actions__btn" wire:click="pleaseWait({{ $visitor->id }})">
-                                            Please wait @if ($visitor->status === 'please_wait') ✓ @endif
-                                        </button>
-                                        <button type="button" class="payment-actions__btn" wire:click="sendNow({{ $visitor->id }})">
-                                            Send now @if ($visitor->status === 'send_now') ✓ @endif
-                                        </button>
-                                        <button type="button" class="hero-btn hero-btn--primary" style="padding: 6px 10px; font-size: 0.75rem;" wire:click="startComplete({{ $visitor->id }})">Complete</button>
-                                    @endif
+                                            <button type="button" class="payment-actions__btn" wire:click="sendNow({{ $visitor->id }})">
+                                                Send now <?php if ($visitor->status === 'send_now') { ?>✓<?php } ?>
+                                            </button>
+                                            <?php if ($canShowSendToManager) { ?>
+                                                <button type="button" class="payment-actions__btn" wire:click="startSendToManager({{ $visitor->id }})">
+                                                    Send to manager
+                                                </button>
+                                            <?php } ?>
+                                            <button type="button" class="hero-btn hero-btn--primary" style="padding: 6px 10px; font-size: 0.75rem;" wire:click="startComplete({{ $visitor->id }})">
+                                                Complete
+                                            </button>
+                                        <?php } ?>
+
+                                    </div>
                                 </td>
                             </tr>
+
+                            @if ($sendingToManagerId === $visitor->id && $visitor->status !== 'completed')
+                                <tr wire:key="my-vis-send-mgr-{{ $visitor->id }}">
+                                    <td colspan="9" style="background: #f8fafc; padding: 12px 16px;">
+                                        <p style="margin: 0 0 8px; font-weight: 600;">Send to manager — {{ $visitor->name }}</p>
+                                        <label class="mu-field__label" for="vis-manager-{{ $visitor->id }}">Manager</label>
+                                        <select
+                                            id="vis-manager-{{ $visitor->id }}"
+                                            class="mu-field__input mu-field__input--select"
+                                            wire:model="manager_id"
+                                            style="margin-top: 6px; margin-bottom: 10px; max-width: 360px;"
+                                        >
+                                            <option value="">Select manager…</option>
+                                            @foreach ($managers as $manager)
+                                                <option value="{{ $manager->id }}">{{ $manager->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('manager_id') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
+                                        @if ($managers->isEmpty())
+                                            <p style="color:#b91c1c;font-size:12px;margin:0 0 10px;">No managers yet. Tick <strong>Manager</strong> on a staff user in Manage Users.</p>
+                                        @endif
+
+                                        <label class="mu-field__label" for="vis-cro-remarks-{{ $visitor->id }}">Remarks (required)</label>
+                                        <input
+                                            id="vis-cro-remarks-{{ $visitor->id }}"
+                                            type="text"
+                                            class="mu-field__input"
+                                            wire:model="remarks"
+                                            placeholder="Note for the manager…"
+                                            maxlength="500"
+                                            style="margin-top: 6px; margin-bottom: 10px;"
+                                        >
+                                        @error('remarks') <span style="color:#b91c1c;font-size:12px;">{{ $message }}</span> @enderror
+
+                                        <div style="display:flex; gap:8px; flex-wrap: wrap;">
+                                            <button type="button" class="payment-actions__btn" wire:click="cancelSendToManager">Cancel</button>
+                                            <button type="button" class="hero-btn hero-btn--primary" wire:click="sendToManager" @disabled($managers->isEmpty())>
+                                                Send &amp; notify
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endif
 
                             @if ($completingId === $visitor->id && $visitor->status !== 'completed')
                                 <tr wire:key="my-vis-complete-{{ $visitor->id }}">

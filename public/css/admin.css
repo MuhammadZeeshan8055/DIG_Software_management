@@ -5024,6 +5024,43 @@ button.admin-nav-link:not(.admin-nav-link--active) {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Keep visitor action buttons on one line (avoids table border gaps) */
+.visitor-actions-row {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.visitor-mgr-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+    color: #0f3d6e;
+    background: rgba(15, 61, 110, 0.08);
+    border: 1px solid rgba(15, 61, 110, 0.12);
+    white-space: nowrap;
+}
+
+.visitor-remark {
+    display: inline-block;
+    max-width: 220px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1.35;
+    color: #1e293b;
+    background: rgba(15, 61, 110, 0.05);
+    border: 1px solid rgba(15, 61, 110, 0.08);
+    white-space: normal;
+    word-break: break-word;
 }
 
 .manage-users-head {

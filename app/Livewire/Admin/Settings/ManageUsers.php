@@ -26,6 +26,9 @@ class ManageUsers extends Component
     /** @var list<string> Selected desk ids for staff (multi). */
     public array $desk_ids = [];
 
+    /** Staff only: CRO can send visitors to this user. */
+    public bool $is_manager = false;
+
     /** When true, staff gets manage on every module feature. */
     public bool $allowAllAccess = false;
 
@@ -85,6 +88,7 @@ class ManageUsers extends Component
             ->map(fn ($id) => (string) $id)
             ->values()
             ->all();
+        $this->is_manager = (bool) $user->is_manager;
         $this->allowAllAccess = false;
         $this->resetModuleAccess();
 
@@ -127,6 +131,7 @@ class ManageUsers extends Component
             'monthly_salary' => ['nullable', 'numeric', 'min:0'],
             'desk_ids' => ['nullable', 'array'],
             'desk_ids.*' => ['integer', Rule::exists('desks', 'id')],
+            'is_manager' => ['boolean'],
             'allowAllAccess' => ['boolean'],
             'moduleEnabled' => ['array'],
             'moduleLevel' => ['array'],
@@ -147,7 +152,7 @@ class ManageUsers extends Component
             ? null
             : round((float) $this->monthly_salary, 2);
 
-        // Staff can have desks; admin / super_admin do not
+        // Staff can have desks / manager flag; admin / super_admin do not
         $deskIds = $this->role === 'staff'
             ? collect($this->desk_ids)
                 ->filter(fn ($id) => $id !== '' && $id !== null)
@@ -156,6 +161,8 @@ class ManageUsers extends Component
                 ->values()
                 ->all()
             : [];
+
+        $isManager = $this->role === 'staff' ? (bool) $this->is_manager : false;
 
         if ($this->editingId) {
             $user = User::findOrFail($this->editingId);
@@ -168,6 +175,7 @@ class ManageUsers extends Component
             $user->email = trim($this->email);
             $user->role = $this->role;
             $user->monthly_salary = $salary;
+            $user->is_manager = $isManager;
 
             if ($this->password !== '') {
                 $user->password = $this->password;
@@ -181,6 +189,7 @@ class ManageUsers extends Component
                 'password' => $this->password,
                 'role' => $this->role,
                 'monthly_salary' => $salary,
+                'is_manager' => $isManager,
                 'email_verified_at' => now(),
             ]);
         }
@@ -303,6 +312,7 @@ class ManageUsers extends Component
         $this->role = 'staff';
         $this->monthly_salary = '';
         $this->desk_ids = [];
+        $this->is_manager = false;
         $this->allowAllAccess = false;
         $this->resetModuleAccess();
         $this->resetValidation();

@@ -24,6 +24,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'is_manager',
         'monthly_salary',
         'email_verified_at',
     ];
@@ -49,6 +50,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'monthly_salary' => 'decimal:2',
+            'is_manager' => 'boolean',
         ];
     }
 
@@ -85,6 +87,22 @@ class User extends Authenticatable
     public function isStaff(): bool
     {
         return $this->role === 'staff';
+    }
+
+    /** Staff marked as Manager — CRO can send visitors to them. */
+    public function isManager(): bool
+    {
+        return $this->isStaff() && (bool) $this->is_manager;
+    }
+
+    /** Staff linked to the CRO desk (desk key = cro). */
+    public function isCro(): bool
+    {
+        if (! $this->isStaff()) {
+            return false;
+        }
+
+        return $this->desks()->where('desks.key', 'cro')->exists();
     }
 
     /**

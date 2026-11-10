@@ -14,6 +14,7 @@ class DailyVisitor extends Model
         'purpose',
         'desk_id',
         'assigned_to',
+        'cro_user_id',
         'created_by',
         'status',
         'remarks',
@@ -38,6 +39,12 @@ class DailyVisitor extends Model
     public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    /** CRO who forwarded this visitor to a manager (stays on the case). */
+    public function croUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cro_user_id');
     }
 
     public function creator(): BelongsTo
@@ -74,6 +81,58 @@ class DailyVisitor extends Model
         }
 
         return $this->status;
+    }
+
+    /** Is this visitor assigned to this user right now? */
+    public function isAssignedTo(int $userId): bool
+    {
+        return (int) $this->assigned_to === $userId;
+    }
+
+    /**
+     * CRO view after forwarding: CRO still sees the row,
+     * but the manager is the current assignee.
+     */
+    public function isCroWatching(int $userId): bool
+    {
+        if (! $this->cro_user_id) {
+            return false;
+        }
+
+        if ((int) $this->cro_user_id !== $userId) {
+            return false;
+        }
+
+        // If still assigned to CRO, they are not "watching" yet
+        if ($this->isAssignedTo($userId)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /** Manager already chose Please wait or Send now — CRO can Mark sent. */
+    public function managerReadyForCroSend(): bool
+    {
+        if ($this->status === 'please_wait') {
+            return true;
+        }
+
+        if ($this->status === 'send_now') {
+            return true;
+        }
+
+        return false;
+    }
+
+    /** Manager name for CRO chip (simple). */
+    public function managerName(): string
+    {
+        if ($this->assignedUser) {
+            return $this->assignedUser->name;
+        }
+
+        return '—';
     }
 
     /** When all reminders are done, mark case for admin review. */
