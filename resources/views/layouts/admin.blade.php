@@ -72,23 +72,55 @@ $workspace = $workspace ?? config('admin_workspace', []);
 
         init() {
             document.body.classList.remove('mu-modal-open');
+
+            // Prefer URL (?m=&o= or ?v=) so refresh / share / debug stay on the same screen
+            if (this.openFromUrl()) {
+                return;
+            }
+
             this.openLastPage();
         },
 
-        // Remember current page in browser (survives refresh)
+        // Keep address bar in sync: /dashboard?m=daily-visitors&o=register
+        syncUrl() {
+            const params = new URLSearchParams();
+
+            if (this.viewingMyAttendance) {
+                params.set('v', 'my-attendance');
+            } else if (this.viewingMyAccount) {
+                params.set('v', 'my-account');
+            } else if (this.activeModule) {
+                params.set('m', this.activeModule);
+                if (this.activeOption) {
+                    params.set('o', this.activeOption);
+                }
+            }
+
+            const qs = params.toString();
+            const next = qs ? (window.location.pathname + '?' + qs) : window.location.pathname;
+
+            if (next !== (window.location.pathname + window.location.search)) {
+                history.replaceState({}, '', next);
+            }
+        },
+
+        // Remember current page in browser (survives refresh) + update URL
         saveLastPage() {
             if (this.viewingMyAttendance) {
                 localStorage.setItem(this.lastPageKey, JSON.stringify({ view: 'my-attendance' }));
+                this.syncUrl();
                 return;
             }
 
             if (this.viewingMyAccount) {
                 localStorage.setItem(this.lastPageKey, JSON.stringify({ view: 'my-account' }));
+                this.syncUrl();
                 return;
             }
 
             if (! this.activeModule) {
                 localStorage.removeItem(this.lastPageKey);
+                this.syncUrl();
                 return;
             }
 
@@ -96,9 +128,30 @@ $workspace = $workspace ?? config('admin_workspace', []);
                 module: this.activeModule,
                 option: this.activeOption,
             }));
+            this.syncUrl();
         },
 
-        // Open last page after refresh
+        // Restore from ?m=&o= or ?v= (returns true if applied)
+        openFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const view = params.get('v');
+            const module = params.get('m');
+            const option = params.get('o');
+
+            if (view === 'my-attendance' || view === 'my-account') {
+                this.applyPage({ view });
+                return true;
+            }
+
+            if (module && this.modules[module]) {
+                this.applyPage({ module, option: option || null });
+                return true;
+            }
+
+            return false;
+        },
+
+        // Open last page after refresh (localStorage fallback)
         openLastPage() {
             const saved = localStorage.getItem(this.lastPageKey);
             if (! saved) {
@@ -113,11 +166,20 @@ $workspace = $workspace ?? config('admin_workspace', []);
                 return;
             }
 
+            this.applyPage(page);
+        },
+
+        applyPage(page) {
+            if (! page) {
+                return;
+            }
+
             if (page.view === 'my-attendance') {
                 this.viewingMyAttendance = true;
                 this.viewingMyAccount = false;
                 this.activeModule = null;
                 this.activeOption = null;
+                this.syncUrl();
                 this.$nextTick(() => {
                     window.dispatchEvent(new CustomEvent('my-attendance-opened'));
                 });
@@ -129,6 +191,7 @@ $workspace = $workspace ?? config('admin_workspace', []);
                 this.viewingMyAttendance = false;
                 this.activeModule = null;
                 this.activeOption = null;
+                this.syncUrl();
                 return;
             }
 
@@ -136,86 +199,45 @@ $workspace = $workspace ?? config('admin_workspace', []);
                 return;
             }
 
+            this.viewingMyAttendance = false;
+            this.viewingMyAccount = false;
             this.activeModule = page.module;
             this.activeOption = page.option || null;
+            this.syncUrl();
+            this.firePanelOpened(this.activeOption);
+        },
 
-            if (this.activeOption === 'import-ticket-details') {
-                this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('import-ticket-panel-opened'));
-                });
+        firePanelOpened(option) {
+            if (! option) {
+                return;
             }
 
-            if (this.activeOption === 'payments') {
-                this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('payments-panel-opened'));
-                });
+            const events = {
+                'import-ticket-details': 'import-ticket-panel-opened',
+                'payments': 'payments-panel-opened',
+                'bank-accounts': 'bank-accounts-panel-opened',
+                'invoices': 'invoices-panel-opened',
+                'reports': 'sales-report-panel-opened',
+                'users': 'users-panel-opened',
+                'desks': 'desks-panel-opened',
+                'leave-approvals': 'leave-approvals-panel-opened',
+                'apply-leave': 'apply-leave-panel-opened',
+                'salary-slips': 'salary-slips-panel-opened',
+                'my-daily-attendance': 'my-attendance-opened',
+                'register': 'daily-visitors-panel-opened',
+                'list': 'all-visitors-panel-opened',
+                'my-queue': 'my-queue-panel-opened',
+                'reminders-list': 'reminders-panel-opened',
+            };
+
+            const eventName = events[option];
+            if (! eventName) {
+                return;
             }
 
-            if (this.activeOption === 'bank-accounts') {
-                this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('bank-accounts-panel-opened'));
-                });
-            }
-
-            if (this.activeOption === 'invoices') {
-                this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('invoices-panel-opened'));
-                });
-            }
-
-            if (this.activeOption === 'reports') {
-                this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('sales-report-panel-opened'));
-                });
-            }
-
-            if (this.activeOption === 'users') {
-                this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('users-panel-opened'));
-                });
-            }
-
-            if (this.activeOption === 'desks') {
-                this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('desks-panel-opened'));
-                });
-            }
-
-            if (this.activeOption === 'leave-approvals') {
-                this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('leave-approvals-panel-opened'));
-                });
-            }
-
-            if (this.activeOption === 'apply-leave') {
-                this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('apply-leave-panel-opened'));
-                });
-            }
-
-            if (this.activeOption === 'salary-slips') {
-                this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('salary-slips-panel-opened'));
-                });
-            }
-
-            if (this.activeOption === 'register') {
-                this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('daily-visitors-panel-opened'));
-                });
-            }
-
-            if (this.activeOption === 'my-queue') {
-                this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('my-queue-panel-opened'));
-                });
-            }
-
-            if (this.activeOption === 'reminders-list') {
-                this.$nextTick(() => {
-                    window.dispatchEvent(new CustomEvent('reminders-panel-opened'));
-                });
-            }
+            this.$nextTick(() => {
+                window.dispatchEvent(new CustomEvent(eventName));
+            });
         },
 
         currentModule() {
