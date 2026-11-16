@@ -154,7 +154,16 @@ class UmrahSaleReport extends Component
                 : collect(),
             'totals' => $canView
                 ? UmrahSaleEntry::totalsForMonth($month)
-                : ['entries' => 0, 'payable' => 0, 'received' => 0, 'profit' => 0, 'agent_profit' => 0],
+                : [
+                    'entries' => 0,
+                    'payable' => 0,
+                    'total_amount' => 0,
+                    'received' => 0,
+                    'remaining' => 0,
+                    'profit' => 0,
+                    'loss' => 0,
+                    'agent_profit' => 0,
+                ],
             'currency' => config('payment_status.currency', 'PKR'),
         ]);
     }

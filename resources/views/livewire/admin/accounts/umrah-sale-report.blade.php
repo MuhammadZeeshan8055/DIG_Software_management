@@ -31,7 +31,7 @@
             <div class="data-panel__head sales-report__head">
                 <div>
                     <h3 class="data-panel__title">Umrah Sale Report</h3>
-                    <p class="import-ticket__hint">Import DIG Umrah Accounts Ledger. Profit = Received − Payable (Cost Per Person).</p>
+                    <p class="import-ticket__hint">Import Umrah Ledger Sales Report. Profit / Loss / Remaining come from the Excel file.</p>
                 </div>
                 <button
                     type="button"
@@ -124,20 +124,19 @@
                                 <span>ID</span>
                                 <span>HEAD / PERSON</span>
                                 <span>PASSPORT</span>
+                                <span>TOTAL PAX</span>
                                 <span>AIRLINE</span>
-                                <span>AIR TICKET</span>
-                                <span>VISA</span>
-                                <span>MAKKAH HOTEL</span>
-                                <span>MADINAH HOTEL</span>
-                                <span>ZIARAT</span>
-                                <span>TRANSPORT</span>
-                                <span>OTHER</span>
-                                <span>AGENT PROFIT</span>
+                                <span>PER PERSON COSTS</span>
                                 <span>COST PER PERSON</span>
+                                <span>TOTAL AMOUNT</span>
                                 <span>RECEIVED</span>
+                                <span>REMAINING</span>
+                                <span>PROFIT</span>
+                                <span>LOSS</span>
+                                <span>LINE TOTALS</span>
                             </div>
                             <p class="sales-report__columns-hint">
-                                Payable = Cost Per Person. Profit = Received − Cost Per Person. Agent Profit is also stored from the ledger.
+                                All values are taken from the Excel (including Profit, Loss, Remaining). Nothing is recalculated.
                             </p>
                         </div>
 
@@ -172,24 +171,24 @@
 
         <div class="stat-grid sales-report__stats sales-report__stats--4" style="margin-bottom: 16px;">
             <article class="stat-card stat-card--amber" style="--stat-i: 0">
-                <div class="stat-card__top"><p class="stat-card__label">Cost / Person (PKR)</p></div>
-                <p class="stat-card__value">{{ $currency }} {{ number_format($totals['payable'], 2) }}</p>
+                <div class="stat-card__top"><p class="stat-card__label">Total Amount (PKR)</p></div>
+                <p class="stat-card__value">{{ $currency }} {{ number_format($totals['total_amount'] ?? 0, 2) }}</p>
                 <p class="stat-card__hint">{{ number_format($totals['entries'], 0) }} entries</p>
             </article>
             <article class="stat-card" style="--stat-i: 1">
                 <div class="stat-card__top"><p class="stat-card__label">Received (PKR)</p></div>
                 <p class="stat-card__value">{{ $currency }} {{ number_format($totals['received'], 2) }}</p>
-                <p class="stat-card__hint">From ledger</p>
+                <p class="stat-card__hint">From Excel</p>
             </article>
-            <article class="stat-card {{ $totals['profit'] < 0 ? 'stat-card--red' : 'stat-card--green' }}" style="--stat-i: 2">
+            <article class="stat-card stat-card--red" style="--stat-i: 2">
+                <div class="stat-card__top"><p class="stat-card__label">Loss (PKR)</p></div>
+                <p class="stat-card__value">{{ $currency }} {{ number_format($totals['loss'] ?? 0, 2) }}</p>
+                <p class="stat-card__hint">From Excel</p>
+            </article>
+            <article class="stat-card {{ ($totals['profit'] ?? 0) < 0 ? 'stat-card--red' : 'stat-card--green' }}" style="--stat-i: 3">
                 <div class="stat-card__top"><p class="stat-card__label">Profit (PKR)</p></div>
                 <p class="stat-card__value">{{ $currency }} {{ number_format($totals['profit'], 2) }}</p>
-                <p class="stat-card__hint">Received − Cost / Person</p>
-            </article>
-            <article class="stat-card stat-card--navy" style="--stat-i: 3">
-                <div class="stat-card__top"><p class="stat-card__label">Agent Profit (PKR)</p></div>
-                <p class="stat-card__value">{{ $currency }} {{ number_format($totals['agent_profit'] ?? 0, 2) }}</p>
-                <p class="stat-card__hint">From ledger (per person)</p>
+                <p class="stat-card__hint">From Excel</p>
             </article>
         </div>
 
@@ -211,15 +210,26 @@
                             <th>Pax</th>
                             <th>Air Ticket</th>
                             <th>Visa</th>
-                            <th>Makkah Hotel</th>
-                            <th>Madinah Hotel</th>
+                            <th>Makkah</th>
+                            <th>Madinah</th>
                             <th>Ziarat</th>
                             <th>Transport</th>
                             <th>Other</th>
                             <th>Agent Profit</th>
                             <th>Cost / Person</th>
+                            <th>Total Amount</th>
                             <th>Received</th>
+                            <th>Remaining</th>
                             <th>Profit</th>
+                            <th>Loss</th>
+                            <th>Air Ticket Tot</th>
+                            <th>Visa Tot</th>
+                            <th>Makkah Tot</th>
+                            <th>Madinah Tot</th>
+                            <th>Ziarat Tot</th>
+                            <th>Transport Tot</th>
+                            <th>Other Tot</th>
+                            <th>Agent Profit Tot</th>
                             @if (auth()->user()->isAdmin())
                                 <th>Actions</th>
                             @endif
@@ -227,9 +237,6 @@
                     </thead>
                     <tbody>
                         @forelse ($entries as $entry)
-                            @php
-                                $rowProfit = round((float) $entry->received - (float) $entry->payable, 2);
-                            @endphp
                             <tr wire:key="umrah-sale-entry-{{ $entry->id }}">
                                 <td>{{ optional($entry->sale_date)->format('d-M-y') }}</td>
                                 <td>{{ $entry->booking_id ?: '—' }}</td>
@@ -246,8 +253,19 @@
                                 <td>{{ number_format((float) $entry->other_expense_pp, 2) }}</td>
                                 <td>{{ number_format((float) $entry->agent_profit_pp, 2) }}</td>
                                 <td>{{ number_format((float) $entry->payable, 2) }}</td>
+                                <td>{{ number_format((float) ($entry->total_amount ?? 0), 2) }}</td>
                                 <td>{{ number_format((float) $entry->received, 2) }}</td>
-                                <td>{{ number_format($rowProfit, 2) }}</td>
+                                <td>{{ number_format((float) ($entry->remaining_amount ?? 0), 2) }}</td>
+                                <td>{{ number_format((float) $entry->profit, 2) }}</td>
+                                <td>{{ number_format((float) ($entry->loss ?? 0), 2) }}</td>
+                                <td>{{ number_format((float) ($entry->air_ticket_total ?? 0), 2) }}</td>
+                                <td>{{ number_format((float) ($entry->visa_total ?? 0), 2) }}</td>
+                                <td>{{ number_format((float) ($entry->makkah_hotel_total ?? 0), 2) }}</td>
+                                <td>{{ number_format((float) ($entry->madinah_hotel_total ?? 0), 2) }}</td>
+                                <td>{{ number_format((float) ($entry->ziarat_total ?? 0), 2) }}</td>
+                                <td>{{ number_format((float) ($entry->transport_total ?? 0), 2) }}</td>
+                                <td>{{ number_format((float) ($entry->other_expense_total ?? 0), 2) }}</td>
+                                <td>{{ number_format((float) ($entry->agent_profit_total ?? 0), 2) }}</td>
                                 @if (auth()->user()->isAdmin())
                                     <td class="manage-users-actions">
                                         <button
@@ -264,7 +282,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ auth()->user()->isAdmin() ? 18 : 17 }}">No umrah sales for this month yet. Import the DIG Umrah Accounts Ledger above.</td>
+                                <td colspan="{{ auth()->user()->isAdmin() ? 29 : 28 }}">No umrah sales for this month yet. Import the Umrah Ledger Sales Report above.</td>
                             </tr>
                         @endforelse
                     </tbody>
