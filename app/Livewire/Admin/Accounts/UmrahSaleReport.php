@@ -5,8 +5,10 @@ namespace App\Livewire\Admin\Accounts;
 use App\Livewire\Concerns\ConfirmsDeletion;
 use App\Models\UmrahSaleEntry;
 use App\Services\UmrahSaleSheetImporter;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 class UmrahSaleReport extends Component
@@ -39,9 +41,14 @@ class UmrahSaleReport extends Component
         $this->successMessage = null;
         $this->errorMessage = null;
 
-        if ($this->excelFile) {
-            $this->validateOnly('excelFile');
+        if (! $this->excelFile) {
+            return;
         }
+
+        // Always pass rules here — validateOnly() alone has no rules and causes 500
+        $this->validateOnly('excelFile', [
+            'excelFile' => $this->excelFileRules(),
+        ], $this->excelFileMessages());
     }
 
     public function monthLabel(): string
@@ -60,14 +67,7 @@ class UmrahSaleReport extends Component
     {
         $this->guardAccess();
         $this->clearMessages();
-        $this->validate([
-            'excelFile' => ['required', 'file', 'mimes:xlsx,xls', 'max:20480'],
-            'report_month' => ['required', 'date_format:Y-m'],
-        ], [
-            'excelFile.required' => 'Please choose the DIG Umrah Accounts Ledger file.',
-            'excelFile.mimes' => 'Upload the ledger as .xlsx or .xls.',
-            'excelFile.max' => 'File is too large (max 20 MB).',
-        ]);
+        $this->validateImportFile();
 
         $rows = $this->parseUploadedFile();
 
@@ -82,7 +82,15 @@ class UmrahSaleReport extends Component
         }
 
         $this->report_month = $this->mainMonthFromRows($rows) ?? $this->report_month;
-        $existing = UmrahSaleEntry::query()->forMonth($this->report_month)->count();
+
+        try {
+            $existing = UmrahSaleEntry::query()->forMonth($this->report_month)->count();
+        } catch (\Throwable $e) {
+            report($e);
+            $this->errorMessage = 'Database table missing. Run: php artisan migrate';
+
+            return;
+        }
 
         if ($existing > 0) {
             $label = $this->monthLabel();
@@ -160,6 +168,45 @@ class UmrahSaleReport extends Component
     {
         $this->successMessage = null;
         $this->errorMessage = null;
+    }
+
+    private function excelFileRules(): array
+    {
+        return [
+            'required',
+            'max:20480',
+            function (string $attribute, mixed $value, \Closure $fail): void {
+                $ok = $value instanceof TemporaryUploadedFile || $value instanceof UploadedFile;
+
+                if (! $ok) {
+                    $fail('Please choose the DIG Umrah Accounts Ledger file.');
+
+                    return;
+                }
+
+                $ext = strtolower($value->getClientOriginalExtension());
+
+                if (! in_array($ext, ['xlsx', 'xls'], true)) {
+                    $fail('Upload the ledger as .xlsx or .xls.');
+                }
+            },
+        ];
+    }
+
+    private function excelFileMessages(): array
+    {
+        return [
+            'excelFile.required' => 'Please choose the DIG Umrah Accounts Ledger file.',
+            'excelFile.max' => 'File is too large (max 20 MB).',
+        ];
+    }
+
+    private function validateImportFile(): void
+    {
+        $this->validate([
+            'excelFile' => $this->excelFileRules(),
+            'report_month' => ['required', 'date_format:Y-m'],
+        ], $this->excelFileMessages());
     }
 
     /** @return array<int, array>|null null = read error */
