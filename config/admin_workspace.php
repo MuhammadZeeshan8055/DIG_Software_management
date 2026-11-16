@@ -397,6 +397,11 @@ return [
                 'columns' => [],
                 'rows' => [],
             ],
+            'umrah-sales-report' => [
+                'title' => 'Umrah Sale Report',
+                'columns' => [],
+                'rows' => [],
+            ],
         ],
     ],
 

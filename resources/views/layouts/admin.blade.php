@@ -47,6 +47,9 @@ $workspace = $workspace ?? config('admin_workspace', []);
                     if ($event.detail.option === 'reports') {
                         window.dispatchEvent(new CustomEvent('sales-report-panel-opened'));
                     }
+                    if ($event.detail.option === 'umrah-sales-report') {
+                        window.dispatchEvent(new CustomEvent('umrah-sales-report-panel-opened'));
+                    }
                     if ($event.detail.option === 'my-queue') {
                         window.dispatchEvent(new CustomEvent('my-queue-panel-opened'));
                     }
@@ -218,6 +221,7 @@ $workspace = $workspace ?? config('admin_workspace', []);
                 'bank-accounts': 'bank-accounts-panel-opened',
                 'invoices': 'invoices-panel-opened',
                 'reports': 'sales-report-panel-opened',
+                'umrah-sales-report': 'umrah-sales-report-panel-opened',
                 'users': 'users-panel-opened',
                 'desks': 'desks-panel-opened',
                 'leave-approvals': 'leave-approvals-panel-opened',
@@ -367,6 +371,9 @@ $workspace = $workspace ?? config('admin_workspace', []);
             }
             if (key === 'reports') {
                 window.dispatchEvent(new CustomEvent('sales-report-panel-opened'));
+            }
+            if (key === 'umrah-sales-report') {
+                window.dispatchEvent(new CustomEvent('umrah-sales-report-panel-opened'));
             }
             if (key === 'users') {
                 window.dispatchEvent(new CustomEvent('users-panel-opened'));

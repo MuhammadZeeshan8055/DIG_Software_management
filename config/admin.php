@@ -102,6 +102,7 @@ return [
                 ['key' => 'bank-accounts', 'label' => 'Bank Accounts', 'route' => null],
                 ['key' => 'payments', 'label' => 'Payments', 'route' => null],
                 ['key' => 'reports', 'label' => 'Sales Report', 'route' => null],
+                ['key' => 'umrah-sales-report', 'label' => 'Umrah Sale Report', 'route' => null],
             ],
         ],
         [

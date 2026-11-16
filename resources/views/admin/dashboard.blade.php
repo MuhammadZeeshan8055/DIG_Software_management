@@ -95,7 +95,7 @@
     {{-- Module workspace (replaces overview) --}}
     <div
         class="dashboard-view module-workspace"
-        x-show="activeModule && activeModule !== 'daily-visitors' && activeModule !== 'my-visitors' && !viewingMyAttendance && !viewingMyAccount && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'invoices' && activeOption !== 'reports' && activeOption !== 'users' && activeOption !== 'desks' && activeOption !== 'my-daily-attendance' && activeOption !== 'staff-daily-attendance' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips' && activeOption !== 'register' && activeOption !== 'list' && activeOption !== 'my-queue' && activeOption !== 'reminders-list' && !(activeModule === 'hotel-vouchers' && activeOption === 'hotel-vouchers')"
+        x-show="activeModule && activeModule !== 'daily-visitors' && activeModule !== 'my-visitors' && !viewingMyAttendance && !viewingMyAccount && activeOption !== 'office-settings' && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'invoices' && activeOption !== 'reports' && activeOption !== 'umrah-sales-report' && activeOption !== 'users' && activeOption !== 'desks' && activeOption !== 'my-daily-attendance' && activeOption !== 'staff-daily-attendance' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips' && activeOption !== 'register' && activeOption !== 'list' && activeOption !== 'my-queue' && activeOption !== 'reminders-list' && !(activeModule === 'hotel-vouchers' && activeOption === 'hotel-vouchers')"
         x-cloak
         x-transition:enter="dash-enter"
         x-transition:enter-start="dash-enter-start"
@@ -208,7 +208,7 @@
                 {{-- Other option tables (static demo data) --}}
                 <div
                     class="module-panel"
-                    x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'my-daily-attendance' && activeOption !== 'invoices' && activeOption !== 'reports' && activeOption !== 'staff-daily-attendance' && activeOption !== 'office-settings' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips' && activeOption !== 'users' && activeOption !== 'desks' && activeOption !== 'register' && activeOption !== 'list' && activeOption !== 'my-queue' && activeOption !== 'reminders-list' && activeOption !== 'hotel-vouchers'"
+                    x-show="activeOption && activeOption !== 'import-ticket-details' && activeOption !== 'payments' && activeOption !== 'bank-accounts' && activeOption !== 'my-daily-attendance' && activeOption !== 'invoices' && activeOption !== 'reports' && activeOption !== 'umrah-sales-report' && activeOption !== 'staff-daily-attendance' && activeOption !== 'office-settings' && activeOption !== 'apply-leave' && activeOption !== 'leave-approvals' && activeOption !== 'holidays' && activeOption !== 'salary-slips' && activeOption !== 'users' && activeOption !== 'desks' && activeOption !== 'register' && activeOption !== 'list' && activeOption !== 'my-queue' && activeOption !== 'reminders-list' && activeOption !== 'hotel-vouchers'"
                     x-cloak
                     x-transition.opacity.duration.200ms>
                     <template x-if="currentTable()">
@@ -311,6 +311,15 @@
         x-cloak
         x-transition.opacity.duration.200ms>
         <livewire:admin.accounts.sales-report />
+    </div>
+
+    {{-- Accounts → Umrah Sale Report (Livewire) --}}
+    <div
+        class="dashboard-view dashboard-view--panel"
+        x-show="activeModule === 'accounts' && activeOption === 'umrah-sales-report' && !viewingMyAttendance && !viewingMyAccount"
+        x-cloak
+        x-transition.opacity.duration.200ms>
+        <livewire:admin.accounts.umrah-sale-report />
     </div>
 
     {{-- My Daily Attendance (profile menu OR Attendance module) --}}
