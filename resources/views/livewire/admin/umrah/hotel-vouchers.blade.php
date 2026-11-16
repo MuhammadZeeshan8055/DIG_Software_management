@@ -280,7 +280,7 @@
                                             <input id="hv-field-6" type="text" class="mu-field__input" wire:model="group_number">
                                         </div>
                                         <div class="mu-field">
-                                            <label class="mu-field__label" for="hv-field-7">Agent</label>
+                                            <label class="mu-field__label" for="hv-field-7">Care Of</label>
                                             <input id="hv-field-7" type="text" class="mu-field__input" wire:model="agent_customer">
                                         </div>
                                         <div class="mu-field">

@@ -159,7 +159,7 @@ return [
             ],
             'monthly-hotel-bookings-rates' => [
                 'title' => 'Voucher Records',
-                'columns' => ['Voucher No', 'Guest', 'Check-in', 'Agent', 'Status'],
+                'columns' => ['Voucher No', 'Guest', 'Check-in', 'Care Of', 'Status'],
                 'rows' => [
                     ['HV-2180', 'Group C', '01 Sep 2026', 'Ayesha', 'Used'],
                     ['HV-2181', 'Ms. Sana', '03 Sep 2026', 'Omar', 'Active'],

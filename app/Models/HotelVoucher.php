@@ -165,14 +165,19 @@ class HotelVoucher extends Model
 
     public static function nextNumber(): string
     {
+        // New vouchers start from DIG-HV-3212
+        $startFrom = 3212;
+
         $latest = static::query()
             ->where('voucher_number', 'like', 'DIG-HV-%')
             ->orderByDesc('id')
             ->value('voucher_number');
 
-        $next = 1;
+        $next = $startFrom;
+
         if ($latest && preg_match('/DIG-HV-(\d+)/', $latest, $matches)) {
-            $next = ((int) $matches[1]) + 1;
+            $fromDb = ((int) $matches[1]) + 1;
+            $next = max($startFrom, $fromDb);
         }
 
         return 'DIG-HV-'.str_pad((string) $next, 4, '0', STR_PAD_LEFT);

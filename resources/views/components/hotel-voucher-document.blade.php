@@ -61,7 +61,7 @@
                 <span class="ticket-doc__field-value">{{ $voucher->show($voucher->family_head) }}</span>
             </div>
             <div class="ticket-doc__field">
-                <span class="ticket-doc__field-label">Agent</span>
+                <span class="ticket-doc__field-label">Care Of</span>
                 <span class="ticket-doc__field-value">{{ $voucher->show($voucher->agent_customer) }}</span>
             </div>
             <div class="ticket-doc__field">
