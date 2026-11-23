@@ -27,7 +27,8 @@ body.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
     flex-direction: column;
     width: calc(100% / var(--hv-print-scale));
     min-height: var(--hv-document-height);
-    height: auto;
+    height: var(--hv-document-height);
+    max-height: var(--hv-document-height);
     padding: 0;
     margin: 0;
     border: 0;
@@ -134,10 +135,11 @@ body.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
 .hotel-voucher-print-page .ticket-doc__notice strong { font-size: 9px; margin-bottom: 2px; }
 .hotel-voucher-print-page .ticket-doc__notice p { line-height: 1.35; }
 
-/* Footer + office address */
+/* Footer + office address — always pinned to bottom of the A4 page */
 .hotel-voucher-print-page .ticket-doc__footer {
-    margin-top: auto;
+    margin-top: auto !important;
     padding-top: 6px;
+    margin-bottom: 0;
     flex-shrink: 0;
 }
 .hotel-voucher-print-page .ticket-doc__footer-signatures {

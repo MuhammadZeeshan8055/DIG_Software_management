@@ -1,9 +1,9 @@
 /**
- * Scale the hotel voucher so guests, stays, transport AND the address footer
- * all fit on a single A4 page when printing.
+ * Scale the hotel voucher to one A4 page and pin the address footer
+ * to the bottom of the page.
  */
 (function () {
-    var SAFETY_PX = 4;
+    var SAFETY_PX = 2;
     var MIN_SCALE = 0.55;
 
     function fitToA4() {
@@ -25,12 +25,10 @@
             return;
         }
 
-        // Measure natural (unscaled) height — no stretch, no scale
+        // 1) Measure natural height (no stretch, scale = 1)
         page.style.setProperty('--hv-print-scale', '1');
         page.style.setProperty('--hv-document-height', 'auto');
-        scaleBox.style.height = 'auto';
-
-        // Force layout so scrollHeight is accurate
+        scaleBox.style.height = available + 'px';
         void doc.offsetHeight;
 
         var scale = 1;
@@ -42,41 +40,32 @@
             if (height <= 0) {
                 break;
             }
-
             if (height * scale <= available) {
                 break;
             }
-
             scale = Math.max(MIN_SCALE, available / height);
         }
 
-        // Final guard: if still slightly over (rounding / fonts), nudge down
         page.style.setProperty('--hv-print-scale', String(scale));
         void doc.offsetHeight;
-        var finalHeight = Math.max(doc.scrollHeight, doc.offsetHeight);
-        if (finalHeight * scale > available) {
-            scale = Math.max(MIN_SCALE, available / finalHeight);
+        var naturalHeight = Math.max(doc.scrollHeight, doc.offsetHeight);
+        if (naturalHeight * scale > available) {
+            scale = Math.max(MIN_SCALE, available / naturalHeight);
             page.style.setProperty('--hv-print-scale', String(scale));
-            void doc.offsetHeight;
-            finalHeight = Math.max(doc.scrollHeight, doc.offsetHeight);
         }
 
-        // Only stretch short documents so the footer sits at the page bottom.
-        // Dense (scaled) docs keep natural height so the address is never clipped.
-        if (scale >= 0.999 && finalHeight < available) {
-            page.style.setProperty('--hv-document-height', available / scale + 'px');
-        } else {
-            page.style.setProperty('--hv-document-height', 'auto');
-        }
-
+        // 2) Always stretch the document to exactly fill the page so the
+        //    footer (margin-top: auto) sticks to the bottom edge.
+        var targetHeight = available / scale;
+        page.style.setProperty('--hv-document-height', targetHeight + 'px');
         scaleBox.style.height = available + 'px';
+        void doc.offsetHeight;
     }
 
     function runFit(thenPrint) {
         fitToA4();
         requestAnimationFrame(function () {
             fitToA4();
-            // Fonts / QR can settle one frame later
             requestAnimationFrame(function () {
                 fitToA4();
                 if (thenPrint) {
