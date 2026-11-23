@@ -1,9 +1,8 @@
 /**
  * Scale the hotel voucher to one A4 page and pin the address footer
- * to the bottom of the page.
+ * flush to the bottom edge of the page.
  */
 (function () {
-    var SAFETY_PX = 2;
     var MIN_SCALE = 0.55;
 
     function fitToA4() {
@@ -18,46 +17,45 @@
             return;
         }
 
-        var styles = window.getComputedStyle(page);
-        var padding = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
-        var available = Math.floor(page.clientHeight - padding) - SAFETY_PX;
+        // Let flex layout size the scale box to the remaining page height
+        scaleBox.style.height = '';
+        page.style.setProperty('--hv-print-scale', '1');
+        page.style.setProperty('--hv-document-height', 'auto');
+        void page.offsetHeight;
+
+        var available = Math.floor(scaleBox.clientHeight);
+        if (available <= 0) {
+            available = Math.floor(page.clientHeight - 1);
+        }
         if (available <= 0) {
             return;
         }
 
-        // 1) Measure natural height (no stretch, scale = 1)
-        page.style.setProperty('--hv-print-scale', '1');
-        page.style.setProperty('--hv-document-height', 'auto');
-        scaleBox.style.height = available + 'px';
-        void doc.offsetHeight;
-
-        var scale = 1;
-        for (var i = 0; i < 10; i++) {
-            page.style.setProperty('--hv-print-scale', String(scale));
-            void doc.offsetHeight;
-
-            var height = Math.max(doc.scrollHeight, doc.offsetHeight);
-            if (height <= 0) {
-                break;
-            }
-            if (height * scale <= available) {
-                break;
-            }
-            scale = Math.max(MIN_SCALE, available / height);
-        }
-
-        page.style.setProperty('--hv-print-scale', String(scale));
+        // Measure natural content height (unscaled, unstretched)
         void doc.offsetHeight;
         var naturalHeight = Math.max(doc.scrollHeight, doc.offsetHeight);
-        if (naturalHeight * scale > available) {
+        var scale = 1;
+
+        if (naturalHeight > available) {
             scale = Math.max(MIN_SCALE, available / naturalHeight);
-            page.style.setProperty('--hv-print-scale', String(scale));
         }
 
-        // 2) Always stretch the document to exactly fill the page so the
-        //    footer (margin-top: auto) sticks to the bottom edge.
-        var targetHeight = available / scale;
-        page.style.setProperty('--hv-document-height', targetHeight + 'px');
+        // Iterate once more after applying width expansion from scale
+        for (var i = 0; i < 6; i++) {
+            page.style.setProperty('--hv-print-scale', String(scale));
+            page.style.setProperty('--hv-document-height', 'auto');
+            void doc.offsetHeight;
+            naturalHeight = Math.max(doc.scrollHeight, doc.offsetHeight);
+            if (naturalHeight * scale <= available + 0.5) {
+                break;
+            }
+            scale = Math.max(MIN_SCALE, available / naturalHeight);
+        }
+
+        // Stretch document so footer (margin-top: auto) sits on the bottom edge.
+        // After CSS transform, visual height === available.
+        page.style.setProperty('--hv-print-scale', String(scale));
+        page.style.setProperty('--hv-document-height', (available / scale) + 'px');
         scaleBox.style.height = available + 'px';
         void doc.offsetHeight;
     }
