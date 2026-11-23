@@ -6649,8 +6649,8 @@ body.ticket-view-modal-open {
         print-color-adjust: exact;
     }
 
-    .ticket-doc-page,
-    .ticket-doc-page--a4 {
+    body:not(.hotel-voucher-print-page) .ticket-doc-page,
+    body:not(.hotel-voucher-print-page) .ticket-doc-page--a4 {
         width: 100%;
         max-width: none;
         min-height: calc(297mm - 16mm) !important;

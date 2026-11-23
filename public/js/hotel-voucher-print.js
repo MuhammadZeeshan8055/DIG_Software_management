@@ -11,8 +11,6 @@
     const blocks = source.querySelectorAll(':scope > .ticket-doc__section');
     const guidance = source.querySelector('.ticket-doc__notice');
     const footer = source.querySelector('.ticket-doc__footer');
-    const signatures = footer.querySelector('.ticket-doc__footer-signatures');
-    const address = footer.querySelector('.ticket-doc__footer-contact');
 
     function paginate() {
         pages.replaceChildren();
@@ -26,8 +24,7 @@
             content = document.createElement('div');
             content.className = 'hotel-voucher-doc-content';
 
-            const pageFooter = footer.cloneNode(false);
-            pageFooter.append(address.cloneNode(true));
+            const pageFooter = footer.cloneNode(true);
             voucher.append(header.cloneNode(true), details.cloneNode(true), content, pageFooter);
             page.append(voucher);
             pages.append(page);
@@ -149,10 +146,44 @@
 
         const closing = document.createElement('div');
         closing.className = 'hotel-voucher-doc-closing';
-        closing.append(guidance.cloneNode(true), signatures.cloneNode(true));
+        closing.append(guidance.cloneNode(true));
         if (!placeBlock(closing)) {
             pages.replaceChildren(sourcePage);
+            return;
         }
+
+        // Signatures stay with the address on the last page only.
+        const sheets = pages.querySelectorAll('.hotel-voucher-doc-page');
+        sheets.forEach(function (sheet, index) {
+            if (index < sheets.length - 1) {
+                const block = sheet.querySelector('.ticket-doc__footer-signatures');
+                if (block) {
+                    block.remove();
+                }
+            }
+        });
+    }
+
+    // Lock the on-screen sizes so print cannot reflow flex or fonts.
+    function lockBox(el) {
+        if (!el) {
+            return;
+        }
+        const height = el.getBoundingClientRect().height;
+        el.style.setProperty('height', height + 'px', 'important');
+        el.style.setProperty('min-height', height + 'px', 'important');
+        el.style.setProperty('max-height', height + 'px', 'important');
+        el.style.setProperty('flex', '0 0 ' + height + 'px', 'important');
+    }
+
+    function freezePages() {
+        pages.querySelectorAll('.hotel-voucher-doc-page--paginated').forEach(function (page) {
+            page.style.setProperty('break-after', 'avoid', 'important');
+            page.style.setProperty('page-break-after', 'avoid', 'important');
+            // Lock the tables only. Leave the signature block and address bar free
+            // so the names are never clipped onto the blue bar.
+            page.querySelectorAll('.ticket-doc__section, .hv-doc-table__row, .hv-doc-table__head').forEach(lockBox);
+        });
     }
 
     async function onReady() {
@@ -161,13 +192,12 @@
         }
 
         paginate();
+        freezePages();
         if (pages.dataset.autoPrint === 'true') {
             window.print();
         }
     }
 
-    window.addEventListener('beforeprint', paginate);
-    window.addEventListener('afterprint', paginate);
     if (document.readyState === 'complete') {
         onReady();
     } else {
