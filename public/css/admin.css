@@ -8793,7 +8793,7 @@ tr.leave-row--rejected td {
     box-sizing: border-box;
     min-height: 297mm;
     height: 297mm;
-    padding: 6mm 7mm;
+    padding: 5mm;
     overflow: hidden;
 }
 
@@ -8802,38 +8802,39 @@ tr.leave-row--rejected td {
     transform-origin: top left;
 }
 
+/* Defaults for modal preview; print page overrides live in hotel-voucher-print.css */
 .hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
-    padding: 10px 12px 8px;
-    font-size: 0.74rem;
-    line-height: 1.3;
+    padding: 0;
+    font-size: 10px;
+    line-height: 1.35;
 }
 
 .hotel-voucher-print-page .ticket-doc__header {
     margin-bottom: 8px;
-    padding-bottom: 8px;
-    gap: 12px;
+    padding-bottom: 10px;
+    gap: 10px;
 }
 
 .hotel-voucher-print-page .ticket-doc__section {
-    margin-bottom: 7px;
+    margin-bottom: 6px;
 }
 
 .hotel-voucher-print-page .ticket-doc__section-head {
-    padding: 5px 9px;
-    font-size: 0.66rem;
+    padding: 6px 9px;
+    font-size: 9px;
 }
 
 .hotel-voucher-print-page .hv-doc-table__head,
 .hotel-voucher-print-page .hv-doc-table__row {
-    padding: 4px 5px;
+    padding: 5px;
 }
 
 .hotel-voucher-print-page .hv-doc-table__head {
-    font-size: 0.5rem;
+    font-size: 6.5px;
 }
 
 .hotel-voucher-print-page .hv-doc-table__row {
-    font-size: 0.62rem;
+    font-size: 9px;
 }
 
 .hv-doc-table {

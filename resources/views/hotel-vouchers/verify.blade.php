@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/hotel-voucher-print.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/hotel-voucher-print.css') }}?v=3">
 </head>
 <body class="ticket-doc-print-page invoice-verify-page hotel-voucher-print-page hotel-voucher-verify-page">
     <header class="invoice-verify-bar">
@@ -46,6 +46,6 @@
             </div>
         </div>
     </main>
-    <script src="{{ asset('js/hotel-voucher-print.js') }}" defer></script>
+    <script src="{{ asset('js/hotel-voucher-print.js') }}?v=3" defer></script>
 </body>
 </html>
