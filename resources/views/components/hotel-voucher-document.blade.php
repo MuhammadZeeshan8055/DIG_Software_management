@@ -212,7 +212,7 @@
         <section class="ticket-doc__section">
             <div class="ticket-doc__section-head">Special Instructions / Inclusions</div>
             <div class="ticket-doc__field ticket-doc__field--full">
-                <span class="ticket-doc__field-value" style="white-space: pre-wrap;">{{ $voucher->special_instructions }}</span>
+                <span class="ticket-doc__field-value" data-voucher-instructions style="white-space: pre-wrap;">{{ $voucher->special_instructions }}</span>
             </div>
         </section>
     @endif

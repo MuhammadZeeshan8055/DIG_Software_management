@@ -2,38 +2,30 @@
 @page { size: A4 portrait; margin: 0; }
 
 body.hotel-voucher-print-page .hotel-voucher-doc-page.ticket-doc-page--a4 {
-    --hv-print-scale: 1;
-    --hv-document-height: 100%;
+    --hv-page-inset: 6mm;
     box-sizing: border-box;
-    display: flex !important;
+    display: flex;
     flex-direction: column;
     width: 210mm;
     max-width: none;
-    height: 297mm !important;
+    height: auto !important;
     min-height: 297mm !important;
-    max-height: 297mm !important;
-    /* Small bottom padding so the address bar isn't flush against the page edge */
-    padding: 6mm 6mm 4mm 6mm !important;
-    overflow: hidden;
+    padding: var(--hv-page-inset) var(--hv-page-inset) 0 !important;
+    overflow: visible;
 }
 
-.hotel-voucher-print-page .hotel-voucher-doc-scale {
-    flex: 1 1 auto;
-    min-height: 0;
-    width: 100%;
-    height: auto;
-    overflow: hidden;
-    position: relative;
+body.hotel-voucher-print-page .hotel-voucher-doc-page--paginated.ticket-doc-page--a4 {
+    /* Leave room for pixel rounding at the physical page break. */
+    height: calc(297mm - 0.5px) !important;
+    min-height: 0 !important;
 }
 
 body.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    width: calc(100% / var(--hv-print-scale));
-    min-height: var(--hv-document-height);
-    height: var(--hv-document-height);
-    max-height: var(--hv-document-height);
+    width: 100%;
+    min-height: 0;
     padding: 0;
     margin: 0;
     border: 0;
@@ -42,11 +34,17 @@ body.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
     font-size: 10px;
     line-height: 1.35;
     gap: 0;
-    transform: scale(var(--hv-print-scale));
-    transform-origin: top left;
 }
 
-.hotel-voucher-print-page .hotel-voucher-doc > * { flex-shrink: 0; }
+.hotel-voucher-doc-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+}
+
+.hotel-voucher-print-page .hotel-voucher-doc > :not(.hotel-voucher-doc-content),
+.hotel-voucher-doc-content > * { flex-shrink: 0; }
 
 /* Header */
 .hotel-voucher-print-page .ticket-doc__header {
@@ -55,12 +53,12 @@ body.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
     margin-bottom: 8px;
     padding-bottom: 10px;
 }
-.hotel-voucher-print-page .ticket-doc__brand-card { padding: 0; gap: 8px; }
+.hotel-voucher-print-page .ticket-doc__brand-card { width: auto; padding: 0; gap: 8px; }
 .hotel-voucher-print-page .ticket-doc__logo { width: 40px; height: auto; }
 .hotel-voucher-print-page .ticket-doc__brand-name,
 .hotel-voucher-print-page .ticket-doc__brand-group { font-size: 10px; }
 .hotel-voucher-print-page .ticket-doc__brand-tagline { font-size: 8px; }
-.hotel-voucher-print-page .ticket-doc__qr { padding: 2px; }
+.hotel-voucher-print-page .ticket-doc__qr { padding: 2px; align-self: center; order: 0; }
 .hotel-voucher-print-page .ticket-doc__qr svg { width: 50px; height: 50px; }
 .hotel-voucher-print-page .ticket-doc__title-block { width: auto; min-width: 0; text-align: right; }
 .hotel-voucher-print-page .ticket-doc__title { font-size: 17px; line-height: 1.25; white-space: normal; margin: 0; }
@@ -79,16 +77,17 @@ body.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
 .hotel-voucher-print-page .ticket-doc__meta-label,
 .hotel-voucher-print-page .ticket-doc__field-label { font-size: 7px; }
 .hotel-voucher-print-page .ticket-doc__meta-value,
-.hotel-voucher-print-page .ticket-doc__field-value { font-size: 10px; }
+.hotel-voucher-print-page .ticket-doc__field-value { font-size: 10px; overflow-wrap: anywhere; }
 
 .hotel-voucher-print-page .ticket-doc__section {
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
     margin-bottom: 6px;
     border-radius: 6px;
     box-shadow: none;
-    break-inside: avoid;
+}
+.hotel-voucher-doc-page--paginated:only-child .ticket-doc__section:has(.ticket-doc__grid, .hv-doc-table) {
+    flex-grow: 1;
 }
 .hotel-voucher-print-page .ticket-doc__section-head {
     flex-shrink: 0;
@@ -111,7 +110,7 @@ body.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
 .hotel-voucher-print-page .hv-doc-table__row {
     font-size: 9px;
     padding: 5px 5px;
-    flex: 0 0 auto;
+    flex: 1 0 auto;
     align-items: center;
     line-height: 1.3;
 }
@@ -136,7 +135,12 @@ body.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
 .hotel-voucher-print-page .ticket-doc__notice strong { font-size: 9px; margin-bottom: 2px; }
 .hotel-voucher-print-page .ticket-doc__notice p { line-height: 1.35; }
 
-/* Footer pinned to page bottom; address bar flush with edge */
+/* The final sheet includes the approvals above the address. */
+.hotel-voucher-doc-closing .ticket-doc__footer-signatures {
+    border-top: 1px solid rgba(148, 163, 184, 0.22);
+    padding-top: 6px;
+}
+
 .hotel-voucher-print-page .ticket-doc__footer {
     margin-top: auto !important;
     padding-top: 6px;
@@ -144,6 +148,7 @@ body.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
     padding-bottom: 0 !important;
     flex-shrink: 0;
 }
+.hotel-voucher-doc-page--paginated .ticket-doc__footer { border-top: 0; }
 .hotel-voucher-print-page .ticket-doc__footer-signatures {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
@@ -157,12 +162,7 @@ body.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
 .hotel-voucher-print-page .ticket-doc__signature-label { font-size: 8px; }
 .hotel-voucher-print-page .ticket-doc__footer-signatures strong { font-size: 10px; }
 .hotel-voucher-print-page .ticket-doc__footer-contact {
-    margin: 0;
-    /* Bleed into side padding so the bar runs edge-to-edge at the bottom */
-    margin-left: -6mm;
-    margin-right: -6mm;
-    width: calc(100% + 12mm);
-    max-width: none;
+    margin: 0 calc(-1 * var(--hv-page-inset));
     padding: 8px 12px;
     font-size: 8px;
     line-height: 1.35;
@@ -180,28 +180,49 @@ body.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
 
 @media screen {
     body.hotel-voucher-print-page { overflow-x: auto; }
+    .hotel-voucher-doc-page + .hotel-voucher-doc-page { margin-top: 16px; }
 }
 
 @media print {
     html:has(.hotel-voucher-print-page),
     body.hotel-voucher-print-page {
         width: 210mm !important;
-        height: 297mm !important;
+        height: auto;
         margin: 0 !important;
         padding: 0 !important;
         background: #fff !important;
         print-color-adjust: exact;
         -webkit-print-color-adjust: exact;
     }
-    .hotel-voucher-print-toolbar { display: none !important; }
+    .hotel-voucher-print-toolbar,
+    .hotel-voucher-verify-page .invoice-verify-bar { display: none !important; }
+    .hotel-voucher-verify-page .invoice-verify-main { padding: 0; }
+
     body.hotel-voucher-print-page .hotel-voucher-doc-page.ticket-doc-page--a4 {
-        width: 210mm;
-        max-width: none;
         margin: 0;
-        box-shadow: none;
-        page-break-after: avoid;
+        box-shadow: none !important;
+    }
+
+    .hotel-voucher-doc-page--paginated + .hotel-voucher-doc-page--paginated {
+        break-before: page;
+    }
+
+    /* Keep the original document printable if pagination is unavailable. */
+    body.hotel-voucher-print-page .hotel-voucher-doc-page.ticket-doc-page--a4:not(.hotel-voucher-doc-page--paginated),
+    body.hotel-voucher-print-page .hotel-voucher-doc-page:not(.hotel-voucher-doc-page--paginated) .hotel-voucher-doc,
+    .hotel-voucher-doc-page:not(.hotel-voucher-doc-page--paginated) .ticket-doc__section,
+    .hotel-voucher-doc-page:not(.hotel-voucher-doc-page--paginated) .ticket-doc__field--full,
+    .hotel-voucher-doc-page:not(.hotel-voucher-doc-page--paginated) .hv-doc-table {
+        display: block;
+    }
+
+    .hotel-voucher-doc-page:not(.hotel-voucher-doc-page--paginated) .ticket-doc__section-head,
+    .hotel-voucher-doc-page:not(.hotel-voucher-doc-page--paginated) .hv-doc-table__head {
         break-after: avoid;
-        page-break-inside: avoid;
+    }
+
+    .hotel-voucher-doc-page:not(.hotel-voucher-doc-page--paginated) .hv-doc-table__row,
+    .hotel-voucher-doc-page:not(.hotel-voucher-doc-page--paginated) .ticket-doc__footer {
         break-inside: avoid;
     }
 }

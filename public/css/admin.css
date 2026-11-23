@@ -8789,54 +8789,6 @@ tr.leave-row--rejected td {
     max-width: 100%;
 }
 
-.hotel-voucher-doc-page {
-    box-sizing: border-box;
-    min-height: 297mm;
-    height: 297mm;
-    padding: 5mm;
-    overflow: hidden;
-}
-
-.hotel-voucher-doc-scale {
-    width: 100%;
-    transform-origin: top left;
-}
-
-/* Defaults for modal preview; print page overrides live in hotel-voucher-print.css */
-.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
-    padding: 0;
-    font-size: 10px;
-    line-height: 1.35;
-}
-
-.hotel-voucher-print-page .ticket-doc__header {
-    margin-bottom: 8px;
-    padding-bottom: 10px;
-    gap: 10px;
-}
-
-.hotel-voucher-print-page .ticket-doc__section {
-    margin-bottom: 6px;
-}
-
-.hotel-voucher-print-page .ticket-doc__section-head {
-    padding: 6px 9px;
-    font-size: 9px;
-}
-
-.hotel-voucher-print-page .hv-doc-table__head,
-.hotel-voucher-print-page .hv-doc-table__row {
-    padding: 5px;
-}
-
-.hotel-voucher-print-page .hv-doc-table__head {
-    font-size: 6.5px;
-}
-
-.hotel-voucher-print-page .hv-doc-table__row {
-    font-size: 9px;
-}
-
 .hv-doc-table {
     width: 100%;
     overflow-x: visible;

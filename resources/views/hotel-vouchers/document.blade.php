@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/hotel-voucher-print.css') }}?v=6">
+    <link rel="stylesheet" href="{{ asset('css/hotel-voucher-print.css') }}?v=7">
 </head>
 <body class="ticket-doc-print-page hotel-voucher-print-page">
     <div class="ticket-doc-page__toolbar hotel-voucher-print-toolbar">
@@ -18,12 +18,12 @@
         <button type="button" class="hero-btn hero-btn--primary" onclick="window.print()">Save as PDF</button>
     </div>
 
-    <div class="ticket-doc-page ticket-doc-page--a4 hotel-voucher-doc-page" id="hv-print-page" data-auto-print="{{ $autoPrint ? 'true' : 'false' }}">
-        <div class="hotel-voucher-doc-scale" id="hv-print-scale">
+    <div id="hv-print-pages" data-auto-print="{{ $autoPrint ? 'true' : 'false' }}">
+        <div class="ticket-doc-page ticket-doc-page--a4 hotel-voucher-doc-page">
             <x-hotel-voucher-document :voucher="$voucher" />
         </div>
     </div>
 
-    <script src="{{ asset('js/hotel-voucher-print.js') }}?v=6" defer></script>
+    <script src="{{ asset('js/hotel-voucher-print.js') }}?v=7" defer></script>
 </body>
 </html>
