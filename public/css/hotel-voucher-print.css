@@ -205,6 +205,11 @@ body.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
 }
 
 @media print {
+    @page {
+        size: A4 portrait;
+        margin: 0;
+    }
+
     html:has(.hotel-voucher-print-page),
     body.hotel-voucher-print-page {
         width: 210mm !important;
@@ -221,14 +226,28 @@ body.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
 
     /* Keep the frozen screen layout. Shared ticket print rules must not resize this page. */
     body.hotel-voucher-print-page .hotel-voucher-doc-page.ticket-doc-page--a4 {
+        position: relative !important;
         width: 210mm !important;
         max-width: 210mm !important;
+        height: 297mm !important;
+        min-height: 297mm !important;
+        max-height: 297mm !important;
         margin: 0 !important;
+        padding-bottom: 0 !important;
         box-shadow: none !important;
         background: #fff !important;
         overflow: hidden !important;
         break-inside: avoid !important;
         page-break-inside: avoid !important;
+        break-after: avoid !important;
+        page-break-after: avoid !important;
+    }
+
+    body.hotel-voucher-print-page .ticket-doc__footer {
+        position: static !important;
+        margin-top: auto !important;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
     }
 
     body.hotel-voucher-print-page .hotel-voucher-doc.ticket-doc {
