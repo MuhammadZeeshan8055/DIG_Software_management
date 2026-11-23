@@ -1,0 +1,33 @@
+---
+description: Hard ban on wiping or rewriting the application database without explicit user authorization
+alwaysApply: true
+---
+
+# Database safety (always apply)
+
+This project’s application MySQL database holds real business data (sales, vouchers, visitors, invoices). Treating it as disposable is unacceptable.
+
+## Before ANY DB write
+
+1. Ask the user for explicit yes/no authorization for the exact command.
+2. Verify from `.env`: `DB_HOST`, `DB_PORT`, `DB_DATABASE`.
+3. Refuse if authorization is missing or the target is unclear.
+
+## Never run without authorization
+
+- `migrate:fresh`, `migrate:refresh`, `db:wipe`, `db:seed` against the app DB
+- `php artisan migrate` / `migrate --force`
+- Any script/tinker that `delete()`, `truncate()`, `forceDelete()`, bulk `update()`, or `DROP`/`TRUNCATE`/`DELETE`
+- Excel import / “replace month” scripts executed via shell against the app DB
+- Feature tests pointed at the real app database
+
+## Safe without DB authorization
+
+- Editing code/templates/CSS/JS
+- `view:clear`, `config:clear`, `route:clear`, `optimize:clear`
+- `migrate:status` (read-only)
+- Showing the user commands to copy-paste themselves
+
+## Prefer
+
+Ship migration or importer code; let the user run DB commands. Do not “just run it to verify” against the configured database.
