@@ -292,14 +292,15 @@ class TicketPdfParser
         //
         // Notes for beginners:
         // - Baggage line is optional (some PDFs skip it)
-        // - Flight number can be EK-828, EK 828, or EK828
+        // - Flight number can be EK-828, EK 828, EK828, or 9P-794 (digit airline codes)
         // - Airline may say "Emirates Operated by Flydubai"
+        // - Terminal may be "Terminal - NA" or "Terminal A" (dash optional)
         // - "Terminal" spelling can vary (OCR), so we match case-insensitive (/i)
-        $pattern = '/(?<flight_number>[A-Z]{2}\s*-?\s*\d{1,4})\s+(?<airline>[A-Za-z][A-Za-z0-9 &\-\/]*?(?:\s+Operated by\s+[A-Za-z][A-Za-z0-9 &\-\/]*?)?)\s+'
+        $pattern = '/(?<flight_number>[A-Z0-9]{2}\s*-?\s*\d{1,4})\s+(?<airline>[A-Za-z][A-Za-z0-9 &\-\/]*?(?:\s+Operated by\s+[A-Za-z][A-Za-z0-9 &\-\/]*?)?)\s+'
             .'(?<departure_time>\d{1,2}:\d{2})\s*\(\s*(?<departure_date>[^)]+?)\s*\)\s+'
-            .'(?<departure_location>[^(]+?\([A-Z]{3}\))\s*Terminal\s*-\s*(?<departure_terminal>\S+)\s+'
+            .'(?<departure_location>[^(]+?\([A-Z]{3}\))\s*Terminal\s*-?\s*(?<departure_terminal>\S+)\s+'
             .'(?<arrival_time>\d{1,2}:\d{2})\s*\(\s*(?<arrival_date>[^)]+?)\s*\)\s+'
-            .'(?<arrival_location>[^(]+?\([A-Z]{3}\))\s*Terminal\s*-\s*(?<arrival_terminal>\S+)\s+'
+            .'(?<arrival_location>[^(]+?\([A-Z]{3}\))\s*Terminal\s*-?\s*(?<arrival_terminal>\S+)\s+'
             .'(?:Status\s*:\s*(?<status>\w+)\s*)?'
             .'Class\s*:\s*(?<class>.+?)'
             .'(?:\s+Baggage\s*:\s*(?<baggage>.+?))?'
@@ -332,9 +333,9 @@ class TicketPdfParser
             $segment[$key] = trim($value);
         }
 
-        // Make flight number consistent: "EK 828" / "EK828" => "EK-828"
+        // Make flight number consistent: "EK 828" / "EK828" / "9P794" => "EK-828" / "9P-794"
         if ($segment['flight_number'] !== '') {
-            if (preg_match('/^([A-Za-z]{2})\s*-?\s*(\d{1,4})$/', $segment['flight_number'], $flightParts)) {
+            if (preg_match('/^([A-Za-z0-9]{2})\s*-?\s*(\d{1,4})$/', $segment['flight_number'], $flightParts)) {
                 $segment['flight_number'] = strtoupper($flightParts[1]).'-'.$flightParts[2];
             }
         }

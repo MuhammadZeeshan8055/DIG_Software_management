@@ -97,4 +97,35 @@ class TicketPdfParserTest extends TestCase
         $this->assertSame('Emirates Operated by Flydubai', $segments[0]['airline']);
         $this->assertSame('17:35', $segments[0]['departure_time']);
     }
+
+    public function test_parses_digit_airline_code_and_terminal_without_dash(): void
+    {
+        // Fly Jinnah (9P) tickets often print "Terminal A" with no dash.
+        $text = 'Booking Reference: CLI_22494- 2916405 Agency PNR: 4LF57Y '
+            .'9P-794 Fly Jinnah 11:35 ( 22 Dec ) Islamabad (ISB) Terminal - NA '
+            .'14:25 ( 22 Dec ) Abu Dhabi (AUH) Terminal A '
+            .'Status : Confirm Class : Economy (E) PNR : 4LF57Y '
+            .'TRAVELLER NAME Mr MOHSIN JAVED (ADT) FREQUENT FLYER - TICKET NO. 5142390563117';
+
+        $parsed = $this->parser->parse($text);
+
+        $this->assertSame('Mr MOHSIN JAVED (ADT)', $parsed['fields']['passenger_name']);
+        $this->assertSame('5142390563117', $parsed['fields']['ticket_number']);
+        $this->assertSame('4LF57Y', $parsed['fields']['agency_pnr']);
+        $this->assertCount(1, $parsed['flight_segments']);
+
+        $segment = $parsed['flight_segments'][0];
+        $this->assertSame('9P-794', $segment['flight_number']);
+        $this->assertSame('Fly Jinnah', $segment['airline']);
+        $this->assertSame('11:35', $segment['departure_time']);
+        $this->assertSame('22 Dec', $segment['departure_date']);
+        $this->assertSame('Islamabad (ISB)', $segment['departure_location']);
+        $this->assertSame('NA', $segment['departure_terminal']);
+        $this->assertSame('14:25', $segment['arrival_time']);
+        $this->assertSame('Abu Dhabi (AUH)', $segment['arrival_location']);
+        $this->assertSame('A', $segment['arrival_terminal']);
+        $this->assertSame('Confirm', $segment['status']);
+        $this->assertSame('Economy (E)', $segment['class']);
+        $this->assertSame('4LF57Y', $segment['pnr']);
+    }
 }
